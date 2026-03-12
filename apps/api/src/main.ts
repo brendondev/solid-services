@@ -12,7 +12,11 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: process.env.WEB_URL || 'http://localhost:3001',
+    origin: [
+      process.env.WEB_URL || 'http://localhost:3001',
+      'http://localhost:3001',
+      /\.vercel\.app$/,  // Permite todos subdomínios vercel.app
+    ],
     credentials: true,
   });
 
@@ -37,17 +41,15 @@ async function bootstrap() {
   );
 
   // Swagger documentation
-  if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Solid Service API')
-      .setDescription('ERP SaaS Multi-tenant API Documentation')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
+  const config = new DocumentBuilder()
+    .setTitle('Solid Service API')
+    .setDescription('ERP SaaS Multi-tenant API Documentation')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
-  }
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   const port = Number(process.env.PORT || process.env.API_PORT || 3000);
   await app.listen(port);
