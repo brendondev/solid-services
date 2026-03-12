@@ -1,0 +1,194 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 3 /Kids [ 3 0 R 5 0 R 7 0 R ] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 2043 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (VERSAO FINAL CONSOLIDADA - ERP SAAS PARA PRESTADORES DE SERVICOS) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (1. O QUE ESTE PACOTE REPRESENTA) Tj
+0 -12 Td () Tj
+0 -12 Td (Este pacote consolida o planejamento completo de um ERP SaaS multi-tenant para MEIs,) Tj
+0 -12 Td (autonomos e pequenas empresas prestadoras de servicos.) Tj
+0 -12 Td () Tj
+0 -12 Td (Nao se trata de documentacao tecnica de implementacao.) Tj
+0 -12 Td (Trata-se de um pacote de definicao de produto, negocio e validacao.) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (2. TESE CENTRAL) Tj
+0 -12 Td () Tj
+0 -12 Td (Pequenos prestadores de servico ainda operam com informacao espalhada entre WhatsApp,) Tj
+0 -12 Td (planilhas, papel e ferramentas desconectadas.) Tj
+0 -12 Td () Tj
+0 -12 Td (O produto proposto resolve isso organizando:) Tj
+0 -12 Td () Tj
+0 -12 Td (* cliente) Tj
+0 -12 Td (* orcamento) Tj
+0 -12 Td (* agenda) Tj
+0 -12 Td (* ordem de servico) Tj
+0 -12 Td (* execucao) Tj
+0 -12 Td (* cobranca) Tj
+0 -12 Td (* pagamento) Tj
+0 -12 Td (* acompanhamento) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (3. POSICIONAMENTO FINAL RECOMENDADO) Tj
+0 -12 Td () Tj
+0 -12 Td (ERP SaaS para prestadores de servicos que precisam organizar atendimento, agenda, execucao e) Tj
+0 -12 Td (cobranca sem complicacao.) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (4. PUBLICO-ALVO FINAL RECOMENDADO) Tj
+0 -12 Td () Tj
+0 -12 Td (* MEIs) Tj
+0 -12 Td (* autonomos) Tj
+0 -12 Td (* pequenas empresas de servico) Tj
+0 -12 Td (* equipes pequenas com operacao local ou regional) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (5. NICHOS INICIAIS RECOMENDADOS) Tj
+0 -12 Td () Tj
+0 -12 Td (1. instalacao e servicos tecnicos leves) Tj
+0 -12 Td (2. manutencao residencial e pequenos reparos) Tj
+0 -12 Td (3. limpeza profissional como nicho alternativo) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (6. ESTRUTURA FINAL DO PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (CORE HORIZONTAL) Tj
+0 -12 Td () Tj
+0 -12 Td (* clientes) Tj
+0 -12 Td (* servicos) Tj
+0 -12 Td (* orcamentos) Tj
+0 -12 Td (* OS) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1700 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* agenda) Tj
+0 -12 Td (* execucao) Tj
+0 -12 Td (* cobranca) Tj
+0 -12 Td (* pagamentos) Tj
+0 -12 Td (* portal do cliente) Tj
+0 -12 Td () Tj
+0 -12 Td (MODULOS DE MATURIDADE) Tj
+0 -12 Td () Tj
+0 -12 Td (* financeiro ampliado) Tj
+0 -12 Td (* contratos e recorrencia) Tj
+0 -12 Td (* estoque opcional) Tj
+0 -12 Td (* dashboards) Tj
+0 -12 Td () Tj
+0 -12 Td (ESPECIALIZACAO FUTURA) Tj
+0 -12 Td () Tj
+0 -12 Td (* templates e pacotes por nicho) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (7. ESTRUTURA FINAL DO PACOTE DOCUMENTAL) Tj
+0 -12 Td () Tj
+0 -12 Td (ESTRATEGIA) Tj
+0 -12 Td () Tj
+0 -12 Td (* apresentacao executiva) Tj
+0 -12 Td (* planejamento completo) Tj
+0 -12 Td (* ICP e nichos) Tj
+0 -12 Td (* precificacao e GTM) Tj
+0 -12 Td () Tj
+0 -12 Td (PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (* MVP detalhado) Tj
+0 -12 Td (* backlog do produto) Tj
+0 -12 Td (* modulos, telas e fluxos) Tj
+0 -12 Td (* especificacao de telas) Tj
+0 -12 Td (* regras de negocio) Tj
+0 -12 Td (* modelo conceitual) Tj
+0 -12 Td () Tj
+0 -12 Td (VALIDACAO COMERCIAL) Tj
+0 -12 Td () Tj
+0 -12 Td (* roteiro de entrevistas) Tj
+0 -12 Td (* script comercial) Tj
+0 -12 Td (* proposta/landing textual) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (8. RECOMENDACAO FINAL DE USO) Tj
+0 -12 Td () Tj
+0 -12 Td (Usar este pacote nesta ordem:) Tj
+0 -12 Td () Tj
+0 -12 Td (1. apresentacao executiva) Tj
+0 -12 Td (2. ICP e nichos) Tj
+0 -12 Td (3. roteiro de entrevistas) Tj
+0 -12 Td (4. MVP detalhado) Tj
+0 -12 Td (5. backlog do produto) Tj
+0 -12 Td (6. especificacao de telas) Tj
+0 -12 Td (7. script comercial) Tj
+0 -12 Td (8. proposta/landing) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (9. DECISAO ESTRATEGICA MAIS IMPORTANTE) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 9 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 698 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td () Tj
+0 -12 Td (Nao tentar construir um ERP generico para todos desde o inicio.) Tj
+0 -12 Td () Tj
+0 -12 Td (A recomendacao consolidada e:) Tj
+0 -12 Td () Tj
+0 -12 Td (* manter um core horizontal forte) Tj
+0 -12 Td (* escolher nichos iniciais com maior dor) Tj
+0 -12 Td (* validar com pilotos) Tj
+0 -12 Td (* especializar depois) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (10. PROXIMOS PASSOS APOS ESTE PLANEJAMENTO) Tj
+0 -12 Td () Tj
+0 -12 Td (1. entrevistar 10 potenciais clientes) Tj
+0 -12 Td (2. confirmar nicho principal) Tj
+0 -12 Td (3. revisar MVP com base nas entrevistas) Tj
+0 -12 Td (4. selecionar pilotos) Tj
+0 -12 Td (5. iniciar a etapa seguinte do projeto) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000129 00000 n 
+0000000255 00000 n 
+0000002350 00000 n 
+0000002476 00000 n 
+0000004228 00000 n 
+0000004354 00000 n 
+0000005103 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+5173
+%%EOF

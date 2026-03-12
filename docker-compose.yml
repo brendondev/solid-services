@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: solid-service-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: solid_service
+      POSTGRES_PASSWORD: solid_service_dev
+      POSTGRES_DB: solid_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - solid-service-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U solid_service']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: solid-service-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - solid-service-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO S3-compatible Storage
+  minio:
+    image: minio/minio:latest
+    container_name: solid-service-minio
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    networks:
+      - solid-service-network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MinIO Client - Create bucket on startup
+  minio-create-bucket:
+    image: minio/mc:latest
+    container_name: solid-service-minio-setup
+    depends_on:
+      - minio
+    networks:
+      - solid-service-network
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/solid-service --ignore-existing;
+      /usr/bin/mc anonymous set public myminio/solid-service;
+      exit 0;
+      "
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  solid-service-network:
+    driver: bridge

@@ -1,0 +1,838 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 12 /Kids [ 3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R ] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 3374 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (PLANEJAMENTO COMPLETO - ERP SAAS MULTI-TENANT PARA PRESTADORES DE SERVICOS) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (1. RESUMO EXECUTIVO) Tj
+0 -12 Td () Tj
+0 -12 Td (Objetivo: criar um ERP SaaS multi-tenant para MEIs, autonomos e pequenas empresas) Tj
+0 -12 Td (prestadoras de servicos, com foco em organizar toda a operacao do negocio de servicos em um) Tj
+0 -12 Td (unico sistema: cliente, agenda, orcamento, ordem de servico, execucao, cobranca, pagamentos,) Tj
+0 -12 Td (financeiro e relacionamento.) Tj
+0 -12 Td () Tj
+0 -12 Td (Resultado esperado: um produto SaaS modular e simples de operar, capaz de atender desde) Tj
+0 -12 Td (profissionais individuais ate pequenas equipes, com trilha de auditoria, portal do cliente,) Tj
+0 -12 Td (automacoes, configuracao por nicho e base preparada para escalar varios tenants com) Tj
+0 -12 Td (seguranca.) Tj
+0 -12 Td () Tj
+0 -12 Td (Hipotese central: a maior parte dos prestadores de servico ainda mistura WhatsApp,) Tj
+0 -12 Td (planilhas, papel, agenda solta e aplicativos separados para atendimento, execucao e) Tj
+0 -12 Td (cobranca. Isso gera retrabalho, esquecimentos, atraso de pagamento e falta de visibilidade) Tj
+0 -12 Td (do negocio.) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (2. VISAO DO PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (2.1 PROBLEMA A RESOLVER) Tj
+0 -12 Td () Tj
+0 -12 Td (* Falta de organizacao do fluxo completo entre pedido, agendamento, execucao e recebimento.) Tj
+0 -12 Td (* Dificuldade em acompanhar servicos em andamento, compromissos, retornos e recorrencias.) Tj
+0 -12 Td (* Perda de informacao em conversas, fotos, comprovantes e combinados com o cliente.) Tj
+0 -12 Td (* Financeiro desconectado da operacao, sem previsao clara de caixa e inadimplencia.) Tj
+0 -12 Td (* Baixa profissionalizacao digital para pequenos prestadores de servico.) Tj
+0 -12 Td () Tj
+0 -12 Td (2.2 PROPOSTA DE VALOR) Tj
+0 -12 Td () Tj
+0 -12 Td (* Centralizar atendimento, operacao e financeiro em um unico sistema.) Tj
+0 -12 Td (* Transformar servicos em fluxo padronizado: lead/cliente, orcamento, agenda, execucao,) Tj
+0 -12 Td (cobranca e pos-venda.) Tj
+0 -12 Td (* Reduzir retrabalho, falta de retorno e atraso de recebimento.) Tj
+0 -12 Td (* Dar imagem mais profissional ao prestador com propostas, recibos, aceite digital e portal.) Tj
+0 -12 Td (* Permitir crescimento sem depender de memoria, papel ou mensagens espalhadas.) Tj
+0 -12 Td () Tj
+0 -12 Td (2.3 PUBLICO-ALVO INICIAL) Tj
+0 -12 Td () Tj
+0 -12 Td (* MEIs e autonomos que prestam servicos sob agenda) Tj
+0 -12 Td (* Pequenas empresas com equipe tecnica ou operacional) Tj
+0 -12 Td (* Prestadores que trabalham com visita, atendimento local ou entrega de servico por demanda) Tj
+0 -12 Td (* Negocios de servico recorrente, manutencao, instalacao, limpeza, consultoria operacional e) Tj
+0 -12 Td (atendimento em campo) Tj
+0 -12 Td () Tj
+0 -12 Td (2.4 SEGMENTOS ATENDIDOS) Tj
+0 -12 Td () Tj
+0 -12 Td (O produto deve atender um core horizontal para servicos em geral, com configuracoes por) Tj
+0 -12 Td (nicho. Exemplos:) Tj
+0 -12 Td () Tj
+0 -12 Td (* eletricista, encanador, instalador e manutencao residencial) Tj
+0 -12 Td (* assistencia tecnica e servicos tecnicos em geral) Tj
+0 -12 Td (* limpeza e facilities) Tj
+0 -12 Td (* climatizacao, energia solar e automacao) Tj
+0 -12 Td (* profissionais de vistoria, inspecao e laudo) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 2775 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* consultores e pequenos escritorios de servico) Tj
+0 -12 Td (* equipes moveis que dependem de agenda e comprovacao de execucao) Tj
+0 -12 Td () Tj
+0 -12 Td (2.5 PERSONAS PRINCIPAIS) Tj
+0 -12 Td () Tj
+0 -12 Td (1. Prestador individual: quer organizar agenda, clientes, cobrancas e historico sem) Tj
+0 -12 Td (complexidade.) Tj
+0 -12 Td (2. Dono da pequena empresa: quer visao de produtividade, caixa, atrasos e equipe.) Tj
+0 -12 Td (3. Atendente/administrativo: quer registrar pedidos, montar orcamentos, confirmar agenda e) Tj
+0 -12 Td (cobrar clientes.) Tj
+0 -12 Td (4. Tecnico ou executante: quer fluxo simples de check-in, checklist, anexos e conclusao.) Tj
+0 -12 Td (5. Cliente final: quer aprovar, acompanhar e receber comprovantes com rapidez.) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (3. TESE DE PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (3.1 POSICIONAMENTO) Tj
+0 -12 Td () Tj
+0 -12 Td (O produto nao deve ser vendido como ERP generico e nem como sistema apenas de vendas. O) Tj
+0 -12 Td (posicionamento ideal e:) Tj
+0 -12 Td () Tj
+0 -12 Td (* ERP SaaS para gestao de servicos) Tj
+0 -12 Td (* Sistema completo para prestadores de servico) Tj
+0 -12 Td (* Plataforma para MEIs e pequenas empresas organizarem operacao, agenda e cobranca) Tj
+0 -12 Td () Tj
+0 -12 Td (3.2 ESTRATEGIA DE PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (A melhor estrategia e combinar:) Tj
+0 -12 Td () Tj
+0 -12 Td (* core horizontal forte para qualquer prestador de servico) Tj
+0 -12 Td (* modulos opcionais conforme maturidade do cliente) Tj
+0 -12 Td (* pacotes verticais por nicho com campos, formularios, checklists e automacoes especificas) Tj
+0 -12 Td () Tj
+0 -12 Td (3.3 PRINCIPIOS DO PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (* simples para um autonomo usar sozinho) Tj
+0 -12 Td (* robusto o suficiente para pequenas equipes) Tj
+0 -12 Td (* mobile first para operacao do dia a dia) Tj
+0 -12 Td (* configuravel sem virar software sob encomenda) Tj
+0 -12 Td (* onboarding rapido e linguagem acessivel) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (4. INSPIRACOES DE MERCADO E MELHORES IDEIAS) Tj
+0 -12 Td () Tj
+0 -12 Td (A pesquisa de mercado mostra alguns padroes recorrentes nas melhores plataformas para) Tj
+0 -12 Td (servicos:) Tj
+0 -12 Td () Tj
+0 -12 Td (* fluxo de quote para job e depois invoice) Tj
+0 -12 Td (* agenda e despacho simples com lembretes) Tj
+0 -12 Td (* portal/customer hub para acompanhar e aprovar) Tj
+0 -12 Td (* pagamentos integrados, inclusive sinal e links) Tj
+0 -12 Td (* jobs recorrentes e contratos de manutencao) Tj
+0 -12 Td (* automacoes de mensagens e cobranca) Tj
+0 -12 Td (* app leve para equipe em campo) Tj
+0 -12 Td () Tj
+0 -12 Td (As melhores ideias para incorporar no produto sao:) Tj
+0 -12 Td () Tj
+0 -12 Td (1. Fluxo ponta a ponta simples) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 2261 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (   - cliente solicita) Tj
+0 -12 Td (   - prestador orca) Tj
+0 -12 Td (   - agenda) Tj
+0 -12 Td (   - executa) Tj
+0 -12 Td (   - registra comprovantes) Tj
+0 -12 Td (   - cobra) Tj
+0 -12 Td (   - acompanha historico) Tj
+0 -12 Td () Tj
+0 -12 Td (2. Operacao em camadas) Tj
+0 -12 Td (   - camada basica para autonomo) Tj
+0 -12 Td (   - camada de equipe para pequenas empresas) Tj
+0 -12 Td (   - camada avancada com financeiro, estoque e contratos) Tj
+0 -12 Td () Tj
+0 -12 Td (3. Portal do cliente util de verdade) Tj
+0 -12 Td (   - aprovar servico/orcamento) Tj
+0 -12 Td (   - pagar) Tj
+0 -12 Td (   - ver historico) Tj
+0 -12 Td (   - baixar comprovante) Tj
+0 -12 Td (   - falar com a empresa sem perder contexto) Tj
+0 -12 Td () Tj
+0 -12 Td (4. Configuracao por tipo de servico) Tj
+0 -12 Td (   - campos customizaveis) Tj
+0 -12 Td (   - checklist por nicho) Tj
+0 -12 Td (   - modelos de OS/orcamento) Tj
+0 -12 Td (   - status adaptaveis) Tj
+0 -12 Td () Tj
+0 -12 Td (5. Cobranca integrada ao servico) Tj
+0 -12 Td (   - gerar pagamento no fechamento) Tj
+0 -12 Td (   - sinal antes do atendimento, quando necessario) Tj
+0 -12 Td (   - lembretes automaticos de vencimento) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (5. OBJETIVOS DE NEGOCIO) Tj
+0 -12 Td () Tj
+0 -12 Td (5.1 METAS DE 12 MESES) Tj
+0 -12 Td () Tj
+0 -12 Td (* lancar MVP comercial em ate 16 semanas) Tj
+0 -12 Td (* validar com 5 a 10 clientes piloto) Tj
+0 -12 Td (* atingir MRR inicial recorrente e feedback de uso semanal) Tj
+0 -12 Td (* provar reducao de desorganizacao operacional e melhoria de recebimento) Tj
+0 -12 Td (* encontrar 1 ou 2 nichos com maior aderencia para aceleracao) Tj
+0 -12 Td () Tj
+0 -12 Td (5.2 KPIS PRINCIPAIS) Tj
+0 -12 Td () Tj
+0 -12 Td (* MRR) Tj
+0 -12 Td (* churn) Tj
+0 -12 Td (* CAC e payback) Tj
+0 -12 Td (* percentual de orcamentos aprovados) Tj
+0 -12 Td (* tempo medio entre solicitacao e execucao) Tj
+0 -12 Td (* percentual de servicos concluidos no prazo) Tj
+0 -12 Td (* inadimplencia por tenant) Tj
+0 -12 Td (* tempo medio para receber apos conclusao) Tj
+0 -12 Td (* numero de servicos por profissional por periodo) Tj
+0 -12 Td (* taxa de uso semanal por tenant) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (6. ESCOPO DO PRODUTO) Tj
+0 -12 Td () Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 2220 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (6.1 CORE HORIZONTAL OBRIGATORIO) Tj
+0 -12 Td () Tj
+0 -12 Td (1. Clientes e contatos) Tj
+0 -12 Td (   - cadastro de clientes PF/PJ) Tj
+0 -12 Td (   - contatos, enderecos e observacoes) Tj
+0 -12 Td (   - historico de atendimentos e cobrancas) Tj
+0 -12 Td () Tj
+0 -12 Td (2. Servicos e catalogo) Tj
+0 -12 Td (   - tipos de servico) Tj
+0 -12 Td (   - categorias) Tj
+0 -12 Td (   - precos base, duracao estimada e templates) Tj
+0 -12 Td () Tj
+0 -12 Td (3. Orcamentos e propostas) Tj
+0 -12 Td (   - itens de servico) Tj
+0 -12 Td (   - materiais opcionais) Tj
+0 -12 Td (   - desconto, validade e observacoes) Tj
+0 -12 Td (   - envio por link e aceite digital) Tj
+0 -12 Td () Tj
+0 -12 Td (4. Ordens de servico) Tj
+0 -12 Td (   - abertura, status, prioridade, responsavel e timeline) Tj
+0 -12 Td (   - relacao com cliente, agendamento e cobranca) Tj
+0 -12 Td () Tj
+0 -12 Td (5. Agenda e execucao) Tj
+0 -12 Td (   - agenda por profissional/equipe) Tj
+0 -12 Td (   - replanejamento) Tj
+0 -12 Td (   - check-in e check-out) Tj
+0 -12 Td (   - apontamento simples de horas e observacoes) Tj
+0 -12 Td () Tj
+0 -12 Td (6. Checklist, formularios e anexos) Tj
+0 -12 Td (   - checklist por tipo de servico) Tj
+0 -12 Td (   - fotos, videos, documentos e comprovantes) Tj
+0 -12 Td (   - laudos ou relatorios simples quando aplicavel) Tj
+0 -12 Td () Tj
+0 -12 Td (7. Financeiro) Tj
+0 -12 Td (   - contas a receber) Tj
+0 -12 Td (   - contas a pagar) Tj
+0 -12 Td (   - fluxo de caixa) Tj
+0 -12 Td (   - inadimplencia) Tj
+0 -12 Td (   - conciliacao simplificada) Tj
+0 -12 Td () Tj
+0 -12 Td (8. Pagamentos) Tj
+0 -12 Td (   - PIX, boleto, cartao e link de pagamento) Tj
+0 -12 Td (   - baixa manual ou automatica) Tj
+0 -12 Td (   - cobranca de sinal quando necessario) Tj
+0 -12 Td () Tj
+0 -12 Td (9. Portal do cliente) Tj
+0 -12 Td (   - acompanhar status) Tj
+0 -12 Td (   - aprovar orcamento) Tj
+0 -12 Td (   - pagar) Tj
+0 -12 Td (   - baixar comprovantes) Tj
+0 -12 Td (   - visualizar historico) Tj
+0 -12 Td () Tj
+0 -12 Td (10. Comunicacao automatizada) Tj
+0 -12 Td (    - confirma agendamento) Tj
+0 -12 Td (    - lembretes) Tj
+0 -12 Td (    - mudancas de status) Tj
+0 -12 Td (    - cobranca e pos-venda) Tj
+0 -12 Td () Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 2292 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (11. Usuarios e permissoes) Tj
+0 -12 Td (    - perfis simples para dono, administrativo, tecnico e financeiro) Tj
+0 -12 Td (    - trilha de auditoria basica) Tj
+0 -12 Td () Tj
+0 -12 Td (12. Relatorios e dashboard) Tj
+0 -12 Td (    - servicos abertos, concluidos, atrasados e faturados) Tj
+0 -12 Td (    - produtividade) Tj
+0 -12 Td (    - aprovacao de orcamentos) Tj
+0 -12 Td (    - caixa e inadimplencia) Tj
+0 -12 Td () Tj
+0 -12 Td (6.2 MODULOS OPCIONAIS POR MATURIDADE) Tj
+0 -12 Td () Tj
+0 -12 Td (* estoque, pecas e insumos) Tj
+0 -12 Td (* contratos e recorrencia) Tj
+0 -12 Td (* comissoes e metas) Tj
+0 -12 Td (* roteirizacao e rotas) Tj
+0 -12 Td (* assinatura de documentos) Tj
+0 -12 Td (* emissao de notas via integracao) Tj
+0 -12 Td (* centro de custo e DRE simplificada) Tj
+0 -12 Td (* multiunidade) Tj
+0 -12 Td () Tj
+0 -12 Td (6.3 PACOTES VERTICAIS POR NICHO) Tj
+0 -12 Td () Tj
+0 -12 Td (Exemplos:) Tj
+0 -12 Td () Tj
+0 -12 Td (* assistencia tecnica: equipamento, serie, garantia e defeitos recorrentes) Tj
+0 -12 Td (* limpeza/facilities: checklist de ambiente, periodicidade e escala) Tj
+0 -12 Td (* instalacao/manutencao: vistoria, materiais e aceite de conclusao) Tj
+0 -12 Td (* servicos profissionais: proposta, recorrencia, entregaveis e aprovacoes) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (7. MVP RECOMENDADO) Tj
+0 -12 Td () Tj
+0 -12 Td (7.1 O QUE ENTRA NO MVP) Tj
+0 -12 Td () Tj
+0 -12 Td (* multi-tenant) Tj
+0 -12 Td (* cadastro de clientes e enderecos) Tj
+0 -12 Td (* catalogo de servicos) Tj
+0 -12 Td (* orcamentos) Tj
+0 -12 Td (* OS com timeline e anexos) Tj
+0 -12 Td (* agenda simples) Tj
+0 -12 Td (* checklist tecnico/formulario basico) Tj
+0 -12 Td (* portal do cliente basico) Tj
+0 -12 Td (* contas a receber simples) Tj
+0 -12 Td (* pagamentos por link/registro manual) Tj
+0 -12 Td (* dashboard operacional inicial) Tj
+0 -12 Td (* usuarios e perfis basicos) Tj
+0 -12 Td () Tj
+0 -12 Td (7.2 O QUE FICA PARA DEPOIS) Tj
+0 -12 Td () Tj
+0 -12 Td (* contas a pagar avancadas) Tj
+0 -12 Td (* fluxo de caixa completo) Tj
+0 -12 Td (* conciliacao automatica mais robusta) Tj
+0 -12 Td (* estoque) Tj
+0 -12 Td (* contratos/recorrencia inteligente) Tj
+0 -12 Td (* comissoes) Tj
+0 -12 Td (* analytics avancado) Tj
+0 -12 Td (* modulos verticais profundos) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 2381 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (8. MODELO DE NEGOCIO) Tj
+0 -12 Td () Tj
+0 -12 Td (8.1 RECEITA) Tj
+0 -12 Td () Tj
+0 -12 Td (* assinatura mensal por tenant) Tj
+0 -12 Td (* planos por numero de usuarios, servicos ou modulos) Tj
+0 -12 Td (* taxa por uso em mensagens, pagamentos ou armazenamento) Tj
+0 -12 Td (* implantacao opcional para pequenas equipes) Tj
+0 -12 Td (* templates/pacotes verticais premium) Tj
+0 -12 Td () Tj
+0 -12 Td (8.2 SUGESTAO DE PLANOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* Solo: 1 usuario, operacao essencial, agenda, OS, orcamento e cobranca basica) Tj
+0 -12 Td (* Time: equipe pequena, portal, automacoes, mais usuarios e mais volume) Tj
+0 -12 Td (* Pro: financeiro mais forte, contratos, estoque leve e indicadores) Tj
+0 -12 Td (* Enterprise: multiunidade, integracoes, suporte prioritario e governanca avancada) Tj
+0 -12 Td () Tj
+0 -12 Td (8.3 DIFERENCIAIS COMPETITIVOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* foco em prestacao de servicos e nao em varejo) Tj
+0 -12 Td (* jornada completa do pedido ao recebimento) Tj
+0 -12 Td (* simples para MEI e escalavel para pequena empresa) Tj
+0 -12 Td (* configuracao por nicho sem perder padronizacao) Tj
+0 -12 Td (* portal, aceite e cobranca integrados no mesmo fluxo) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (9. REQUISITOS FUNCIONAIS) Tj
+0 -12 Td () Tj
+0 -12 Td (9.1 ADMINISTRACAO SAAS) Tj
+0 -12 Td () Tj
+0 -12 Td (* criar tenant, plano, status e limites) Tj
+0 -12 Td (* onboarding inicial guiado) Tj
+0 -12 Td (* parametrizacao de identidade visual basica) Tj
+0 -12 Td (* controle de usuarios e consumo por plano) Tj
+0 -12 Td () Tj
+0 -12 Td (9.2 USUARIOS E PERMISSAO) Tj
+0 -12 Td () Tj
+0 -12 Td (* perfis prontos e permissoes basicas por modulo) Tj
+0 -12 Td (* acoes auditaveis em orcamentos, OS, financeiro e clientes) Tj
+0 -12 Td () Tj
+0 -12 Td (9.3 CLIENTES) Tj
+0 -12 Td () Tj
+0 -12 Td (* cadastro completo e busca rapida) Tj
+0 -12 Td (* multiplos enderecos, contatos e observacoes) Tj
+0 -12 Td (* historico de atendimento, cobranca e arquivos) Tj
+0 -12 Td () Tj
+0 -12 Td (9.4 SERVICOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* cadastro de servicos e templates) Tj
+0 -12 Td (* duracao estimada, valor base e checklist sugerido) Tj
+0 -12 Td () Tj
+0 -12 Td (9.5 ORCAMENTOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* criacao manual ou a partir de template) Tj
+0 -12 Td (* aprovacao por link) Tj
+0 -12 Td (* aceite digital) Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 16 0 R >>
+endobj
+16 0 obj
+<< /Length 2068 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* conversao para OS) Tj
+0 -12 Td () Tj
+0 -12 Td (9.6 ORDENS DE SERVICO) Tj
+0 -12 Td () Tj
+0 -12 Td (* abertura manual, via portal ou a partir de orcamento) Tj
+0 -12 Td (* status configuraveis em faixa controlada) Tj
+0 -12 Td (* timeline de eventos) Tj
+0 -12 Td (* conclusao com comprovantes) Tj
+0 -12 Td () Tj
+0 -12 Td (9.7 AGENDA) Tj
+0 -12 Td () Tj
+0 -12 Td (* visualizacao por dia, semana e profissional) Tj
+0 -12 Td (* reagendamento) Tj
+0 -12 Td (* confirmacao e lembrete automatico) Tj
+0 -12 Td () Tj
+0 -12 Td (9.8 EXECUCAO) Tj
+0 -12 Td () Tj
+0 -12 Td (* check-in/check-out) Tj
+0 -12 Td (* checklist) Tj
+0 -12 Td (* assinatura/aceite de conclusao) Tj
+0 -12 Td (* anexos e observacoes) Tj
+0 -12 Td () Tj
+0 -12 Td (9.9 FINANCEIRO) Tj
+0 -12 Td () Tj
+0 -12 Td (* gerar recebiveis por OS/orcamento) Tj
+0 -12 Td (* registrar recebimento parcial ou total) Tj
+0 -12 Td (* contas a pagar basicas) Tj
+0 -12 Td (* visao de fluxo de caixa previsto/realizado) Tj
+0 -12 Td () Tj
+0 -12 Td (9.10 PAGAMENTOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* links de pagamento) Tj
+0 -12 Td (* PIX e boleto via integracao futura ou provider) Tj
+0 -12 Td (* status de pagamento e baixa) Tj
+0 -12 Td () Tj
+0 -12 Td (9.11 PORTAL DO CLIENTE) Tj
+0 -12 Td () Tj
+0 -12 Td (* acompanhar solicitacoes, OS e orcamentos) Tj
+0 -12 Td (* aprovar e pagar) Tj
+0 -12 Td (* baixar documentos) Tj
+0 -12 Td (* acessar historico) Tj
+0 -12 Td () Tj
+0 -12 Td (9.12 COMUNICACAO) Tj
+0 -12 Td () Tj
+0 -12 Td (* notificacoes por e-mail, WhatsApp e SMS conforme plano) Tj
+0 -12 Td (* templates por evento) Tj
+0 -12 Td (* lembretes de agenda e cobranca) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (10. REQUISITOS NAO FUNCIONAIS) Tj
+0 -12 Td () Tj
+0 -12 Td (* arquitetura multi-tenant segura) Tj
+0 -12 Td (* isolamento logico por tenant em toda consulta e escrita) Tj
+0 -12 Td (* logs e auditoria de eventos criticos) Tj
+0 -12 Td (* backup automatizado) Tj
+0 -12 Td (* criptografia em transito e em repouso) Tj
+0 -12 Td (* performance adequada para escritorio e mobile) Tj
+0 -12 Td (* API documentada) Tj
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 18 0 R >>
+endobj
+18 0 obj
+<< /Length 1963 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* observabilidade minima) Tj
+0 -12 Td (* LGPD e governanca de dados) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (11. ARQUITETURA DO PRODUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (11.1 PRINCIPIOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* monolito modular no inicio para ganhar velocidade) Tj
+0 -12 Td (* dominios separados por contexto de negocio) Tj
+0 -12 Td (* frontend e backend desacoplados por contrato) Tj
+0 -12 Td (* base preparada para extrair servicos no futuro) Tj
+0 -12 Td () Tj
+0 -12 Td (11.2 STACK SUGERIDA) Tj
+0 -12 Td () Tj
+0 -12 Td (* frontend: Next.js ou React responsivo) Tj
+0 -12 Td (* backend: Laravel ou Node.js modular) Tj
+0 -12 Td (* banco: PostgreSQL) Tj
+0 -12 Td (* cache e filas: Redis) Tj
+0 -12 Td (* storage: S3 compativel) Tj
+0 -12 Td (* auth: session/JWT com RBAC) Tj
+0 -12 Td (* observabilidade: logs estruturados e monitoramento) Tj
+0 -12 Td () Tj
+0 -12 Td (11.3 ESTRATEGIA MULTI-TENANT) Tj
+0 -12 Td () Tj
+0 -12 Td (Modelo recomendado no inicio: banco compartilhado com coluna tenant_id, escopos) Tj
+0 -12 Td (obrigatorios, middlewares de isolamento e testes automatizados de segregacao.) Tj
+0 -12 Td () Tj
+0 -12 Td (11.4 MODULOS TECNICOS) Tj
+0 -12 Td () Tj
+0 -12 Td (* auth e identidade) Tj
+0 -12 Td (* billing SaaS) Tj
+0 -12 Td (* CRM e clientes) Tj
+0 -12 Td (* catalogo de servicos) Tj
+0 -12 Td (* orcamentos) Tj
+0 -12 Td (* OS e workflow) Tj
+0 -12 Td (* agenda) Tj
+0 -12 Td (* checklists e formularios) Tj
+0 -12 Td (* anexos) Tj
+0 -12 Td (* financeiro) Tj
+0 -12 Td (* pagamentos) Tj
+0 -12 Td (* portal do cliente) Tj
+0 -12 Td (* notificacoes) Tj
+0 -12 Td (* analytics) Tj
+0 -12 Td (* admin/support) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (12. MODELO DE DADOS DE ALTO NIVEL) Tj
+0 -12 Td () Tj
+0 -12 Td (12.1 ENTIDADES PRINCIPAIS) Tj
+0 -12 Td () Tj
+0 -12 Td (* tenants) Tj
+0 -12 Td (* plans) Tj
+0 -12 Td (* subscriptions) Tj
+0 -12 Td (* users) Tj
+0 -12 Td (* roles) Tj
+0 -12 Td (* permissions) Tj
+0 -12 Td (* customers) Tj
+ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 20 0 R >>
+endobj
+20 0 obj
+<< /Length 2142 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* customer_contacts) Tj
+0 -12 Td (* customer_addresses) Tj
+0 -12 Td (* services) Tj
+0 -12 Td (* service_templates) Tj
+0 -12 Td (* quotations) Tj
+0 -12 Td (* quotation_items) Tj
+0 -12 Td (* service_orders) Tj
+0 -12 Td (* schedules) Tj
+0 -12 Td (* checklists) Tj
+0 -12 Td (* checklist_templates) Tj
+0 -12 Td (* attachments) Tj
+0 -12 Td (* service_reports) Tj
+0 -12 Td (* receivables) Tj
+0 -12 Td (* payables) Tj
+0 -12 Td (* payments) Tj
+0 -12 Td (* contracts) Tj
+0 -12 Td (* recurring_jobs) Tj
+0 -12 Td (* stock_items) Tj
+0 -12 Td (* stock_movements) Tj
+0 -12 Td (* notifications) Tj
+0 -12 Td (* audit_logs) Tj
+0 -12 Td () Tj
+0 -12 Td (12.2 RELACOES-CHAVE) Tj
+0 -12 Td () Tj
+0 -12 Td (* tenant possui usuarios, clientes, servicos, OS e financeiro) Tj
+0 -12 Td (* cliente possui atendimentos, documentos, cobrancas e contratos) Tj
+0 -12 Td (* orcamento pode virar OS) Tj
+0 -12 Td (* OS pode gerar recebiveis, anexos e comprovantes) Tj
+0 -12 Td (* contrato pode gerar servicos recorrentes) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (13. JORNADA PRINCIPAL DO USUARIO) Tj
+0 -12 Td () Tj
+0 -12 Td (1. Cliente entra em contato ou e cadastrado) Tj
+0 -12 Td (2. Prestador monta proposta/orcamento) Tj
+0 -12 Td (3. Cliente aprova) Tj
+0 -12 Td (4. Sistema agenda o servico) Tj
+0 -12 Td (5. Prestador executa e registra evidencias) Tj
+0 -12 Td (6. Sistema conclui e gera cobranca) Tj
+0 -12 Td (7. Cliente paga e acessa comprovantes) Tj
+0 -12 Td (8. Historico fica salvo para proximas demandas) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (14. ROADMAP DE IMPLEMENTACAO) Tj
+0 -12 Td () Tj
+0 -12 Td (14.1 FASE 0 - FUNDACAO \(2 A 3 SEMANAS\)) Tj
+0 -12 Td () Tj
+0 -12 Td (* entrevistas com prestadores de servico) Tj
+0 -12 Td (* definicao do nicho inicial e ICP) Tj
+0 -12 Td (* mapa da jornada e regras de negocio) Tj
+0 -12 Td (* setup de arquitetura, repositorio e CI/CD) Tj
+0 -12 Td (* base multi-tenant e auth) Tj
+0 -12 Td () Tj
+0 -12 Td (14.2 FASE 1 - MVP OPERACIONAL \(8 A 10 SEMANAS\)) Tj
+0 -12 Td () Tj
+0 -12 Td (* clientes, servicos e orcamentos) Tj
+0 -12 Td (* OS, agenda, anexos e checklist) Tj
+0 -12 Td (* perfis basicos) Tj
+ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 22 0 R >>
+endobj
+22 0 obj
+<< /Length 2055 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* dashboard inicial) Tj
+0 -12 Td (* cobranca simples) Tj
+0 -12 Td () Tj
+0 -12 Td (14.3 FASE 2 - VALIDACAO COMERCIAL \(4 A 6 SEMANAS\)) Tj
+0 -12 Td () Tj
+0 -12 Td (* portal do cliente) Tj
+0 -12 Td (* aceite digital) Tj
+0 -12 Td (* automacoes de mensagem) Tj
+0 -12 Td (* onboarding dos pilotos) Tj
+0 -12 Td (* metricas de uso) Tj
+0 -12 Td () Tj
+0 -12 Td (14.4 FASE 3 - FINANCEIRO E MONETIZACAO \(6 A 8 SEMANAS\)) Tj
+0 -12 Td () Tj
+0 -12 Td (* contas a pagar e fluxo de caixa) Tj
+0 -12 Td (* pagamentos integrados) Tj
+0 -12 Td (* assinatura SaaS e billing) Tj
+0 -12 Td (* melhorias de cobranca) Tj
+0 -12 Td () Tj
+0 -12 Td (14.5 FASE 4 - ESCALA E ESPECIALIZACAO \(8 A 12 SEMANAS\)) Tj
+0 -12 Td () Tj
+0 -12 Td (* contratos e recorrencia) Tj
+0 -12 Td (* estoque opcional) Tj
+0 -12 Td (* pacotes verticais) Tj
+0 -12 Td (* analytics avancado) Tj
+0 -12 Td (* melhorias de suporte e governanca) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (15. TIME RECOMENDADO) Tj
+0 -12 Td () Tj
+0 -12 Td (15.1 TIME MINIMO ENXUTO) Tj
+0 -12 Td () Tj
+0 -12 Td (* 1 founder/product owner) Tj
+0 -12 Td (* 1 dev full-stack senior) Tj
+0 -12 Td (* 1 dev full-stack pleno) Tj
+0 -12 Td (* 1 designer/product designer part-time) Tj
+0 -12 Td (* 1 QA part-time ou processo de testes disciplinado) Tj
+0 -12 Td () Tj
+0 -12 Td (15.2 APOIOS PONTUAIS) Tj
+0 -12 Td () Tj
+0 -12 Td (* especialista financeiro/fiscal) Tj
+0 -12 Td (* consultoria LGPD) Tj
+0 -12 Td (* apoio comercial para entrevistas e pilotos) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (16. GOVERNANCA) Tj
+0 -12 Td () Tj
+0 -12 Td (* backlog priorizado por valor x esforco) Tj
+0 -12 Td (* ritos semanais de discovery e delivery) Tj
+0 -12 Td (* definicao clara de pronto) Tj
+0 -12 Td (* acompanhamento por KPI e uso real) Tj
+0 -12 Td (* registro de decisoes arquiteturais) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (17. PRINCIPAIS RISCOS E MITIGACOES) Tj
+0 -12 Td () Tj
+0 -12 Td (1. Produto ficar generico demais) Tj
+0 -12 Td (   - mitigacao: core horizontal claro + pacotes verticais por nicho) Tj
+0 -12 Td () Tj
+ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 24 0 R >>
+endobj
+24 0 obj
+<< /Length 1988 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (2. Escopo excessivo) Tj
+0 -12 Td (   - mitigacao: MVP com corte duro e fases de entrega) Tj
+0 -12 Td () Tj
+0 -12 Td (3. UX pesada para autonomos) Tj
+0 -12 Td (   - mitigacao: foco em simplicidade, onboarding guiado e mobile first) Tj
+0 -12 Td () Tj
+0 -12 Td (4. Financeiro complexo cedo demais) Tj
+0 -12 Td (   - mitigacao: comecar com recebiveis e cobranca simples) Tj
+0 -12 Td () Tj
+0 -12 Td (5. Vazamento entre tenants) Tj
+0 -12 Td (   - mitigacao: testes automatizados de segregacao e auditoria) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (18. ESTRATEGIA COMERCIAL INICIAL) Tj
+0 -12 Td () Tj
+0 -12 Td (* comecar com 1 ou 2 nichos com alta dor operacional) Tj
+0 -12 Td (* vender organizacao, profissionalizacao e recebimento mais rapido) Tj
+0 -12 Td (* usar onboarding consultivo nos primeiros clientes) Tj
+0 -12 Td (* coletar templates reais de orcamento, checklist e comunicacao) Tj
+0 -12 Td (* transformar os melhores aprendizados em pacotes verticais) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (19. BACKLOG INICIAL POR EPICOS) Tj
+0 -12 Td () Tj
+0 -12 Td (EPIC A - PLATAFORMA SAAS) Tj
+0 -12 Td () Tj
+0 -12 Td (* onboarding de tenant) Tj
+0 -12 Td (* plano e limites) Tj
+0 -12 Td (* usuarios e perfis) Tj
+0 -12 Td (* auditoria administrativa) Tj
+0 -12 Td () Tj
+0 -12 Td (EPIC B - OPERACAO CORE) Tj
+0 -12 Td () Tj
+0 -12 Td (* clientes) Tj
+0 -12 Td (* servicos) Tj
+0 -12 Td (* orcamentos) Tj
+0 -12 Td (* OS) Tj
+0 -12 Td (* agenda) Tj
+0 -12 Td (* checklist e anexos) Tj
+0 -12 Td () Tj
+0 -12 Td (EPIC C - EXPERIENCIA DO CLIENTE) Tj
+0 -12 Td () Tj
+0 -12 Td (* portal) Tj
+0 -12 Td (* aceite digital) Tj
+0 -12 Td (* notificacoes) Tj
+0 -12 Td (* comprovantes) Tj
+0 -12 Td () Tj
+0 -12 Td (EPIC D - FINANCEIRO) Tj
+0 -12 Td () Tj
+0 -12 Td (* recebiveis) Tj
+0 -12 Td (* pagamentos) Tj
+0 -12 Td (* contas a pagar) Tj
+0 -12 Td (* fluxo de caixa) Tj
+0 -12 Td (* cobranca automatizada) Tj
+0 -12 Td () Tj
+0 -12 Td (EPIC E - ESCALA) Tj
+0 -12 Td () Tj
+0 -12 Td (* contratos) Tj
+ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 27 0 R >> >> /Contents 26 0 R >>
+endobj
+26 0 obj
+<< /Length 1024 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td (* recorrencia) Tj
+0 -12 Td (* estoque opcional) Tj
+0 -12 Td (* dashboards) Tj
+0 -12 Td (* pacotes verticais) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (20. ENTREGAVEIS DESTE PACOTE) Tj
+0 -12 Td () Tj
+0 -12 Td (* documento-mestre de planejamento) Tj
+0 -12 Td (* arquivo DOCX para compartilhamento executivo) Tj
+0 -12 Td (* arquivo PDF para distribuicao) Tj
+0 -12 Td (* arquivo XLSX com roadmap, backlog, modulos, KPIs e riscos) Tj
+0 -12 Td (* CSV do backlog para importacao em ferramentas de gestao) Tj
+0 -12 Td () Tj
+0 -12 Td () Tj
+0 -12 Td (21. PROXIMOS PASSOS RECOMENDADOS) Tj
+0 -12 Td () Tj
+0 -12 Td (1. Definir o nicho de entrada entre 2 ou 3 segmentos com maior dor.) Tj
+0 -12 Td (2. Validar o fluxo de orcamento > agenda > execucao > cobranca com entrevistas.) Tj
+0 -12 Td (3. Congelar o escopo do MVP por 30 dias.) Tj
+0 -12 Td (4. Desenhar wireframes das telas principais.) Tj
+0 -12 Td (5. Modelar banco inicial e contratos de API.) Tj
+0 -12 Td (6. Iniciar a Fase 0 com clientes piloto.) Tj
+ET
+endstream
+endobj
+27 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 28
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000192 00000 n 
+0000000319 00000 n 
+0000003745 00000 n 
+0000003872 00000 n 
+0000006699 00000 n 
+0000006826 00000 n 
+0000009139 00000 n 
+0000009267 00000 n 
+0000011540 00000 n 
+0000011669 00000 n 
+0000014014 00000 n 
+0000014143 00000 n 
+0000016577 00000 n 
+0000016706 00000 n 
+0000018827 00000 n 
+0000018956 00000 n 
+0000020972 00000 n 
+0000021101 00000 n 
+0000023296 00000 n 
+0000023425 00000 n 
+0000025533 00000 n 
+0000025662 00000 n 
+0000027703 00000 n 
+0000027832 00000 n 
+0000028909 00000 n 
+trailer
+<< /Size 28 /Root 1 0 R >>
+startxref
+28980
+%%EOF

@@ -1,0 +1,26 @@
+{
+  "name": "@solid-service/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "ts-node prisma/seed/index.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.9.1",
+    "bcrypt": "^5.1.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.9.1",
+    "@types/bcrypt": "^5.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
