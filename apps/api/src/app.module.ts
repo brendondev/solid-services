@@ -20,6 +20,7 @@ import { TenantMiddleware } from './common/middleware';
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       envFilePath: '.env',
     }),
 

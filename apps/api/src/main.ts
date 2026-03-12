@@ -44,11 +44,11 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  const port = process.env.API_PORT || 3000;
+  const port = Number(process.env.PORT || process.env.API_PORT || 3000);
   await app.listen(port);
 
-  console.log(`🚀 API running on: http://localhost:${port}`);
-  console.log(`📚 API docs: http://localhost:${port}/api/docs`);
+  console.log(`API running on port ${port}`);
+  console.log(`API docs path: /api/docs`);
 }
 
 bootstrap();

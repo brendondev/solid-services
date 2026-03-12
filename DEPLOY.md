@@ -64,6 +64,11 @@ git push origin main
 
 Railway já configura `DATABASE_URL` automaticamente!
 
+Importante:
+- `.env` local deve ser usado apenas em desenvolvimento.
+- Em produção, `DATABASE_URL` precisa vir do PostgreSQL do Railway e começar com `postgresql://` ou `postgres://`.
+- Se o link automático não aparecer, configure manualmente `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+
 Você só precisa adicionar as outras:
 
 1. Clique no serviço da API
@@ -85,12 +90,17 @@ Railway detecta automaticamente, mas se precisar ajustar:
 
 **Build Command:**
 ```bash
-npm install && cd packages/database && npx prisma generate && npx prisma migrate deploy && cd ../../apps/api && npm run build
+npm install && cd packages/database && npx prisma generate && cd ../.. && npm run build
 ```
 
 **Start Command:**
 ```bash
-cd apps/api && npm run start:prod
+cd apps/api && node dist/main.js
+```
+
+**Release Command:**
+```bash
+cd packages/database && npx prisma migrate deploy
 ```
 
 ### 7. Deploy!
@@ -271,7 +281,8 @@ Railway cria o banco automaticamente. Verifique se conectou o PostgreSQL ao proj
 **Solução:**
 1. Certifique-se que adicionou PostgreSQL ao projeto
 2. Vá em Variables e verifique se `DATABASE_URL` está lá
-3. Se não estiver, Railway adiciona automaticamente após alguns segundos
+3. Se não estiver, defina `DATABASE_URL=${{Postgres.DATABASE_URL}}`
+4. Confirme que o valor começa com `postgresql://` ou `postgres://`
 
 ### Seed não rodou
 

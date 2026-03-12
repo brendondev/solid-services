@@ -35,6 +35,12 @@
 
 **✅ Railway conecta automaticamente via variável DATABASE_URL!**
 
+Regras para evitar falha no Prisma:
+- `.env` local é apenas para desenvolvimento.
+- Em produção, `DATABASE_URL` deve vir do PostgreSQL do Railway.
+- O valor precisa começar com `postgresql://` ou `postgres://`.
+- Se a variável não aparecer automaticamente, use `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+
 ---
 
 ### 4️⃣ Configurar Variável de Ambiente
@@ -67,9 +73,11 @@ NODE_ENV=production
 Railway vai automaticamente:
 - ✅ `npm install` (instalar dependências)
 - ✅ `npx prisma generate` (gerar Prisma Client)
-- ✅ `npx prisma migrate deploy` (rodar migrations)
 - ✅ `npm run build` (compilar TypeScript)
 - ✅ Iniciar a aplicação
+
+Na fase de release:
+- ✅ `npx prisma migrate deploy` (rodar migrations)
 
 **Você pode acompanhar o progresso no log de deploy.**
 
@@ -218,6 +226,7 @@ Agora você pode testar:
 **Possíveis causas:**
 1. Esqueceu de adicionar `JWT_SECRET` nas variáveis
 2. PostgreSQL não foi adicionado (falta DATABASE_URL)
+3. `DATABASE_URL` está com valor local/inválido em vez de `postgresql://...`
 
 ### ❌ Não consigo encontrar o repositório no Railway
 **Solução:** Certifique-se que está logado com a conta GitHub correta: `brendondev`
