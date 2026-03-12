@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@solid-service/database';
+import { PrismaClient } from '@prisma/client';
 import { TenantContextService } from '../tenant';
 
 /**
