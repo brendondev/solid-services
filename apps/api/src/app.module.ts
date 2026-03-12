@@ -13,6 +13,7 @@ import { AuthModule } from './core/auth';
 // Business modules
 import { CustomersModule } from './modules/customers';
 import { ServicesModule } from './modules/services';
+import { QuotationsModule } from './modules/quotations';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware';
@@ -43,6 +44,7 @@ import { TenantMiddleware } from './common/middleware';
     // Business modules
     CustomersModule,
     ServicesModule,
+    QuotationsModule,
   ],
   providers: [
     {
