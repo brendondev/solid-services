@@ -14,7 +14,8 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx prisma migrate:*)"
+      "Bash(npx prisma migrate:*)",
+      "Bash(ls:*)"
     ]
   }
 }
