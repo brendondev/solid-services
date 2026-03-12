@@ -18,12 +18,14 @@ export default function QuotationsPage() {
   const loadQuotations = async () => {
     try {
       setLoading(true);
+      setError('');
       const data = filter
         ? await quotationsApi.findAll(filter)
         : await quotationsApi.findAll();
-      setQuotations(data);
+      setQuotations(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar orçamentos');
+      setQuotations([]);
     } finally {
       setLoading(false);
     }

@@ -18,10 +18,12 @@ export default function OrdersPage() {
   const loadOrders = async () => {
     try {
       setLoading(true);
+      setError('');
       const data = filter ? await ordersApi.findAll(filter) : await ordersApi.findAll();
-      setOrders(data);
+      setOrders(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar ordens');
+      setOrders([]);
     } finally {
       setLoading(false);
     }

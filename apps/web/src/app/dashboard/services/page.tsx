@@ -18,12 +18,14 @@ export default function ServicesPage() {
   const loadServices = async () => {
     try {
       setLoading(true);
+      setError('');
       const data = filter
         ? await servicesApi.findAll(filter)
         : await servicesApi.findAll();
-      setServices(data);
+      setServices(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar serviços');
+      setServices([]);
     } finally {
       setLoading(false);
     }

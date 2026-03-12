@@ -18,12 +18,14 @@ export default function CustomersPage() {
   const loadCustomers = async () => {
     try {
       setLoading(true);
+      setError('');
       const data = filter
         ? await customersApi.findAll(filter)
         : await customersApi.findAll();
-      setCustomers(data);
+      setCustomers(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar clientes');
+      setCustomers([]);
     } finally {
       setLoading(false);
     }

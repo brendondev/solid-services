@@ -19,16 +19,19 @@ export default function FinancialPage() {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError('');
       const [receivablesData, dashboardData] = await Promise.all([
         filter
           ? financialApi.findAllReceivables(filter)
           : financialApi.findAllReceivables(),
         financialApi.getDashboard(),
       ]);
-      setReceivables(receivablesData);
-      setDashboard(dashboardData);
+      setReceivables(Array.isArray(receivablesData) ? receivablesData : []);
+      setDashboard(dashboardData || null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar dados financeiros');
+      setReceivables([]);
+      setDashboard(null);
     } finally {
       setLoading(false);
     }
@@ -109,30 +112,30 @@ export default function FinancialPage() {
       )}
 
       {/* Dashboard Financeiro */}
-      {dashboard && (
+      {dashboard && dashboard.summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-lg shadow">
             <p className="text-sm text-gray-600">Total a Receber</p>
             <p className="text-2xl font-bold text-gray-900">
-              {formatCurrency(dashboard.summary.totalReceivables)}
+              {formatCurrency(dashboard.summary.totalReceivables || 0)}
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow">
             <p className="text-sm text-gray-600">Recebido</p>
             <p className="text-2xl font-bold text-green-600">
-              {formatCurrency(dashboard.summary.paidAmount)}
+              {formatCurrency(dashboard.summary.paidAmount || 0)}
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow">
             <p className="text-sm text-gray-600">Pendente</p>
             <p className="text-2xl font-bold text-yellow-600">
-              {formatCurrency(dashboard.summary.pendingAmount)}
+              {formatCurrency(dashboard.summary.pendingAmount || 0)}
             </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow">
             <p className="text-sm text-gray-600">Vencido</p>
             <p className="text-2xl font-bold text-red-600">
-              {formatCurrency(dashboard.summary.overdueAmount)}
+              {formatCurrency(dashboard.summary.overdueAmount || 0)}
             </p>
           </div>
         </div>
