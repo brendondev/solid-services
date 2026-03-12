@@ -45,8 +45,14 @@ export default function DashboardMainPage() {
     );
   }
 
-  if (!stats || !quickStats) {
-    return null;
+  if (!stats || !quickStats || !quickStats.today || !quickStats.thisWeek || !quickStats.thisMonth) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-600">
+          {error ? error : 'Carregando dados do dashboard...'}
+        </div>
+      </div>
+    );
   }
 
   const formatCurrency = (value: number) => {
