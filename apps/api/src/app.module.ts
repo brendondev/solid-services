@@ -14,6 +14,7 @@ import { AuthModule } from './core/auth';
 import { CustomersModule } from './modules/customers';
 import { ServicesModule } from './modules/services';
 import { QuotationsModule } from './modules/quotations';
+import { ServiceOrdersModule } from './modules/service-orders';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware';
@@ -45,6 +46,7 @@ import { TenantMiddleware } from './common/middleware';
     CustomersModule,
     ServicesModule,
     QuotationsModule,
+    ServiceOrdersModule,
   ],
   providers: [
     {
