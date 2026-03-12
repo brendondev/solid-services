@@ -15,6 +15,7 @@ import { CustomersModule } from './modules/customers';
 import { ServicesModule } from './modules/services';
 import { QuotationsModule } from './modules/quotations';
 import { ServiceOrdersModule } from './modules/service-orders';
+import { FinancialModule } from './modules/financial';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware';
@@ -47,6 +48,7 @@ import { TenantMiddleware } from './common/middleware';
     ServicesModule,
     QuotationsModule,
     ServiceOrdersModule,
+    FinancialModule,
   ],
   providers: [
     {
