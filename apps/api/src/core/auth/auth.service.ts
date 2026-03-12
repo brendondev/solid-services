@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../database';
-import { TenantContextService } from '../tenant';
 import { LoginDto, RegisterDto } from './dto';
 import { JwtPayload } from './interfaces';
 
@@ -26,7 +25,6 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly _tenantContext: TenantContextService,
   ) {}
 
   /**
@@ -63,9 +61,6 @@ export class AuthService {
     // Gerar tokens
     const { accessToken, refreshToken } = await this.generateTokens(user);
 
-    // Converter roles para array
-    const roles = user.roles.split(',').map((r) => r.trim());
-
     return {
       accessToken,
       refreshToken,
@@ -73,7 +68,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        roles,
+        roles: user.roles,
         tenantId: user.tenantId,
         tenantSlug: user.tenant.slug,
       },
@@ -114,7 +109,7 @@ export class AuthService {
           email: registerDto.email,
           passwordHash,
           name: registerDto.name,
-          roles: 'admin',
+          roles: ['admin'],
           status: 'active',
         },
       });
@@ -125,9 +120,6 @@ export class AuthService {
     // Gerar tokens
     const { accessToken, refreshToken } = await this.generateTokens(result.user);
 
-    // Converter roles para array
-    const roles = result.user.roles.split(',').map((r) => r.trim());
-
     return {
       accessToken,
       refreshToken,
@@ -135,7 +127,7 @@ export class AuthService {
         id: result.user.id,
         email: result.user.email,
         name: result.user.name,
-        roles,
+        roles: result.user.roles,
         tenantId: result.user.tenantId,
         tenantSlug: result.tenant.slug,
       },

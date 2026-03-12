@@ -13,13 +13,13 @@ import { JwtPayload } from '../interfaces';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly _configService: ConfigService,
+    configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: _configService.get<string>('JWT_SECRET'),
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
@@ -34,14 +34,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Retornar dados do usuário (será anexado ao request)
-    // Converter roles de string para array
-    const roles = user.roles.split(',').map((r) => r.trim());
-
     return {
       id: user.id,
       email: user.email,
       tenantId: user.tenantId,
-      roles,
+      roles: user.roles,
       name: user.name,
     };
   }
