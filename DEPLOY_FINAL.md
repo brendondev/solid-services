@@ -76,7 +76,7 @@ Railway vai automaticamente:
 - ✅ `npm run build` (compilar TypeScript)
 - ✅ Iniciar a aplicação
 
-Na fase de release:
+Na inicialização do serviço:
 - ✅ `npx prisma migrate deploy` (rodar migrations)
 
 **Você pode acompanhar o progresso no log de deploy.**

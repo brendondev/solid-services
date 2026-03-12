@@ -1,2 +1,1 @@
-web: cd apps/api && node dist/main.js
-release: cd packages/database && npx prisma migrate deploy
+web: cd packages/database && npx prisma migrate deploy && cd ../../apps/api && node dist/main.js

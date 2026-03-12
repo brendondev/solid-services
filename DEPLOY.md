@@ -98,10 +98,8 @@ npm install && cd packages/database && npx prisma generate && cd ../.. && npm ru
 cd apps/api && node dist/main.js
 ```
 
-**Release Command:**
-```bash
-cd packages/database && npx prisma migrate deploy
-```
+**Observação importante:**
+No Nixpacks do Railway, a rede privada não fica disponível na fase de build/release. Por isso, rode `prisma migrate deploy` no `Start Command`.
 
 ### 7. Deploy!
 
