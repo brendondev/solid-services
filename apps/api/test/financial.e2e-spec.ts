@@ -287,7 +287,6 @@ describe('Financial (e2e)', () => {
     let serviceId: string;
     let quotationId: string;
     let orderId: string;
-    let orderReceivableId: string;
 
     it('deve criar ordem completada para gerar recebível', async () => {
       // Criar serviço
@@ -346,8 +345,6 @@ describe('Financial (e2e)', () => {
       expect(response.body.customerId).toBe(customerId);
       expect(Number(response.body.amount)).toBe(500.00);
       expect(response.body.status).toBe('pending');
-
-      orderReceivableId = response.body.id;
     });
 
     it('não deve permitir criar recebível duplicado da mesma ordem', async () => {
