@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { financialApi, Receivable, FinancialDashboard } from '@/lib/api/financial';
+import { PaymentModal } from '@/components/financial/PaymentModal';
 
 export default function FinancialPage() {
   const router = useRouter();
@@ -11,6 +12,8 @@ export default function FinancialPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [selectedReceivable, setSelectedReceivable] = useState<Receivable | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -48,6 +51,20 @@ export default function FinancialPage() {
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao excluir recebível');
     }
+  };
+
+  const handleOpenPaymentModal = (receivable: Receivable) => {
+    setSelectedReceivable(receivable);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleClosePaymentModal = () => {
+    setIsPaymentModalOpen(false);
+    setSelectedReceivable(null);
+  };
+
+  const handlePaymentSuccess = async () => {
+    await loadData();
   };
 
   const formatCurrency = (value: number) => {
@@ -238,6 +255,14 @@ export default function FinancialPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      {receivable.amount > receivable.paidAmount && (
+                        <button
+                          onClick={() => handleOpenPaymentModal(receivable)}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Pagar
+                        </button>
+                      )}
                       <button
                         onClick={() =>
                           router.push(`/dashboard/financial/${receivable.id}`)
@@ -260,6 +285,14 @@ export default function FinancialPage() {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={handleClosePaymentModal}
+        receivable={selectedReceivable}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }
