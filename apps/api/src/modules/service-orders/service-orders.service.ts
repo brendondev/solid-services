@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
+import { StorageService } from '@core/storage';
 import { CreateServiceOrderDto, UpdateServiceOrderDto, UpdateChecklistItemDto } from './dto';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class ServiceOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tenantContext: TenantContextService,
+    private readonly storage: StorageService,
   ) {}
 
   /**
@@ -542,5 +544,144 @@ export class ServiceOrdersService {
         scheduledFor: 'asc',
       },
     });
+  }
+
+  /**
+   * Upload de anexo
+   */
+  async uploadAttachment(
+    orderId: string,
+    file: Express.Multer.File,
+    _description?: string, // Não usado por enquanto - pode ser adicionado ao schema depois
+  ) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Validar ordem
+    const order = await this.prisma.serviceOrder.findFirst({
+      where: {
+        id: orderId,
+        tenantId,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Ordem de serviço não encontrada');
+    }
+
+    // Validar tamanho (max 10MB)
+    if (!this.storage.validateFileSize(file.size, 10)) {
+      throw new BadRequestException('Arquivo muito grande (máx 10MB)');
+    }
+
+    // Validar extensão
+    const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip'];
+    if (!this.storage.validateFileExtension(file.originalname, allowedExtensions)) {
+      throw new BadRequestException(
+        `Tipo de arquivo não permitido. Extensões permitidas: ${allowedExtensions.join(', ')}`
+      );
+    }
+
+    // Upload para S3
+    const fileKey = await this.storage.uploadFile(
+      file.buffer,
+      tenantId,
+      'service-orders',
+      file.originalname,
+    );
+
+    // Criar registro no banco
+    const attachment = await this.prisma.attachment.create({
+      data: {
+        serviceOrderId: orderId,
+        fileName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        storageKey: fileKey,
+      },
+    });
+
+    // Adicionar evento na timeline
+    await this.addTimelineEvent(
+      orderId,
+      'attachment_uploaded',
+      `Anexo adicionado: ${file.originalname}`,
+      { attachmentId: attachment.id },
+    );
+
+    return attachment;
+  }
+
+  /**
+   * Gera URL de download do anexo
+   */
+  async getAttachmentDownloadUrl(orderId: string, attachmentId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Validar anexo
+    const attachment = await this.prisma.attachment.findFirst({
+      where: {
+        id: attachmentId,
+        serviceOrder: {
+          id: orderId,
+          tenantId,
+        },
+      },
+    });
+
+    if (!attachment) {
+      throw new NotFoundException('Anexo não encontrado');
+    }
+
+    // Gerar URL assinada (válida por 1 hora)
+    const url = await this.storage.getSignedDownloadUrl(attachment.storageKey, 3600);
+
+    return {
+      url,
+      fileName: attachment.fileName,
+      fileSize: attachment.fileSize,
+      mimeType: attachment.mimeType,
+      expiresIn: 3600,
+    };
+  }
+
+  /**
+   * Deleta anexo
+   */
+  async deleteAttachment(orderId: string, attachmentId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Validar anexo
+    const attachment = await this.prisma.attachment.findFirst({
+      where: {
+        id: attachmentId,
+        serviceOrder: {
+          id: orderId,
+          tenantId,
+        },
+      },
+    });
+
+    if (!attachment) {
+      throw new NotFoundException('Anexo não encontrado');
+    }
+
+    // Deletar do S3
+    await this.storage.deleteFile(attachment.storageKey);
+
+    // Deletar do banco
+    await this.prisma.attachment.delete({
+      where: {
+        id: attachmentId,
+      },
+    });
+
+    // Adicionar evento na timeline
+    await this.addTimelineEvent(
+      orderId,
+      'attachment_deleted',
+      `Anexo removido: ${attachment.fileName}`,
+    );
+
+    return { message: 'Anexo deletado com sucesso' };
   }
 }

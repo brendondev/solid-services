@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { TenantModule } from './core/tenant';
 import { DatabaseModule } from './core/database';
 import { AuthModule } from './core/auth';
+import { StorageModule } from './core/storage';
 
 // Business modules
 import { CustomersModule } from './modules/customers';
@@ -43,6 +44,7 @@ import { TenantMiddleware } from './common/middleware';
     TenantModule,
     DatabaseModule,
     AuthModule,
+    StorageModule,
 
     // Business modules
     CustomersModule,

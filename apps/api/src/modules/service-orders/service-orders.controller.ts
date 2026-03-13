@@ -9,8 +9,12 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiConsumes } from '@nestjs/swagger';
 import { ServiceOrdersService } from './service-orders.service';
 import { CreateServiceOrderDto, UpdateServiceOrderDto, UpdateChecklistItemDto } from './dto';
 
@@ -117,6 +121,46 @@ export class ServiceOrdersController {
     @Body('metadata') metadata?: any,
   ) {
     return this.serviceOrdersService.addTimelineEvent(id, event, description, metadata);
+  }
+
+  @Post(':id/attachments')
+  @ApiOperation({ summary: 'Fazer upload de anexo' })
+  @ApiConsumes('multipart/form-data')
+  @ApiResponse({ status: 201, description: 'Anexo enviado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Arquivo inválido' })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttachment(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('description') description?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Nenhum arquivo foi enviado');
+    }
+
+    return this.serviceOrdersService.uploadAttachment(id, file, description);
+  }
+
+  @Get(':id/attachments/:attachmentId/download')
+  @ApiOperation({ summary: 'Gerar URL de download do anexo' })
+  @ApiResponse({ status: 200, description: 'URL de download gerada' })
+  @ApiResponse({ status: 404, description: 'Anexo não encontrado' })
+  async downloadAttachment(
+    @Param('id') id: string,
+    @Param('attachmentId') attachmentId: string,
+  ) {
+    return this.serviceOrdersService.getAttachmentDownloadUrl(id, attachmentId);
+  }
+
+  @Delete(':id/attachments/:attachmentId')
+  @ApiOperation({ summary: 'Deletar anexo' })
+  @ApiResponse({ status: 200, description: 'Anexo deletado' })
+  @ApiResponse({ status: 404, description: 'Anexo não encontrado' })
+  async deleteAttachment(
+    @Param('id') id: string,
+    @Param('attachmentId') attachmentId: string,
+  ) {
+    return this.serviceOrdersService.deleteAttachment(id, attachmentId);
   }
 
   @Delete(':id')
