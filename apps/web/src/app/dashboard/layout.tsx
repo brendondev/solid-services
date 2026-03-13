@@ -16,6 +16,7 @@ const navigation: NavItem[] = [
   { name: 'Serviços', href: '/dashboard/services', icon: '🔧' },
   { name: 'Orçamentos', href: '/dashboard/quotations', icon: '💰' },
   { name: 'Ordens de Serviço', href: '/dashboard/orders', icon: '📋' },
+  { name: 'Agenda', href: '/dashboard/schedule', icon: '📅' },
   { name: 'Financeiro', href: '/dashboard/financial', icon: '💵' },
 ];
 
