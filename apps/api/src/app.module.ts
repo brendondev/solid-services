@@ -18,6 +18,7 @@ import { QuotationsModule } from './modules/quotations';
 import { ServiceOrdersModule } from './modules/service-orders';
 import { FinancialModule } from './modules/financial';
 import { DashboardModule } from './modules/dashboard';
+import { SchedulingModule } from './modules/scheduling';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware';
@@ -53,6 +54,7 @@ import { TenantMiddleware } from './common/middleware';
     ServiceOrdersModule,
     FinancialModule,
     DashboardModule,
+    SchedulingModule,
   ],
   providers: [
     {
