@@ -18,7 +18,20 @@ export interface LoginResponse {
   };
 }
 
+export interface RegisterRequest {
+  tenantName: string;
+  tenantSlug: string;
+  adminName: string;
+  adminEmail: string;
+  password: string;
+}
+
 export const authApi = {
+  register: async (data: RegisterRequest): Promise<LoginResponse> => {
+    const response = await api.post('/auth/register', data);
+    return response.data;
+  },
+
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     const response = await api.post('/auth/login', data);
     return response.data;
