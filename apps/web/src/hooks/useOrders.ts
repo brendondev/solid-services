@@ -68,8 +68,8 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      ordersApi.updateStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: 'open' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled' }) =>
+      ordersApi.update(id, { status }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [ORDERS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [ORDERS_QUERY_KEY, variables.id] });

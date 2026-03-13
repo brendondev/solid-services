@@ -168,6 +168,7 @@ model Quotation {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, customerId])
+  @@index([tenantId, createdAt])
   @@map("quotations")
 }
 
@@ -224,6 +225,8 @@ model ServiceOrder {
   @@index([tenantId, customerId])
   @@index([tenantId, assignedTo])
   @@index([tenantId, scheduledFor])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, completedAt])
   @@map("service_orders")
 }
 
@@ -358,5 +361,7 @@ model AuditLog {
   @@index([tenantId])
   @@index([tenantId, entity, entityId])
   @@index([tenantId, createdAt])
+  @@index([tenantId, userId])
+  @@index([tenantId, action])
   @@map("audit_logs")
 }

@@ -1,26 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import * as PdfPrinter from 'pdfmake';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+
+// Import usando require para pdfmake (CommonJS module)
+const PdfPrinter = require('pdfmake');
 
 @Injectable()
 export class QuotationPdfService {
   private printer: any;
 
   constructor() {
-    // Configuração das fontes
-    const fonts = {
-      Roboto: {
-        normal: 'node_modules/pdfmake/build/vfs_fonts.js',
-        bold: 'node_modules/pdfmake/build/vfs_fonts.js',
-        italics: 'node_modules/pdfmake/build/vfs_fonts.js',
-        bolditalics: 'node_modules/pdfmake/build/vfs_fonts.js',
-      },
-    };
+    try {
+      // Configuração das fontes
+      const fonts = {
+        Roboto: {
+          normal: 'node_modules/pdfmake/build/vfs_fonts.js',
+          bold: 'node_modules/pdfmake/build/vfs_fonts.js',
+          italics: 'node_modules/pdfmake/build/vfs_fonts.js',
+          bolditalics: 'node_modules/pdfmake/build/vfs_fonts.js',
+        },
+      };
 
-    this.printer = new (PdfPrinter as any)(fonts);
+      // Lazy initialization - apenas inicializa quando realmente usado
+      this.printer = null;
+      this.initializePrinter = () => {
+        if (!this.printer) {
+          this.printer = new PdfPrinter(fonts);
+        }
+      };
+    } catch (error) {
+      console.warn('PdfMake initialization failed, PDF generation will not work:', error);
+      this.printer = null;
+      this.initializePrinter = () => {};
+    }
   }
 
+  private initializePrinter: () => void;
+
   async generateQuotationPdf(quotation: any): Promise<Buffer> {
+    // Inicializar printer se necessário
+    this.initializePrinter();
+
     const docDefinition: TDocumentDefinitions = {
       pageSize: 'A4',
       pageMargins: [40, 60, 40, 60],

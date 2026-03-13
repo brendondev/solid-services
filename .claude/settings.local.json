@@ -15,7 +15,12 @@
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
       "Bash(npx prisma migrate:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(npm run test:e2e:*)"
     ]
   }
 }

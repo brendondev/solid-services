@@ -15,12 +15,16 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { FinancialService } from './financial.service';
 import { CreateReceivableDto, CreatePaymentDto, UpdateReceivableDto } from './dto';
+import { AuditService } from '../audit';
 
 @ApiTags('Financial')
 @ApiBearerAuth()
 @Controller('financial')
 export class FinancialController {
-  constructor(private readonly financialService: FinancialService) {}
+  constructor(
+    private readonly financialService: FinancialService,
+    private readonly auditService: AuditService,
+  ) {}
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Dashboard financeiro' })
@@ -86,12 +90,27 @@ export class FinancialController {
   @ApiOperation({ summary: 'Registrar pagamento' })
   @ApiResponse({ status: 201, description: 'Pagamento registrado' })
   @ApiResponse({ status: 400, description: 'Valor excede pendente' })
-  registerPayment(
+  async registerPayment(
     @Param('id') id: string,
     @Body() createPaymentDto: CreatePaymentDto,
     @Request() req: any,
   ) {
-    return this.financialService.registerPayment(id, createPaymentDto, req.user.id);
+    const payment = await this.financialService.registerPayment(id, createPaymentDto, req.user.id);
+
+    // Audit log
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'PAYMENT_REGISTERED',
+      entity: 'Receivable',
+      entityId: id,
+      changes: {
+        paymentId: payment.id,
+        amount: createPaymentDto.amount,
+        method: createPaymentDto.method,
+      },
+    });
+
+    return payment;
   }
 
   @Delete('receivables/:id')

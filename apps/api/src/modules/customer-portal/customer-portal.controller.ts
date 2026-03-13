@@ -1,0 +1,140 @@
+import { Controller, Get, Patch, Param, Headers, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
+import { CustomerPortalService } from './customer-portal.service';
+
+/**
+ * Customer Portal Controller
+ *
+ * Endpoints públicos para o portal do cliente
+ * Autenticação via header X-Customer-Token
+ */
+@ApiTags('Customer Portal')
+@Controller('portal')
+export class CustomerPortalController {
+  constructor(private readonly customerPortalService: CustomerPortalService) {}
+
+  /**
+   * Valida token e retorna dados do cliente
+   */
+  @Get('auth/validate')
+  @ApiOperation({ summary: 'Validar token de acesso do cliente' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Token válido' })
+  @ApiResponse({ status: 401, description: 'Token inválido' })
+  async validateToken(@Headers('x-customer-token') token: string) {
+    if (!token) {
+      throw new UnauthorizedException('Token não fornecido');
+    }
+    return this.customerPortalService.validateToken(token);
+  }
+
+  /**
+   * Lista orçamentos do cliente
+   */
+  @Get('quotations')
+  @ApiOperation({ summary: 'Listar orçamentos do cliente' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Lista de orçamentos' })
+  async getQuotations(@Headers('x-customer-token') token: string) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.getCustomerQuotations(customer.id, customer.tenantId);
+  }
+
+  /**
+   * Busca orçamento específico
+   */
+  @Get('quotations/:id')
+  @ApiOperation({ summary: 'Buscar orçamento específico' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Orçamento encontrado' })
+  @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
+  async getQuotation(
+    @Param('id') id: string,
+    @Headers('x-customer-token') token: string,
+  ) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.getQuotation(id, customer.id, customer.tenantId);
+  }
+
+  /**
+   * Aprovar orçamento
+   */
+  @Patch('quotations/:id/approve')
+  @ApiOperation({ summary: 'Aprovar orçamento' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Orçamento aprovado' })
+  @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
+  async approveQuotation(
+    @Param('id') id: string,
+    @Headers('x-customer-token') token: string,
+  ) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.approveQuotation(id, customer.id, customer.tenantId);
+  }
+
+  /**
+   * Rejeitar orçamento
+   */
+  @Patch('quotations/:id/reject')
+  @ApiOperation({ summary: 'Rejeitar orçamento' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Orçamento rejeitado' })
+  @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
+  async rejectQuotation(
+    @Param('id') id: string,
+    @Headers('x-customer-token') token: string,
+  ) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.rejectQuotation(id, customer.id, customer.tenantId);
+  }
+
+  /**
+   * Lista ordens do cliente
+   */
+  @Get('orders')
+  @ApiOperation({ summary: 'Listar ordens de serviço do cliente' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Lista de ordens' })
+  async getOrders(@Headers('x-customer-token') token: string) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.getCustomerOrders(customer.id, customer.tenantId);
+  }
+
+  /**
+   * Busca ordem específica
+   */
+  @Get('orders/:id')
+  @ApiOperation({ summary: 'Buscar ordem específica' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Ordem encontrada' })
+  @ApiResponse({ status: 404, description: 'Ordem não encontrada' })
+  async getOrder(
+    @Param('id') id: string,
+    @Headers('x-customer-token') token: string,
+  ) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.getOrder(id, customer.id, customer.tenantId);
+  }
+
+  /**
+   * Histórico de serviços
+   */
+  @Get('history')
+  @ApiOperation({ summary: 'Histórico de serviços do cliente' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'Histórico de serviços' })
+  async getHistory(@Headers('x-customer-token') token: string) {
+    const customer = await this.validateCustomer(token);
+    return this.customerPortalService.getServiceHistory(customer.id, customer.tenantId);
+  }
+
+  /**
+   * Helper para validar token e retornar customer
+   */
+  private async validateCustomer(token: string) {
+    if (!token) {
+      throw new UnauthorizedException('Token não fornecido');
+    }
+    return this.customerPortalService.validateToken(token);
+  }
+}

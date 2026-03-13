@@ -16,6 +16,8 @@ import { Response } from 'express';
 import { QuotationsService } from './quotations.service';
 import { QuotationPdfService } from './services/quotation-pdf.service';
 import { CreateQuotationDto, UpdateQuotationDto } from './dto';
+import { Roles, CurrentUser } from '@core/auth';
+import { AuditService } from '../audit';
 
 /**
  * Controller de Quotations (Orçamentos)
@@ -36,6 +38,7 @@ export class QuotationsController {
   constructor(
     private readonly quotationsService: QuotationsService,
     private readonly quotationPdfService: QuotationPdfService,
+    private readonly auditService: AuditService,
   ) {}
 
   @Post()
@@ -101,8 +104,24 @@ export class QuotationsController {
   @ApiOperation({ summary: 'Atualizar status do orçamento' })
   @ApiResponse({ status: 200, description: 'Status atualizado' })
   @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
-  updateStatus(@Param('id') id: string, @Param('status') status: string) {
-    return this.quotationsService.updateStatus(id, status);
+  async updateStatus(
+    @Param('id') id: string,
+    @Param('status') status: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    const oldQuotation = await this.quotationsService.findOne(id);
+    const updated = await this.quotationsService.updateStatus(id, status);
+
+    // Audit log para mudança de status
+    await this.auditService.logStatusChange({
+      userId,
+      entity: 'Quotation',
+      entityId: id,
+      oldStatus: oldQuotation.status,
+      newStatus: status,
+    });
+
+    return updated;
   }
 
   @Get(':id/pdf')
@@ -123,10 +142,12 @@ export class QuotationsController {
   }
 
   @Delete(':id')
+  @Roles('admin', 'manager')
   @ApiOperation({ summary: 'Deletar orçamento' })
   @ApiResponse({ status: 200, description: 'Orçamento deletado' })
   @ApiResponse({ status: 400, description: 'Não é possível deletar orçamento aprovado' })
   @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
+  @ApiResponse({ status: 403, description: 'Sem permissão (requer role: admin ou manager)' })
   remove(@Param('id') id: string) {
     return this.quotationsService.remove(id);
   }

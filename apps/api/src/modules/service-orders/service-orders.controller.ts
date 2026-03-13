@@ -17,18 +17,36 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiConsumes } from '@nestjs/swagger';
 import { ServiceOrdersService } from './service-orders.service';
 import { CreateServiceOrderDto, UpdateServiceOrderDto, UpdateChecklistItemDto } from './dto';
+import { CurrentUser } from '@core/auth';
+import { AuditService } from '../audit';
 
 @ApiTags('Service Orders')
 @ApiBearerAuth()
 @Controller('service-orders')
 export class ServiceOrdersController {
-  constructor(private readonly serviceOrdersService: ServiceOrdersService) {}
+  constructor(
+    private readonly serviceOrdersService: ServiceOrdersService,
+    private readonly auditService: AuditService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar nova ordem de serviço' })
   @ApiResponse({ status: 201, description: 'Ordem criada com sucesso' })
-  create(@Body() createServiceOrderDto: CreateServiceOrderDto) {
-    return this.serviceOrdersService.create(createServiceOrderDto);
+  async create(
+    @Body() createServiceOrderDto: CreateServiceOrderDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    const order = await this.serviceOrdersService.create(createServiceOrderDto);
+
+    // Audit log
+    await this.auditService.logCreate({
+      userId,
+      entity: 'ServiceOrder',
+      entityId: order.id,
+      data: { number: order.number, status: order.status },
+    });
+
+    return order;
   }
 
   @Post('from-quotation/:quotationId')
@@ -36,8 +54,21 @@ export class ServiceOrdersController {
   @ApiResponse({ status: 201, description: 'Ordem criada a partir do orçamento' })
   @ApiResponse({ status: 404, description: 'Orçamento não encontrado ou não aprovado' })
   @ApiResponse({ status: 400, description: 'Ordem já existe para este orçamento' })
-  createFromQuotation(@Param('quotationId') quotationId: string) {
-    return this.serviceOrdersService.createFromQuotation(quotationId);
+  async createFromQuotation(
+    @Param('quotationId') quotationId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    const order = await this.serviceOrdersService.createFromQuotation(quotationId);
+
+    // Audit log
+    await this.auditService.logCreate({
+      userId,
+      entity: 'ServiceOrder',
+      entityId: order.id,
+      data: { number: order.number, quotationId, status: order.status },
+    });
+
+    return order;
   }
 
   @Get()
@@ -92,12 +123,25 @@ export class ServiceOrdersController {
   @Patch(':id/status/:status')
   @ApiOperation({ summary: 'Atualizar status da ordem' })
   @ApiResponse({ status: 200, description: 'Status atualizado' })
-  updateStatus(
+  async updateStatus(
     @Param('id') id: string,
     @Param('status') status: string,
-    @Body('description') description?: string,
+    @Body('description') description: string | undefined,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.serviceOrdersService.updateStatus(id, status, description);
+    const oldOrder = await this.serviceOrdersService.findOne(id);
+    const updated = await this.serviceOrdersService.updateStatus(id, status, description);
+
+    // Audit log para mudança de status
+    await this.auditService.logStatusChange({
+      userId,
+      entity: 'ServiceOrder',
+      entityId: id,
+      oldStatus: oldOrder.status,
+      newStatus: status,
+    });
+
+    return updated;
   }
 
   @Patch(':id/checklist/:checklistId')
@@ -132,13 +176,29 @@ export class ServiceOrdersController {
   async uploadAttachment(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-    @Body('description') description?: string,
+    @Body('description') description: string | undefined,
+    @CurrentUser('id') userId: string,
   ) {
     if (!file) {
       throw new BadRequestException('Nenhum arquivo foi enviado');
     }
 
-    return this.serviceOrdersService.uploadAttachment(id, file, description);
+    const attachment = await this.serviceOrdersService.uploadAttachment(id, file, description);
+
+    // Audit log
+    await this.auditService.log({
+      userId,
+      action: 'UPLOAD_ATTACHMENT',
+      entity: 'ServiceOrder',
+      entityId: id,
+      changes: {
+        attachmentId: attachment.id,
+        fileName: attachment.fileName,
+        fileSize: attachment.fileSize,
+      },
+    });
+
+    return attachment;
   }
 
   @Get(':id/attachments/:attachmentId/download')
@@ -159,8 +219,22 @@ export class ServiceOrdersController {
   async deleteAttachment(
     @Param('id') id: string,
     @Param('attachmentId') attachmentId: string,
+    @CurrentUser('id') userId: string,
   ) {
-    return this.serviceOrdersService.deleteAttachment(id, attachmentId);
+    const result = await this.serviceOrdersService.deleteAttachment(id, attachmentId);
+
+    // Audit log
+    await this.auditService.log({
+      userId,
+      action: 'DELETE_ATTACHMENT',
+      entity: 'ServiceOrder',
+      entityId: id,
+      changes: {
+        attachmentId,
+      },
+    });
+
+    return result;
   }
 
   @Delete(':id')

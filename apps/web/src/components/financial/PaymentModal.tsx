@@ -28,7 +28,7 @@ interface Receivable {
   id: string;
   amount: number;
   paidAmount: number;
-  customer: {
+  customer?: {
     name: string;
   };
 }
@@ -120,7 +120,7 @@ export function PaymentModal({ isOpen, onClose, receivable, onSuccess }: Payment
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="text-gray-600">Cliente:</span>
-                  <p className="font-medium text-gray-900">{receivable.customer.name}</p>
+                  <p className="font-medium text-gray-900">{receivable.customer?.name || '-'}</p>
                 </div>
                 <div>
                   <span className="text-gray-600">Valor total:</span>

@@ -4,6 +4,8 @@ import { QuotationsController } from './quotations.controller';
 import { QuotationPdfService } from './services/quotation-pdf.service';
 import { DatabaseModule } from '@core/database';
 import { TenantModule } from '@core/tenant';
+import { NotificationsModule } from '../notifications';
+import { AuditModule } from '../audit';
 
 /**
  * Módulo de Quotations (Orçamentos)
@@ -11,7 +13,7 @@ import { TenantModule } from '@core/tenant';
  * Encapsula toda a funcionalidade relacionada a orçamentos
  */
 @Module({
-  imports: [DatabaseModule, TenantModule],
+  imports: [DatabaseModule, TenantModule, NotificationsModule, AuditModule],
   controllers: [QuotationsController],
   providers: [QuotationsService, QuotationPdfService],
   exports: [QuotationsService],

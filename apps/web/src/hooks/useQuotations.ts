@@ -57,7 +57,7 @@ export function useUpdateQuotationStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
+    mutationFn: ({ id, status }: { id: string; status: 'sent' | 'approved' | 'rejected' }) =>
       quotationsApi.updateStatus(id, status),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });

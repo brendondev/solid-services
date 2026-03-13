@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
 import { CreateQuotationDto, UpdateQuotationDto } from './dto';
+import { NotificationsService } from '../notifications';
 
 /**
  * Service de Quotations (Orçamentos)
@@ -21,6 +22,7 @@ export class QuotationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tenantContext: TenantContextService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -261,12 +263,46 @@ export class QuotationsService {
    * Atualiza status do orçamento
    */
   async updateStatus(id: string, status: string) {
-    await this.findOne(id);
+    const quotation = await this.findOne(id);
 
-    return this.prisma.quotation.update({
+    const updated = await this.prisma.quotation.update({
       where: { id },
       data: { status },
+      include: {
+        customer: {
+          include: {
+            contacts: {
+              where: { isPrimary: true },
+              take: 1,
+            },
+          },
+        },
+        items: true,
+      },
     });
+
+    // Enviar notificação por email se status mudou para "sent"
+    if (status === 'sent' && quotation.status !== 'sent') {
+      const primaryContact = updated.customer.contacts[0];
+      if (primaryContact?.email) {
+        const portalUrl = `${process.env.PORTAL_URL || 'http://localhost:3001/portal'}/access?token=GENERATE_TOKEN_HERE`;
+
+        try {
+          await this.notificationsService.sendQuotationCreated({
+            to: primaryContact.email,
+            customerName: updated.customer.name,
+            quotationNumber: updated.number,
+            totalAmount: Number(updated.totalAmount),
+            portalUrl,
+          });
+        } catch (error) {
+          // Log error but don't fail the operation
+          console.error('Failed to send quotation email:', error);
+        }
+      }
+    }
+
+    return updated;
   }
 
   /**

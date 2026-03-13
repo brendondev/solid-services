@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
+import { RolesGuard } from '@core/auth';
 
 // Core modules
 import { TenantModule } from './core/tenant';
@@ -19,6 +20,9 @@ import { ServiceOrdersModule } from './modules/service-orders';
 import { FinancialModule } from './modules/financial';
 import { DashboardModule } from './modules/dashboard';
 import { SchedulingModule } from './modules/scheduling';
+import { CustomerPortalModule } from './modules/customer-portal';
+import { NotificationsModule } from './modules/notifications';
+import { AuditModule } from './modules/audit';
 
 // Middleware
 import { TenantMiddleware } from './common/middleware';
@@ -55,11 +59,18 @@ import { TenantMiddleware } from './common/middleware';
     FinancialModule,
     DashboardModule,
     SchedulingModule,
+    CustomerPortalModule,
+    NotificationsModule,
+    AuditModule,
   ],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })
