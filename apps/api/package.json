@@ -42,7 +42,7 @@
     "reflect-metadata": "^0.2.1",
     "resend": "^6.9.3",
     "rxjs": "^7.8.1",
-    "uuid": "^13.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.1",
@@ -58,7 +58,7 @@
     "@types/passport-local": "^1.0.38",
     "@types/pdfmake": "^0.3.2",
     "@types/supertest": "^7.2.0",
-    "@types/uuid": "^10.0.0",
+    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "eslint": "^8.56.0",
