@@ -110,7 +110,7 @@ export default function RegisterPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Minha Empresa Ltda"
                 disabled={isLoading}
-                onInput={handleNameChange}
+                onChange={handleNameChange}
               />
               {errors.tenantName && (
                 <p className="mt-1 text-sm text-red-600">
