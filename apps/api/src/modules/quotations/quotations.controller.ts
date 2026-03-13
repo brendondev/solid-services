@@ -9,9 +9,12 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Response } from 'express';
 import { QuotationsService } from './quotations.service';
+import { QuotationPdfService } from './services/quotation-pdf.service';
 import { CreateQuotationDto, UpdateQuotationDto } from './dto';
 
 /**
@@ -30,7 +33,10 @@ import { CreateQuotationDto, UpdateQuotationDto } from './dto';
 @ApiBearerAuth()
 @Controller('quotations')
 export class QuotationsController {
-  constructor(private readonly quotationsService: QuotationsService) {}
+  constructor(
+    private readonly quotationsService: QuotationsService,
+    private readonly quotationPdfService: QuotationPdfService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar novo orçamento' })
@@ -97,6 +103,23 @@ export class QuotationsController {
   @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
   updateStatus(@Param('id') id: string, @Param('status') status: string) {
     return this.quotationsService.updateStatus(id, status);
+  }
+
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Gerar PDF do orçamento' })
+  @ApiResponse({ status: 200, description: 'PDF gerado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
+  async generatePdf(@Param('id') id: string, @Res() res: Response) {
+    const quotation = await this.quotationsService.findOne(id);
+    const pdfBuffer = await this.quotationPdfService.generateQuotationPdf(quotation);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="orcamento-${quotation.number}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.send(pdfBuffer);
   }
 
   @Delete(':id')

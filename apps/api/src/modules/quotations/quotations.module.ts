@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { QuotationsService } from './quotations.service';
 import { QuotationsController } from './quotations.controller';
+import { QuotationPdfService } from './services/quotation-pdf.service';
 import { DatabaseModule } from '@core/database';
 import { TenantModule } from '@core/tenant';
 
@@ -12,7 +13,7 @@ import { TenantModule } from '@core/tenant';
 @Module({
   imports: [DatabaseModule, TenantModule],
   controllers: [QuotationsController],
-  providers: [QuotationsService],
+  providers: [QuotationsService, QuotationPdfService],
   exports: [QuotationsService],
 })
 export class QuotationsModule {}
