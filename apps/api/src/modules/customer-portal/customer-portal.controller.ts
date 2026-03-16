@@ -23,9 +23,20 @@ export class CustomerPortalController {
   @ApiResponse({ status: 404, description: 'Cliente não encontrado' })
   async generateToken(@Param('customerId') customerId: string) {
     const token = await this.customerPortalService.generateAccessToken(customerId);
+
+    // Determinar URL do frontend
+    // 1. Usar FRONTEND_URL se estiver definida
+    // 2. Senão, usar NEXT_PUBLIC_BASE_URL
+    // 3. Fallback para localhost apenas em dev
+    const frontendUrl = process.env.FRONTEND_URL
+      || process.env.NEXT_PUBLIC_BASE_URL
+      || (process.env.NODE_ENV === 'production'
+        ? 'https://solid-services-web.vercel.app'
+        : 'http://localhost:3001');
+
     return {
       token,
-      portalUrl: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/portal/${token}`,
+      portalUrl: `${frontendUrl}/portal/${token}`,
       expiresIn: '7 days',
     };
   }

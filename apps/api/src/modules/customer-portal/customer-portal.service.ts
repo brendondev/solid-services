@@ -17,10 +17,6 @@ import { NotificationsService } from '../notifications';
  */
 @Injectable()
 export class CustomerPortalService {
-  // Armazenamento temporário de tokens (para MVP)
-  // TODO: Migrar para banco de dados em produção
-  private readonly tokenMap = new Map<string, { customerId: string; tenantId: string; generatedAt: Date }>();
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly tenantContext: TenantContextService,
@@ -48,11 +44,18 @@ export class CustomerPortalService {
     // Gerar token único
     const token = uuidv4();
 
-    // Armazenar token no mapa (memória)
-    this.tokenMap.set(token, {
-      customerId: customer.id,
-      tenantId,
-      generatedAt: new Date(),
+    // Calcular data de expiração (7 dias)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Salvar token no banco de dados
+    await this.prisma.customerPortalToken.create({
+      data: {
+        token,
+        customerId: customer.id,
+        tenantId,
+        expiresAt,
+      },
     });
 
     return token;
@@ -62,39 +65,46 @@ export class CustomerPortalService {
    * Valida token e retorna dados do cliente
    */
   async validateToken(token: string) {
-    // Buscar token no mapa
-    const tokenData = this.tokenMap.get(token);
+    // Buscar token no banco de dados
+    const tokenData = await this.prisma.customerPortalToken.findUnique({
+      where: { token },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            tenantId: true,
+            name: true,
+            status: true,
+          },
+        },
+      },
+    });
 
     if (!tokenData) {
       throw new UnauthorizedException('Token inválido');
     }
 
-    // Verificar expiração (7 dias)
-    const daysSinceGenerated = (Date.now() - tokenData.generatedAt.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceGenerated > 7) {
-      this.tokenMap.delete(token);
+    // Verificar expiração
+    if (tokenData.expiresAt < new Date()) {
+      // Deletar token expirado
+      await this.prisma.customerPortalToken.delete({
+        where: { id: tokenData.id },
+      });
       throw new UnauthorizedException('Token expirado');
     }
 
-    // Buscar dados do cliente
-    const customer = await this.prisma.customer.findFirst({
-      where: {
-        id: tokenData.customerId,
-        tenantId: tokenData.tenantId,
-      },
-      select: {
-        id: true,
-        tenantId: true,
-        name: true,
-        status: true,
-      },
-    });
-
-    if (!customer || customer.status !== 'active') {
+    // Verificar se cliente está ativo
+    if (!tokenData.customer || tokenData.customer.status !== 'active') {
       throw new UnauthorizedException('Cliente inativo');
     }
 
-    return customer;
+    // Atualizar lastUsedAt
+    await this.prisma.customerPortalToken.update({
+      where: { id: tokenData.id },
+      data: { lastUsedAt: new Date() },
+    });
+
+    return tokenData.customer;
   }
 
   /**
