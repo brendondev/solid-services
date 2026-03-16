@@ -35,14 +35,15 @@ export default function NewServicePage() {
     setError('');
 
     try {
-      const cleanData = {
-        ...data,
+      // Backend não aceita campo 'category', então remover
+      const payload = {
+        name: data.name,
         description: data.description || undefined,
-        category: data.category || undefined,
+        defaultPrice: data.defaultPrice,
         estimatedDuration: data.estimatedDuration || undefined,
       };
 
-      const service = await servicesApi.create(cleanData);
+      const service = await servicesApi.create(payload);
       router.push('/dashboard/services');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao criar serviço');

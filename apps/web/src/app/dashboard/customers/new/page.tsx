@@ -38,15 +38,24 @@ export default function NewCustomerPage() {
     setError('');
 
     try {
-      // Remover campos vazios
-      const cleanData = {
-        ...data,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        taxId: data.taxId || undefined,
+      // Transformar para estrutura esperada pelo backend
+      const payload: any = {
+        name: data.name,
+        type: data.type,
+        document: data.taxId || undefined,
       };
 
-      const customer = await customersApi.create(cleanData);
+      // Adicionar contato se tiver email ou phone
+      if (data.email || data.phone) {
+        payload.contacts = [{
+          name: data.name,
+          email: data.email || undefined,
+          phone: data.phone || undefined,
+          isPrimary: true,
+        }];
+      }
+
+      const customer = await customersApi.create(payload);
       router.push(`/dashboard/customers/${customer.id}`);
     } catch (err: any) {
       setError(

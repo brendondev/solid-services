@@ -22,7 +22,11 @@
       "Bash(find:*)",
       "Bash(npm run test:e2e:*)",
       "Bash(node:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run dev:*)",
+      "Bash(ping:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker compose:*)"
     ]
   }
 }

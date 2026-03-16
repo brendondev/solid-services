@@ -118,11 +118,12 @@ export default function NewQuotationPage() {
         customerId: data.customerId,
         validUntil: data.validUntil || undefined,
         notes: data.notes || undefined,
-        items: data.items.map((item) => ({
+        items: data.items.map((item, index) => ({
           serviceId: item.serviceId,
           description: item.description,
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
+          order: index + 1, // Backend exige campo order >= 1
         })),
       });
 
