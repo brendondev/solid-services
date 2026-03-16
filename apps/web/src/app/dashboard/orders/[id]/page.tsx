@@ -485,7 +485,7 @@ export default function OrderDetailPage() {
                       : 'text-gray-900 font-medium'
                   }`}
                 >
-                  {item.description}
+                  {item.title}
                 </span>
                 {item.completedAt && (
                   <div className="flex items-center gap-1 text-xs text-success">

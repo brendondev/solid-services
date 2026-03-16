@@ -144,6 +144,16 @@ export class ServiceOrdersController {
     return updated;
   }
 
+  @Post(':id/checklist')
+  @ApiOperation({ summary: 'Adicionar item ao checklist' })
+  @ApiResponse({ status: 201, description: 'Item adicionado ao checklist' })
+  addChecklistItem(
+    @Param('id') id: string,
+    @Body('title') title: string,
+  ) {
+    return this.serviceOrdersService.addChecklistItem(id, title);
+  }
+
   @Patch(':id/checklist/:checklistId')
   @ApiOperation({ summary: 'Atualizar item do checklist' })
   @ApiResponse({ status: 200, description: 'Checklist atualizado' })

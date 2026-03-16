@@ -57,10 +57,9 @@ export interface OrderTimelineEvent {
 export interface OrderChecklistItem {
   id: string;
   serviceOrderId: string;
-  description: string;
+  title: string;
   isCompleted: boolean;
   completedAt: string | null;
-  completedBy: string | null;
   order: number;
 }
 
@@ -137,10 +136,10 @@ export const ordersApi = {
   // Checklist
   addChecklistItem: async (
     id: string,
-    description: string
+    title: string
   ): Promise<OrderChecklistItem> => {
     const response = await api.post(`/service-orders/${id}/checklist`, {
-      description,
+      title,
     });
     return response.data;
   },

@@ -433,6 +433,30 @@ export class ServiceOrdersService {
   }
 
   /**
+   * Adiciona item ao checklist
+   */
+  async addChecklistItem(orderId: string, title: string) {
+    await this.findOne(orderId);
+
+    // Buscar a última ordem para incrementar
+    const lastItem = await this.prisma.orderChecklist.findFirst({
+      where: { serviceOrderId: orderId },
+      orderBy: { order: 'desc' },
+    });
+
+    const nextOrder = lastItem ? lastItem.order + 1 : 1;
+
+    return this.prisma.orderChecklist.create({
+      data: {
+        serviceOrderId: orderId,
+        title,
+        order: nextOrder,
+        isCompleted: false,
+      },
+    });
+  }
+
+  /**
    * Atualiza item do checklist
    */
   async updateChecklistItem(orderId: string, checklistId: string, dto: UpdateChecklistItemDto) {
