@@ -30,7 +30,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:shadboard.vercel.app)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cd:*)"
     ]
   }
 }

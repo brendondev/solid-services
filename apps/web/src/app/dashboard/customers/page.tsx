@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { customersApi, Customer } from '@/lib/api/customers';
+import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
 import {
   Plus,
   Users,
@@ -183,7 +183,9 @@ export default function CustomersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {customers.map((customer) => (
+          {customers.map((customer) => {
+            const primaryContact = getPrimaryContact(customer);
+            return (
             <div
               key={customer.id}
               className="bg-white rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
@@ -202,8 +204,8 @@ export default function CustomersPage() {
                       <h3 className="text-xl font-bold text-gray-900">
                         {customer.name}
                       </h3>
-                      {customer.taxId && (
-                        <p className="text-sm text-muted-foreground">{customer.taxId}</p>
+                      {customer.document && (
+                        <p className="text-sm text-muted-foreground">{customer.document}</p>
                       )}
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
@@ -233,16 +235,16 @@ export default function CustomersPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    {customer.email && (
+                    {primaryContact.email && (
                       <div className="flex items-center gap-2 text-sm">
                         <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-gray-900">{customer.email}</span>
+                        <span className="text-gray-900">{primaryContact.email}</span>
                       </div>
                     )}
-                    {customer.phone && (
+                    {primaryContact.phone && (
                       <div className="flex items-center gap-2 text-sm">
                         <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-gray-900">{customer.phone}</span>
+                        <span className="text-gray-900">{primaryContact.phone}</span>
                       </div>
                     )}
                   </div>
@@ -273,7 +275,8 @@ export default function CustomersPage() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

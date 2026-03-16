@@ -3,16 +3,27 @@ import api from './client';
 export interface Customer {
   id: string;
   name: string;
-  email: string | null;
-  phone: string | null;
-  taxId: string | null;
   type: string;
+  document: string | null;
   status: string;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
   contacts?: CustomerContact[];
   addresses?: CustomerAddress[];
 }
+
+// Helper para pegar email e phone do contato primário
+export const getPrimaryContact = (customer: Customer) => {
+  if (!customer.contacts || customer.contacts.length === 0) {
+    return { email: null, phone: null };
+  }
+  const primary = customer.contacts.find(c => c.isPrimary) || customer.contacts[0];
+  return {
+    email: primary.email,
+    phone: primary.phone
+  };
+};
 
 export interface CustomerContact {
   id: string;
@@ -39,36 +50,34 @@ export interface CustomerAddress {
 
 export interface CreateCustomerDto {
   name: string;
-  email?: string;
-  phone?: string;
-  taxId?: string;
   type: 'individual' | 'company';
+  document?: string;
+  notes?: string;
   contacts?: Array<{
     name: string;
     email?: string;
     phone?: string;
     role?: string;
-    isPrimary: boolean;
+    isPrimary?: boolean;
   }>;
   addresses?: Array<{
     street: string;
     number: string;
     complement?: string;
-    neighborhood: string;
+    district: string;
     city: string;
     state: string;
     zipCode: string;
-    isPrimary: boolean;
+    isPrimary?: boolean;
   }>;
 }
 
 export interface UpdateCustomerDto {
   name?: string;
-  email?: string;
-  phone?: string;
-  taxId?: string;
   type?: 'individual' | 'company';
+  document?: string;
   status?: 'active' | 'inactive';
+  notes?: string;
 }
 
 export const customersApi = {

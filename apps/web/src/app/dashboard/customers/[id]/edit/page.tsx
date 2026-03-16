@@ -9,9 +9,7 @@ import { customersApi, Customer } from '@/lib/api/customers';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
-  phone: z.string().optional(),
-  taxId: z.string().optional(),
+  document: z.string().optional(),
   type: z.enum(['individual', 'company']),
   status: z.enum(['active', 'inactive']),
 });
@@ -52,9 +50,7 @@ export default function EditCustomerPage() {
       // Preencher o formulário com os dados do cliente
       reset({
         name: data.name,
-        email: data.email || '',
-        phone: data.phone || '',
-        taxId: data.taxId || '',
+        document: data.document || '',
         type: data.type as 'individual' | 'company',
         status: data.status as 'active' | 'inactive',
       });
@@ -70,11 +66,11 @@ export default function EditCustomerPage() {
     setError('');
 
     try {
-      const cleanData = {
-        ...data,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        taxId: data.taxId || undefined,
+      const cleanData: any = {
+        name: data.name,
+        type: data.type,
+        status: data.status,
+        document: data.document || undefined,
       };
 
       await customersApi.update(id, cleanData);
@@ -199,60 +195,23 @@ export default function EditCustomerPage() {
               )}
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label
-                htmlFor="taxId"
+                htmlFor="document"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 CPF / CNPJ
               </label>
               <input
-                {...register('taxId')}
+                {...register('document')}
                 type="text"
-                id="taxId"
+                id="document"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="000.000.000-00 ou 00.000.000/0000-00"
                 disabled={isLoading}
               />
-              {errors.taxId && (
-                <p className="mt-1 text-sm text-red-600">{errors.taxId.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                {...register('email')}
-                type="email"
-                id="email"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Telefone
-              </label>
-              <input
-                {...register('phone')}
-                type="tel"
-                id="phone"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-              />
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+              {errors.document && (
+                <p className="mt-1 text-sm text-red-600">{errors.document.message}</p>
               )}
             </div>
           </div>

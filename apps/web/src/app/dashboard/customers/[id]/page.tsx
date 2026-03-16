@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { customersApi, Customer } from '@/lib/api/customers';
+import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
 
 export default function CustomerDetailPage() {
   const router = useRouter();
@@ -55,6 +55,8 @@ export default function CustomerDetailPage() {
     );
   }
 
+  const primaryContact = getPrimaryContact(customer);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -96,15 +98,15 @@ export default function CustomerDetailPage() {
           </div>
           <div>
             <label className="text-sm text-gray-600">Email</label>
-            <p className="text-gray-900 font-medium">{customer.email || '-'}</p>
+            <p className="text-gray-900 font-medium">{primaryContact.email || '-'}</p>
           </div>
           <div>
             <label className="text-sm text-gray-600">Telefone</label>
-            <p className="text-gray-900 font-medium">{customer.phone || '-'}</p>
+            <p className="text-gray-900 font-medium">{primaryContact.phone || '-'}</p>
           </div>
           <div>
             <label className="text-sm text-gray-600">CPF/CNPJ</label>
-            <p className="text-gray-900 font-medium">{customer.taxId || '-'}</p>
+            <p className="text-gray-900 font-medium">{customer.document || '-'}</p>
           </div>
           <div>
             <label className="text-sm text-gray-600">Status</label>
