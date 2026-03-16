@@ -1,5 +1,5 @@
-import { Controller, Get, Patch, Param, Headers, UnauthorizedException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
+import { Controller, Get, Patch, Post, Param, Headers, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth } from '@nestjs/swagger';
 import { CustomerPortalService } from './customer-portal.service';
 
 /**
@@ -12,6 +12,23 @@ import { CustomerPortalService } from './customer-portal.service';
 @Controller('portal')
 export class CustomerPortalController {
   constructor(private readonly customerPortalService: CustomerPortalService) {}
+
+  /**
+   * Gera token de acesso para um cliente (endpoint protegido para admins)
+   */
+  @Post('generate-token/:customerId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Gerar token de acesso ao portal para um cliente' })
+  @ApiResponse({ status: 201, description: 'Token gerado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Cliente não encontrado' })
+  async generateToken(@Param('customerId') customerId: string) {
+    const token = await this.customerPortalService.generateAccessToken(customerId);
+    return {
+      token,
+      portalUrl: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/portal/${token}`,
+      expiresIn: '7 days',
+    };
+  }
 
   /**
    * Valida token e retorna dados do cliente

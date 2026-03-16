@@ -112,4 +112,9 @@ export const customersApi = {
   remove: async (id: string): Promise<void> => {
     await api.delete(`/customers/${id}`);
   },
+
+  generatePortalToken: async (id: string): Promise<{ token: string; portalUrl: string; expiresIn: string }> => {
+    const response = await api.post(`/portal/generate-token/${id}`);
+    return response.data;
+  },
 };
