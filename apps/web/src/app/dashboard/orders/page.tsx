@@ -254,7 +254,7 @@ export default function OrdersPage() {
                         <div className="flex items-center gap-2 mt-1">
                           <UserCircle className="w-4 h-4 text-muted-foreground" />
                           <p className="text-base font-medium text-gray-900">
-                            {order.assignedToUser?.name || 'Não atribuído'}
+                            {order.assignedUser?.name || 'Não atribuído'}
                           </p>
                         </div>
                       </div>

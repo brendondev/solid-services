@@ -7,6 +7,31 @@ export class DebugController {
   constructor(private prisma: PrismaService) {}
 
   @Public()
+  @Post('clean-orphaned-data')
+  async cleanOrphanedData() {
+    try {
+      // Deletar dados órfãos (que não pertencem a nenhum tenant válido)
+      // Ou dados que foram criados com tenant errado durante o bug
+
+      // Contar quantos registros órfãos existem
+      const orphanedOrders = await this.prisma.$queryRaw`
+        SELECT COUNT(*) as count FROM service_orders
+        WHERE tenant_id NOT IN (SELECT id FROM tenants)
+      `;
+
+      return {
+        success: true,
+        message: 'Use este endpoint com cuidado!',
+        orphanedOrders,
+      };
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  @Public()
   @Get('debug')
   async debug() {
     try {

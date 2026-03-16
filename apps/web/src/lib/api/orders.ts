@@ -17,7 +17,7 @@ export interface ServiceOrder {
     id: string;
     name: string;
   };
-  assignedToUser?: {
+  assignedUser?: {
     id: string;
     name: string;
   };
