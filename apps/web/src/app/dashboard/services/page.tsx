@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { servicesApi, Service } from '@/lib/api/services';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Plus,
   Package,
@@ -22,6 +23,13 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'toggle' | null;
+    serviceId: string | null;
+    currentStatus?: string;
+  }>({ isOpen: false, type: null, serviceId: null });
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     loadServices();
@@ -43,31 +51,46 @@ export default function ServicesPage() {
     }
   };
 
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    const action = currentStatus === 'active' ? 'inativar' : 'ativar';
-    if (!confirm(`Tem certeza que deseja ${action} este serviço?`)) {
-      return;
-    }
+  const handleToggleStatusClick = (id: string, currentStatus: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'toggle',
+      serviceId: id,
+      currentStatus,
+    });
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'delete',
+      serviceId: id,
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (!confirmDialog.serviceId || !confirmDialog.type) return;
 
     try {
-      await servicesApi.toggleStatus(id);
+      setIsProcessing(true);
+
+      if (confirmDialog.type === 'toggle') {
+        await servicesApi.toggleStatus(confirmDialog.serviceId);
+      } else if (confirmDialog.type === 'delete') {
+        await servicesApi.remove(confirmDialog.serviceId);
+      }
+
+      setConfirmDialog({ isOpen: false, type: null, serviceId: null });
       await loadServices();
     } catch (err: any) {
-      alert(err.response?.data?.message || `Erro ao ${action} serviço`);
+      alert(err.response?.data?.message || 'Erro ao processar ação');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja EXCLUIR PERMANENTEMENTE este serviço? Esta ação não pode ser desfeita.')) {
-      return;
-    }
-
-    try {
-      await servicesApi.remove(id);
-      await loadServices();
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao excluir serviço');
-    }
+  const handleCancel = () => {
+    setConfirmDialog({ isOpen: false, type: null, serviceId: null });
   };
 
   const formatCurrency = (value: number) => {
@@ -287,7 +310,7 @@ export default function ServicesPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleToggleStatus(service.id, service.status)}
+                    onClick={() => handleToggleStatusClick(service.id, service.status)}
                     className={`p-2 rounded-lg transition-colors ${
                       service.status === 'active'
                         ? 'text-gray-600 hover:bg-gray-100'
@@ -302,7 +325,7 @@ export default function ServicesPage() {
                     )}
                   </button>
                   <button
-                    onClick={() => handleDelete(service.id)}
+                    onClick={() => handleDeleteClick(service.id)}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                     title="Excluir Permanentemente"
                   >
@@ -314,6 +337,36 @@ export default function ServicesPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleCancel}
+        onConfirm={handleConfirm}
+        title={
+          confirmDialog.type === 'delete'
+            ? 'Excluir Serviço'
+            : confirmDialog.currentStatus === 'active'
+            ? 'Inativar Serviço'
+            : 'Ativar Serviço'
+        }
+        message={
+          confirmDialog.type === 'delete'
+            ? 'Tem certeza que deseja excluir permanentemente este serviço?\n\nEsta ação não pode ser desfeita. Se o serviço estiver em uso, você deverá inativá-lo ao invés de excluir.'
+            : confirmDialog.currentStatus === 'active'
+            ? 'Tem certeza que deseja inativar este serviço?\n\nEle não aparecerá mais nas listagens ativas, mas poderá ser reativado depois.'
+            : 'Tem certeza que deseja ativar este serviço?\n\nEle voltará a aparecer nas listagens ativas.'
+        }
+        confirmText={
+          confirmDialog.type === 'delete'
+            ? 'Excluir'
+            : confirmDialog.currentStatus === 'active'
+            ? 'Inativar'
+            : 'Ativar'
+        }
+        cancelText="Cancelar"
+        variant={confirmDialog.type === 'delete' ? 'danger' : 'info'}
+        isLoading={isProcessing}
+      />
     </div>
   );
 }

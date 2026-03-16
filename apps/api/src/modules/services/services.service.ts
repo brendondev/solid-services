@@ -181,9 +181,32 @@ export class ServicesService {
   async remove(id: string) {
     await this.findOne(id);
 
-    return this.prisma.service.delete({
-      where: { id },
-    });
+    // Verificar se o serviço está sendo usado em algum item de orçamento ou ordem
+    const [quotationItemsCount, orderItemsCount] = await Promise.all([
+      this.prisma.quotationItem.count({
+        where: { serviceId: id },
+      }),
+      this.prisma.orderItem.count({
+        where: { serviceId: id },
+      }),
+    ]);
+
+    if (quotationItemsCount > 0 || orderItemsCount > 0) {
+      throw new BadRequestException(
+        `Não é possível excluir este serviço pois ele está sendo usado em ${quotationItemsCount} orçamento(s) e ${orderItemsCount} ordem(ns). Inative-o ao invés de excluir.`
+      );
+    }
+
+    try {
+      return await this.prisma.service.delete({
+        where: { id },
+      });
+    } catch (error: any) {
+      console.error('Error deleting service:', error);
+      throw new BadRequestException(
+        `Não foi possível excluir o serviço: ${error.message || 'Erro desconhecido'}`
+      );
+    }
   }
 
   /**

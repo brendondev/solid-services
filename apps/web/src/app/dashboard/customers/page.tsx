@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Plus,
   Users,
@@ -24,6 +25,11 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    customerId: string | null;
+  }>({ isOpen: false, customerId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadCustomers();
@@ -45,17 +51,27 @@ export default function CustomersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este cliente?')) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setConfirmDialog({ isOpen: true, customerId: id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDialog.customerId) return;
 
     try {
-      await customersApi.remove(id);
+      setIsDeleting(true);
+      await customersApi.remove(confirmDialog.customerId);
+      setConfirmDialog({ isOpen: false, customerId: null });
       await loadCustomers();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao excluir cliente');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmDialog({ isOpen: false, customerId: null });
   };
 
   const getStats = () => {
@@ -266,7 +282,7 @@ export default function CustomersPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(customer.id)}
+                    onClick={() => handleDeleteClick(customer.id)}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                     title="Excluir"
                   >
@@ -279,6 +295,18 @@ export default function CustomersPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Cliente"
+        message="Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
