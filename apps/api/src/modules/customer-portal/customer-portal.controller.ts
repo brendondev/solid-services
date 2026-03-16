@@ -1,6 +1,7 @@
 import { Controller, Get, Patch, Post, Param, Headers, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth } from '@nestjs/swagger';
 import { CustomerPortalService } from './customer-portal.service';
+import { Public } from '@core/auth/decorators';
 
 /**
  * Customer Portal Controller
@@ -44,6 +45,7 @@ export class CustomerPortalController {
   /**
    * Valida token e retorna dados do cliente
    */
+  @Public()
   @Get('auth/validate')
   @ApiOperation({ summary: 'Validar token de acesso do cliente' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -59,6 +61,7 @@ export class CustomerPortalController {
   /**
    * Lista orçamentos do cliente
    */
+  @Public()
   @Get('quotations')
   @ApiOperation({ summary: 'Listar orçamentos do cliente' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -71,6 +74,7 @@ export class CustomerPortalController {
   /**
    * Busca orçamento específico
    */
+  @Public()
   @Get('quotations/:id')
   @ApiOperation({ summary: 'Buscar orçamento específico' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -87,6 +91,7 @@ export class CustomerPortalController {
   /**
    * Aprovar orçamento
    */
+  @Public()
   @Patch('quotations/:id/approve')
   @ApiOperation({ summary: 'Aprovar orçamento' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -103,6 +108,7 @@ export class CustomerPortalController {
   /**
    * Rejeitar orçamento
    */
+  @Public()
   @Patch('quotations/:id/reject')
   @ApiOperation({ summary: 'Rejeitar orçamento' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -119,6 +125,7 @@ export class CustomerPortalController {
   /**
    * Lista ordens do cliente
    */
+  @Public()
   @Get('orders')
   @ApiOperation({ summary: 'Listar ordens de serviço do cliente' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -131,6 +138,7 @@ export class CustomerPortalController {
   /**
    * Busca ordem específica
    */
+  @Public()
   @Get('orders/:id')
   @ApiOperation({ summary: 'Buscar ordem específica' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
@@ -147,6 +155,7 @@ export class CustomerPortalController {
   /**
    * Histórico de serviços
    */
+  @Public()
   @Get('history')
   @ApiOperation({ summary: 'Histórico de serviços do cliente' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
