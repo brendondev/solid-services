@@ -4,6 +4,21 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { financialApi, Receivable, FinancialDashboard } from '@/lib/api/financial';
 import { PaymentModal } from '@/components/financial/PaymentModal';
+import {
+  Plus,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  Eye,
+  Trash2,
+  Loader2,
+  CreditCard,
+  AlertCircle
+} from 'lucide-react';
 
 export default function FinancialPage() {
   const router = useRouter();
@@ -74,56 +89,56 @@ export default function FinancialPage() {
     }).format(value);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'paid':
-        return 'bg-green-100 text-green-700';
-      case 'overdue':
-        return 'bg-red-100 text-red-700';
-      case 'cancelled':
-        return 'bg-gray-100 text-gray-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      pending: 'Pendente',
-      paid: 'Pago',
-      overdue: 'Vencido',
-      cancelled: 'Cancelado',
-    };
-    return labels[status] || status;
+  const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+    pending: {
+      label: 'Pendente',
+      color: 'bg-warning/10 text-warning border-warning/20',
+      icon: Clock
+    },
+    paid: {
+      label: 'Pago',
+      color: 'bg-success/10 text-success border-success/20',
+      icon: CheckCircle
+    },
+    overdue: {
+      label: 'Vencido',
+      color: 'bg-destructive/10 text-destructive border-destructive/20',
+      icon: AlertCircle
+    },
+    cancelled: {
+      label: 'Cancelado',
+      color: 'bg-gray-100 text-gray-700 border-gray-200',
+      icon: XCircle
+    },
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando dados financeiros...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeInUp">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financeiro</h1>
-          <p className="text-gray-600">Contas a receber e pagamentos</p>
+          <h1 className="text-3xl font-bold text-gray-900">Financeiro</h1>
+          <p className="text-muted-foreground mt-1">Contas a receber e pagamentos</p>
         </div>
         <button
           onClick={() => router.push('/dashboard/financial/new')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
         >
-          + Novo Recebível
+          <Plus className="w-5 h-5" />
+          Novo Recebível
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
@@ -131,160 +146,198 @@ export default function FinancialPage() {
       {/* Dashboard Financeiro */}
       {dashboard && dashboard.summary && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Total a Receber</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {formatCurrency(dashboard.summary.totalReceivables || 0)}
-            </p>
+          <div className="bg-white p-6 rounded-lg shadow border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total a Receber</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(dashboard.summary.totalReceivables || 0)}
+                </p>
+              </div>
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <DollarSign className="w-6 h-6 text-primary" />
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Recebido</p>
-            <p className="text-2xl font-bold text-green-600">
-              {formatCurrency(dashboard.summary.paidAmount || 0)}
-            </p>
+
+          <div className="bg-white p-6 rounded-lg shadow border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Recebido</p>
+                <p className="text-2xl font-bold text-success mt-1">
+                  {formatCurrency(dashboard.summary.paidAmount || 0)}
+                </p>
+              </div>
+              <div className="p-3 bg-success/10 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-success" />
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Pendente</p>
-            <p className="text-2xl font-bold text-yellow-600">
-              {formatCurrency(dashboard.summary.pendingAmount || 0)}
-            </p>
+
+          <div className="bg-white p-6 rounded-lg shadow border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Pendente</p>
+                <p className="text-2xl font-bold text-warning mt-1">
+                  {formatCurrency(dashboard.summary.pendingAmount || 0)}
+                </p>
+              </div>
+              <div className="p-3 bg-warning/10 rounded-lg">
+                <Clock className="w-6 h-6 text-warning" />
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow">
-            <p className="text-sm text-gray-600">Vencido</p>
-            <p className="text-2xl font-bold text-red-600">
-              {formatCurrency(dashboard.summary.overdueAmount || 0)}
-            </p>
+
+          <div className="bg-white p-6 rounded-lg shadow border border-border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Vencido</p>
+                <p className="text-2xl font-bold text-destructive mt-1">
+                  {formatCurrency(dashboard.summary.overdueAmount || 0)}
+                </p>
+              </div>
+              <div className="p-3 bg-destructive/10 rounded-lg">
+                <TrendingDown className="w-6 h-6 text-destructive" />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Tabela de Recebíveis */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b">
-          <div className="flex items-center space-x-4">
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todos os status</option>
-              <option value="pending">Pendente</option>
-              <option value="paid">Pago</option>
-              <option value="overdue">Vencido</option>
-              <option value="cancelled">Cancelado</option>
-            </select>
-
-            <div className="text-sm text-gray-600">
-              Total: <span className="font-semibold">{receivables.length}</span>{' '}
-              recebíveis
-            </div>
-          </div>
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow border border-border">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
+          >
+            <option value="">Todos os status</option>
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="overdue">Vencido</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
         </div>
-
-        {receivables.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <p className="text-lg">Nenhum recebível encontrado</p>
-            <p className="text-sm mt-2">Registre um novo recebível</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cliente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Descrição
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valor Total
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Pago
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Vencimento
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {receivables.map((receivable) => (
-                  <tr key={receivable.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {receivable.customer?.name || '-'}
-                      </div>
-                      {receivable.serviceOrder && (
-                        <div className="text-xs text-gray-500">
-                          OS: {receivable.serviceOrder.number}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 max-w-xs truncate">
-                        {receivable.description || '-'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatCurrency(receivable.amount)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-green-600">
-                        {formatCurrency(receivable.paidAmount)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(receivable.dueDate).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
-                          receivable.status
-                        )}`}
-                      >
-                        {getStatusLabel(receivable.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      {receivable.amount > receivable.paidAmount && (
-                        <button
-                          onClick={() => handleOpenPaymentModal(receivable)}
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          Pagar
-                        </button>
-                      )}
-                      <button
-                        onClick={() =>
-                          router.push(`/dashboard/financial/${receivable.id}`)
-                        }
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Ver
-                      </button>
-                      <button
-                        onClick={() => handleDelete(receivable.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Excluir
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
+
+      {/* Receivables List */}
+      {receivables.length === 0 ? (
+        <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
+          <DollarSign className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-xl font-semibold text-gray-900 mb-2">Nenhum recebível encontrado</p>
+          <p className="text-muted-foreground mb-6">Registre um novo recebível</p>
+          <button
+            onClick={() => router.push('/dashboard/financial/new')}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            Adicionar Primeiro Recebível
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {receivables.map((receivable) => {
+            const statusInfo = statusConfig[receivable.status];
+            const StatusIcon = statusInfo?.icon || Clock;
+            const remaining = Number(receivable.amount) - Number(receivable.paidAmount);
+
+            return (
+              <div
+                key={receivable.id}
+                className="bg-white rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <DollarSign className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {receivable.customer?.name || 'Cliente não informado'}
+                        </h3>
+                        {receivable.serviceOrder && (
+                          <p className="text-sm text-muted-foreground">
+                            OS: {receivable.serviceOrder.number}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${statusInfo?.color}`}>
+                        <StatusIcon className="w-3 h-3" />
+                        {statusInfo?.label}
+                      </span>
+                    </div>
+
+                    {receivable.description && (
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {receivable.description}
+                      </p>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valor Total</p>
+                        <p className="text-base font-bold text-gray-900">
+                          {formatCurrency(Number(receivable.amount))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valor Pago</p>
+                        <p className="text-base font-bold text-success">
+                          {formatCurrency(Number(receivable.paidAmount))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">A Receber</p>
+                        <p className="text-base font-bold text-warning">
+                          {formatCurrency(remaining)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Vencimento</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <p className="text-base font-medium text-gray-900">
+                            {new Date(receivable.dueDate).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 ml-4">
+                    {remaining > 0 && (
+                      <button
+                        onClick={() => handleOpenPaymentModal(receivable)}
+                        className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors font-medium"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Registrar Pagamento
+                      </button>
+                    )}
+                    <button
+                      onClick={() => router.push(`/dashboard/financial/${receivable.id}`)}
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Ver detalhes"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(receivable.id)}
+                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Payment Modal */}
       <PaymentModal
