@@ -500,9 +500,16 @@ export class ServiceOrdersService {
   async remove(id: string) {
     await this.findOne(id);
 
-    return this.prisma.serviceOrder.delete({
-      where: { id },
-    });
+    try {
+      return await this.prisma.serviceOrder.delete({
+        where: { id },
+      });
+    } catch (error: any) {
+      console.error('Error deleting service order:', error);
+      throw new BadRequestException(
+        `Não foi possível excluir a ordem: ${error.message || 'Erro desconhecido'}`
+      );
+    }
   }
 
   /**

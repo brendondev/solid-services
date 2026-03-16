@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Plus,
   ClipboardList,
@@ -24,6 +25,11 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    orderId: string | null;
+  }>({ isOpen: false, orderId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -43,17 +49,27 @@ export default function OrdersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta ordem?')) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setConfirmDialog({ isOpen: true, orderId: id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDialog.orderId) return;
 
     try {
-      await ordersApi.remove(id);
+      setIsDeleting(true);
+      await ordersApi.remove(confirmDialog.orderId);
+      setConfirmDialog({ isOpen: false, orderId: null });
       await loadOrders();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao excluir ordem');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmDialog({ isOpen: false, orderId: null });
   };
 
   const formatCurrency = (value: number) => {
@@ -287,7 +303,7 @@ export default function OrdersPage() {
                       Ver Detalhes
                     </button>
                     <button
-                      onClick={() => handleDelete(order.id)}
+                      onClick={() => handleDeleteClick(order.id)}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Excluir"
                     >
@@ -300,6 +316,18 @@ export default function OrdersPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Ordem de Serviço"
+        message="Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
