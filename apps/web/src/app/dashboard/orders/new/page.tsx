@@ -122,11 +122,12 @@ export default function NewOrderPage() {
         quotationId: quotationId || undefined,
         scheduledFor: data.scheduledFor || undefined,
         notes: data.notes || undefined,
-        items: data.items.map((item) => ({
+        items: data.items.map((item, index) => ({
           serviceId: item.serviceId,
           description: item.description,
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
+          order: index + 1,
         })),
       });
 
