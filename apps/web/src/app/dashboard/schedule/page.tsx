@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { schedulingApi, ScheduledOrder } from '@/lib/api/scheduling';
 import { useRouter } from 'next/navigation';
+import { Plus, CalendarIcon, Clock, PlayCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 const locales = {
   'pt-BR': ptBR,
@@ -103,51 +104,61 @@ export default function SchedulePage() {
   if (loading && orders.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando agenda...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeInUp">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-gray-600">Visualize e gerencie os agendamentos</p>
+          <h1 className="text-3xl font-bold text-gray-900">Agenda</h1>
+          <p className="text-muted-foreground mt-1">Visualize e gerencie os agendamentos</p>
         </div>
 
         <button
           onClick={() => router.push('/dashboard/orders/new')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
         >
-          + Nova Ordem
+          <Plus className="w-5 h-5" />
+          Nova Ordem
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
 
       {/* Legenda */}
-      <div className="bg-white p-4 rounded-lg shadow flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }}></div>
-          <span className="text-sm text-gray-600">Agendado</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }}></div>
-          <span className="text-sm text-gray-600">Em Andamento</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }}></div>
-          <span className="text-sm text-gray-600">Concluído</span>
+      <div className="bg-white p-4 rounded-lg shadow border border-border">
+        <div className="flex items-center gap-6 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <CalendarIcon className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="text-sm text-gray-700 font-medium">Agendado</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-warning/10 rounded-lg">
+              <PlayCircle className="w-4 h-4 text-warning" />
+            </div>
+            <span className="text-sm text-gray-700 font-medium">Em Andamento</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-success/10 rounded-lg">
+              <CheckCircle className="w-4 h-4 text-success" />
+            </div>
+            <span className="text-sm text-gray-700 font-medium">Concluído</span>
+          </div>
         </div>
       </div>
 
       {/* Calendário */}
-      <div className="bg-white p-6 rounded-lg shadow" style={{ height: '700px' }}>
+      <div className="bg-white p-6 rounded-lg shadow border border-border" style={{ height: '700px' }}>
         <Calendar
           localizer={localizer}
           events={events}
