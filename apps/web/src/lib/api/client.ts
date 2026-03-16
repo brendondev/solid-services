@@ -13,8 +13,17 @@ api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
 
+    console.log('[API Client] Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
+    });
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      console.warn('[API Client] No token found in localStorage!');
     }
 
     // Adicionar tenant-id ao header se disponível
@@ -36,10 +45,17 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('[API Client] Error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message,
+      url: error.config?.url,
+      method: error.config?.method,
+    });
+
     // Apenas redirecionar para login em caso de 401 (não autenticado)
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        console.error('Token expirado ou inválido, redirecionando para login...');
+        console.error('[API Client] Token expirado ou inválido, redirecionando para login...');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/auth/login';
