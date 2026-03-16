@@ -412,7 +412,7 @@ export default function OrderDetailPage() {
             {order.timeline.map((event, index) => (
               <div key={event.id} className="flex gap-4">
                 <div className="flex-shrink-0 w-3 h-3 mt-2 bg-primary rounded-full"></div>
-                <div className={`flex-1 pb-4 ${index < order.timeline.length - 1 ? 'border-l-2 border-border' : ''} pl-4`}>
+                <div className={`flex-1 pb-4 ${index < (order.timeline?.length || 0) - 1 ? 'border-l-2 border-border' : ''} pl-4`}>
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-semibold text-gray-900">{event.event}</p>
