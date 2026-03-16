@@ -19,26 +19,26 @@ interface ConfirmDialogProps {
 const variantConfig = {
   danger: {
     icon: XCircle,
-    iconColor: 'text-destructive',
-    bgColor: 'bg-destructive/10',
-    buttonVariant: 'destructive' as const,
+    iconColor: 'text-red-600',
+    bgColor: 'bg-red-100',
+    buttonVariant: 'danger' as const,
   },
   warning: {
     icon: AlertTriangle,
-    iconColor: 'text-warning',
-    bgColor: 'bg-warning/10',
-    buttonVariant: 'warning' as const,
+    iconColor: 'text-yellow-600',
+    bgColor: 'bg-yellow-100',
+    buttonVariant: 'primary' as const,
   },
   info: {
     icon: Info,
-    iconColor: 'text-primary',
-    bgColor: 'bg-primary/10',
+    iconColor: 'text-blue-600',
+    bgColor: 'bg-blue-100',
     buttonVariant: 'primary' as const,
   },
   success: {
     icon: CheckCircle,
-    iconColor: 'text-success',
-    bgColor: 'bg-success/10',
+    iconColor: 'text-green-600',
+    bgColor: 'bg-green-100',
     buttonVariant: 'primary' as const,
   },
 };
