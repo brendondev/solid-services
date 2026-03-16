@@ -1,11 +1,13 @@
 import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { PrismaService } from './core/database/prisma.service';
+import { Public } from './core/auth/decorators/public.decorator';
 import * as bcrypt from 'bcrypt';
 
 @Controller('dev')
 export class SeedController {
   constructor(private prisma: PrismaService) {}
 
+  @Public()
   @Post('seed')
   @HttpCode(HttpStatus.OK)
   async runSeed() {
