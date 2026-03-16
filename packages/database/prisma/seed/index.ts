@@ -6,102 +6,134 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Limpar dados existentes (apenas em desenvolvimento!)
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('🗑️  Cleaning existing data...');
-    await prisma.payment.deleteMany();
-    await prisma.receivable.deleteMany();
-    await prisma.attachment.deleteMany();
-    await prisma.orderChecklist.deleteMany();
-    await prisma.orderTimeline.deleteMany();
-    await prisma.orderItem.deleteMany();
-    await prisma.serviceOrder.deleteMany();
-    await prisma.quotationItem.deleteMany();
-    await prisma.quotation.deleteMany();
-    await prisma.service.deleteMany();
-    await prisma.customerAddress.deleteMany();
-    await prisma.customerContact.deleteMany();
-    await prisma.customer.deleteMany();
-    await prisma.auditLog.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.tenant.deleteMany();
+  // Usar tenant existente
+  const TENANT_ID = '1875be3a-c4c5-49fa-aba2-9df95fb152c5';
+
+  console.log('📦 Verificando tenant existente...');
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: TENANT_ID },
+  });
+
+  if (!tenant) {
+    console.error('❌ Tenant não encontrado:', TENANT_ID);
+    process.exit(1);
   }
 
-  // Criar Tenant de demonstração
-  console.log('👔 Creating demo tenant...');
-  const tenant = await prisma.tenant.create({
-    data: {
-      slug: 'demo-company',
-      name: 'Demo Company - Serviços Técnicos',
-      status: 'active',
-      settings: {
-        currency: 'BRL',
-        timezone: 'America/Sao_Paulo',
+  console.log('✅ Tenant encontrado:', tenant.name);
+
+  // Criar ou buscar usuário admin
+  console.log('👤 Criando usuário admin...');
+  const passwordHash = await bcrypt.hash('123456', 10);
+
+  let adminUser = await prisma.user.findFirst({
+    where: {
+      tenantId: tenant.id,
+      email: 'admin@demo.com',
+    },
+  });
+
+  if (!adminUser) {
+    adminUser = await prisma.user.create({
+      data: {
+        tenantId: tenant.id,
+        email: 'admin@demo.com',
+        passwordHash,
+        name: 'Administrador Demo',
+        roles: ['admin'],
+        status: 'active',
       },
+    });
+    console.log('✅ Admin criado: admin@demo.com');
+  } else {
+    console.log('ℹ️  Admin já existe: admin@demo.com');
+  }
+
+  // Criar ou buscar usuário técnico
+  console.log('👷 Criando usuário técnico...');
+  let techUser = await prisma.user.findFirst({
+    where: {
+      tenantId: tenant.id,
+      email: 'tecnico@demo.com',
     },
   });
 
-  // Criar usuário admin
-  console.log('👤 Creating admin user...');
-  const passwordHash = await bcrypt.hash('admin123', 10);
-  await prisma.user.create({
-    data: {
-      tenantId: tenant.id,
-      email: 'admin@democompany.com',
-      passwordHash,
-      name: 'Admin User',
-      roles: ['admin'],
-      status: 'active',
-    },
-  });
-
-  // Criar usuário técnico
-  console.log('👷 Creating technician user...');
-  const techUser = await prisma.user.create({
-    data: {
-      tenantId: tenant.id,
-      email: 'tecnico@democompany.com',
-      passwordHash: await bcrypt.hash('tecnico123', 10),
-      name: 'João Silva',
-      roles: ['technician'],
-      status: 'active',
-    },
-  });
+  if (!techUser) {
+    techUser = await prisma.user.create({
+      data: {
+        tenantId: tenant.id,
+        email: 'tecnico@demo.com',
+        passwordHash,
+        name: 'João Técnico',
+        roles: ['technician'],
+        status: 'active',
+      },
+    });
+    console.log('✅ Técnico criado: tecnico@demo.com');
+  } else {
+    console.log('ℹ️  Técnico já existe: tecnico@demo.com');
+  }
 
   // Criar catálogo de serviços
-  console.log('🛠️  Creating services catalog...');
-  const services = await Promise.all([
-    prisma.service.create({
-      data: {
+  console.log('🛠️  Criando catálogo de serviços...');
+
+  const servicesList = [
+    {
+      name: 'Manutenção Preventiva',
+      description: 'Manutenção preventiva completa de equipamentos',
+      category: 'Manutenção',
+      defaultPrice: 150.00,
+      unit: 'hora',
+      estimatedDuration: 120,
+    },
+    {
+      name: 'Instalação de Equipamento',
+      description: 'Instalação e configuração de equipamentos',
+      category: 'Instalação',
+      defaultPrice: 200.00,
+      unit: 'unidade',
+      estimatedDuration: 180,
+    },
+    {
+      name: 'Reparo de Emergência',
+      description: 'Reparo emergencial com atendimento prioritário',
+      category: 'Reparo',
+      defaultPrice: 300.00,
+      unit: 'hora',
+      estimatedDuration: 240,
+    },
+    {
+      name: 'Consultoria Técnica',
+      description: 'Consultoria técnica especializada',
+      category: 'Consultoria',
+      defaultPrice: 250.00,
+      unit: 'hora',
+      estimatedDuration: 60,
+    },
+  ];
+
+  const services = [];
+  for (const svc of servicesList) {
+    let service = await prisma.service.findFirst({
+      where: {
         tenantId: tenant.id,
-        name: 'Manutenção Preventiva',
-        description: 'Manutenção preventiva completa de equipamentos',
-        defaultPrice: 150.00,
-        estimatedDuration: 120,
-        status: 'active',
+        name: svc.name,
       },
-    }),
-    prisma.service.create({
-      data: {
-        tenantId: tenant.id,
-        name: 'Instalação de Equipamento',
-        description: 'Instalação e configuração de equipamentos',
-        defaultPrice: 200.00,
-        estimatedDuration: 180,
-        status: 'active',
-      },
-    }),
-    prisma.service.create({
-      data: {
-        tenantId: tenant.id,
-        name: 'Reparo de Emergência',
-        description: 'Reparo emergencial com atendimento prioritário',
-        defaultPrice: 300.00,
-        estimatedDuration: 240,
-        status: 'active',
-      },
-    }),
-  ]);
+    });
+
+    if (!service) {
+      service = await prisma.service.create({
+        data: {
+          tenantId: tenant.id,
+          ...svc,
+          status: 'active',
+        },
+      });
+      console.log(`✅ Serviço criado: ${service.name}`);
+    } else {
+      console.log(`ℹ️  Serviço já existe: ${service.name}`);
+    }
+    services.push(service);
+  }
 
   // Criar clientes
   console.log('👥 Creating customers...');
@@ -280,11 +312,12 @@ async function main() {
     },
   });
 
-  console.log('✅ Seed completed successfully!');
-  console.log('\n📊 Demo credentials:');
-  console.log('  Admin: admin@democompany.com / admin123');
-  console.log('  Technician: tecnico@democompany.com / tecnico123');
-  console.log('\n🏢 Tenant: demo-company');
+  console.log('\n✅ Seed concluído com sucesso!');
+  console.log('\n📊 Credenciais de acesso:');
+  console.log('  👤 Admin: admin@demo.com / 123456');
+  console.log('  👷 Técnico: tecnico@demo.com / 123456');
+  console.log(`\n🏢 Tenant ID: ${tenant.id}`);
+  console.log(`📦 Tenant: ${tenant.slug}`);
 }
 
 main()
