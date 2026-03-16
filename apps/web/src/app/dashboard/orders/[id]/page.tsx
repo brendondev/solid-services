@@ -56,7 +56,8 @@ export default function OrderDetailPage() {
   };
 
   const handleStatusChange = async (status: string) => {
-    if (!confirm(`Tem certeza que deseja mudar o status para "${getStatusLabel(status)}"?`)) {
+    const statusLabel = statusConfig[status]?.label || status;
+    if (!confirm(`Tem certeza que deseja mudar o status para "${statusLabel}"?`)) {
       return;
     }
 
