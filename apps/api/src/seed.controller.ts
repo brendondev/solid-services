@@ -90,33 +90,25 @@ export class SeedController {
         {
           name: 'Manutenção Preventiva',
           description: 'Manutenção preventiva completa de equipamentos',
-          category: 'Manutenção',
           defaultPrice: 150.0,
-          unit: 'hora',
           estimatedDuration: 120,
         },
         {
           name: 'Instalação de Equipamento',
           description: 'Instalação e configuração de equipamentos',
-          category: 'Instalação',
           defaultPrice: 200.0,
-          unit: 'unidade',
           estimatedDuration: 180,
         },
         {
           name: 'Reparo de Emergência',
           description: 'Reparo emergencial com atendimento prioritário',
-          category: 'Reparo',
           defaultPrice: 300.0,
-          unit: 'hora',
           estimatedDuration: 240,
         },
         {
           name: 'Consultoria Técnica',
           description: 'Consultoria técnica especializada',
-          category: 'Consultoria',
           defaultPrice: 250.0,
-          unit: 'hora',
           estimatedDuration: 60,
         },
       ];
