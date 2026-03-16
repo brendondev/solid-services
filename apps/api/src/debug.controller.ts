@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { PrismaService } from './core/database/prisma.service';
 import { Public } from './core/auth/decorators/public.decorator';
 
