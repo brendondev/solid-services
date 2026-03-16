@@ -31,6 +31,7 @@ export default function DashboardMainPage() {
   const loadDashboard = async () => {
     try {
       setLoading(true);
+      setError('');
       const [dashboardData, quickData] = await Promise.all([
         dashboardApi.getOperationalDashboard(),
         dashboardApi.getQuickStats(),
@@ -38,6 +39,7 @@ export default function DashboardMainPage() {
       setStats(dashboardData);
       setQuickStats(quickData);
     } catch (err: any) {
+      console.error('Erro ao carregar dashboard:', err);
       setError(err.response?.data?.message || 'Erro ao carregar dashboard');
     } finally {
       setLoading(false);
@@ -54,21 +56,46 @@ export default function DashboardMainPage() {
 
   if (error) {
     return (
-      <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
-        {error}
+      <div className="space-y-4 p-6">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
+          <p className="font-semibold">Erro ao carregar dashboard</p>
+          <p className="text-sm mt-1">{error}</p>
+        </div>
+        <button
+          onClick={loadDashboard}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }
 
-  if (!stats || !quickStats || !quickStats.today || !quickStats.thisWeek || !quickStats.thisMonth) {
+  if (!stats || !quickStats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">
-          {error ? error : 'Carregando dados do dashboard...'}
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Carregando dados do dashboard...</p>
         </div>
       </div>
     );
   }
+
+  // Garantir valores padrão para evitar erros
+  const safeStats = {
+    summary: stats.summary || { customersCount: 0, servicesCount: 0, activeOrdersCount: 0, pendingReceivablesAmount: 0 },
+    quotations: safeStats.quotations || { draft: 0, sent: 0, approved: 0, rejected: 0 },
+    orders: safeStats.orders || { open: 0, scheduled: 0, in_progress: 0, completed: 0 },
+    recentOrders: safeStats.recentOrders || [],
+    upcomingOrders: safeStats.upcomingOrders || []
+  };
+
+  const safeQuickStats = {
+    today: safeQuickStats.today || { scheduledOrders: 0, completedOrders: 0, paymentsReceived: 0, paymentsAmount: 0 },
+    thisWeek: safeQuickStats.thisWeek || { newCustomers: 0, quotationsSent: 0, ordersCompleted: 0, revenue: 0 },
+    thisMonth: safeQuickStats.thisMonth || { totalOrders: 0, completedOrders: 0, totalRevenue: 0, pendingReceivables: 0 }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -91,7 +118,7 @@ export default function DashboardMainPage() {
             <div>
               <p className="text-sm text-muted-foreground">Clientes Ativos</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">
-                {stats.summary.customersCount}
+                {safeStats.summary.customersCount}
               </p>
             </div>
             <div className="p-3 bg-primary/10 rounded-lg">
@@ -105,7 +132,7 @@ export default function DashboardMainPage() {
             <div>
               <p className="text-sm text-muted-foreground">Serviços Cadastrados</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">
-                {stats.summary.servicesCount}
+                {safeStats.summary.servicesCount}
               </p>
             </div>
             <div className="p-3 bg-accent rounded-lg">
@@ -119,7 +146,7 @@ export default function DashboardMainPage() {
             <div>
               <p className="text-sm text-muted-foreground">Ordens Ativas</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">
-                {stats.summary.activeOrdersCount}
+                {safeStats.summary.activeOrdersCount}
               </p>
             </div>
             <div className="p-3 bg-warning/10 rounded-lg">
@@ -133,7 +160,7 @@ export default function DashboardMainPage() {
             <div>
               <p className="text-sm text-muted-foreground">A Receber</p>
               <p className="text-2xl font-bold text-success mt-1">
-                {formatCurrency(stats.summary.pendingReceivablesAmount)}
+                {formatCurrency(safeStats.summary.pendingReceivablesAmount)}
               </p>
             </div>
             <div className="p-3 bg-success/10 rounded-lg">
@@ -156,25 +183,25 @@ export default function DashboardMainPage() {
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Ordens Agendadas</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.today.scheduledOrders}
+                {safeQuickStats.today.scheduledOrders}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Ordens Concluídas</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.today.completedOrders}
+                {safeQuickStats.today.completedOrders}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Pagamentos</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.today.paymentsReceived}
+                {safeQuickStats.today.paymentsReceived}
               </span>
             </div>
             <div className="flex justify-between border-t border-border pt-3 mt-3">
               <span className="text-sm font-medium text-gray-900">Total Recebido</span>
               <span className="font-bold text-success">
-                {formatCurrency(quickStats.today.paymentsAmount)}
+                {formatCurrency(safeQuickStats.today.paymentsAmount)}
               </span>
             </div>
           </div>
@@ -191,25 +218,25 @@ export default function DashboardMainPage() {
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Novos Clientes</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.thisWeek.newCustomers}
+                {safeQuickStats.thisWeek.newCustomers}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Orçamentos Enviados</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.thisWeek.quotationsSent}
+                {safeQuickStats.thisWeek.quotationsSent}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Serviços Completos</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.thisWeek.ordersCompleted}
+                {safeQuickStats.thisWeek.ordersCompleted}
               </span>
             </div>
             <div className="flex justify-between border-t border-border pt-3 mt-3">
               <span className="text-sm font-medium text-gray-900">Receita</span>
               <span className="font-bold text-success">
-                {formatCurrency(quickStats.thisWeek.revenue)}
+                {formatCurrency(safeQuickStats.thisWeek.revenue)}
               </span>
             </div>
           </div>
@@ -226,25 +253,25 @@ export default function DashboardMainPage() {
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Total de Ordens</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.thisMonth.totalOrders}
+                {safeQuickStats.thisMonth.totalOrders}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Ordens Concluídas</span>
               <span className="font-semibold text-gray-900">
-                {quickStats.thisMonth.completedOrders}
+                {safeQuickStats.thisMonth.completedOrders}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Receita Total</span>
               <span className="font-semibold text-success">
-                {formatCurrency(quickStats.thisMonth.totalRevenue)}
+                {formatCurrency(safeQuickStats.thisMonth.totalRevenue)}
               </span>
             </div>
             <div className="flex justify-between border-t border-border pt-3 mt-3">
               <span className="text-sm font-medium text-gray-900">Pendente</span>
               <span className="font-bold text-warning">
-                {formatCurrency(quickStats.thisMonth.pendingReceivables)}
+                {formatCurrency(safeQuickStats.thisMonth.pendingReceivables)}
               </span>
             </div>
           </div>
@@ -269,7 +296,7 @@ export default function DashboardMainPage() {
                 Rascunho
               </span>
               <span className="px-3 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded-full text-sm font-medium">
-                {stats.quotations.draft}
+                {safeStats.quotations.draft}
               </span>
             </div>
             <div className="flex justify-between items-center p-2 hover:bg-muted/50 rounded-lg transition-colors">
@@ -278,7 +305,7 @@ export default function DashboardMainPage() {
                 Enviados
               </span>
               <span className="px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded-full text-sm font-medium">
-                {stats.quotations.sent}
+                {safeStats.quotations.sent}
               </span>
             </div>
             <div className="flex justify-between items-center p-2 hover:bg-muted/50 rounded-lg transition-colors">
@@ -287,7 +314,7 @@ export default function DashboardMainPage() {
                 Aprovados
               </span>
               <span className="px-3 py-1 bg-success/10 text-success border border-success/20 rounded-full text-sm font-medium">
-                {stats.quotations.approved}
+                {safeStats.quotations.approved}
               </span>
             </div>
             <div className="flex justify-between items-center p-2 hover:bg-muted/50 rounded-lg transition-colors">
@@ -296,7 +323,7 @@ export default function DashboardMainPage() {
                 Rejeitados
               </span>
               <span className="px-3 py-1 bg-destructive/10 text-destructive border border-destructive/20 rounded-full text-sm font-medium">
-                {stats.quotations.rejected}
+                {safeStats.quotations.rejected}
               </span>
             </div>
           </div>
@@ -318,7 +345,7 @@ export default function DashboardMainPage() {
                 Abertas
               </span>
               <span className="px-3 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded-full text-sm font-medium">
-                {stats.orders.open}
+                {safeStats.orders.open}
               </span>
             </div>
             <div className="flex justify-between items-center p-2 hover:bg-muted/50 rounded-lg transition-colors">
@@ -327,7 +354,7 @@ export default function DashboardMainPage() {
                 Agendadas
               </span>
               <span className="px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded-full text-sm font-medium">
-                {stats.orders.scheduled}
+                {safeStats.orders.scheduled}
               </span>
             </div>
             <div className="flex justify-between items-center p-2 hover:bg-muted/50 rounded-lg transition-colors">
@@ -336,7 +363,7 @@ export default function DashboardMainPage() {
                 Em Andamento
               </span>
               <span className="px-3 py-1 bg-warning/10 text-warning border border-warning/20 rounded-full text-sm font-medium">
-                {stats.orders.in_progress}
+                {safeStats.orders.in_progress}
               </span>
             </div>
             <div className="flex justify-between items-center p-2 hover:bg-muted/50 rounded-lg transition-colors">
@@ -345,7 +372,7 @@ export default function DashboardMainPage() {
                 Concluídas
               </span>
               <span className="px-3 py-1 bg-success/10 text-success border border-success/20 rounded-full text-sm font-medium">
-                {stats.orders.completed}
+                {safeStats.orders.completed}
               </span>
             </div>
           </div>
@@ -358,11 +385,11 @@ export default function DashboardMainPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Ordens Recentes
           </h3>
-          {stats.recentOrders.length === 0 ? (
+          {safeStats.recentOrders.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhuma ordem recente</p>
           ) : (
             <div className="space-y-3">
-              {stats.recentOrders.map((order) => (
+              {safeStats.recentOrders.map((order) => (
                 <div
                   key={order.id}
                   className="flex items-center justify-between border-b border-border pb-3 last:border-b-0 hover:bg-muted/50 p-2 rounded-lg transition-colors"
@@ -394,11 +421,11 @@ export default function DashboardMainPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Próximos Agendamentos
           </h3>
-          {stats.upcomingOrders.length === 0 ? (
+          {safeStats.upcomingOrders.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum agendamento próximo</p>
           ) : (
             <div className="space-y-3">
-              {stats.upcomingOrders.map((order) => (
+              {safeStats.upcomingOrders.map((order) => (
                 <div
                   key={order.id}
                   className="flex items-center justify-between border-b border-border pb-3 last:border-b-0 hover:bg-muted/50 p-2 rounded-lg transition-colors"
