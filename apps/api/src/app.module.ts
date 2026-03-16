@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
+import { SeedController } from './seed.controller';
 import { RolesGuard } from '@core/auth';
 
 // Core modules
@@ -28,7 +29,7 @@ import { AuditModule } from './modules/audit';
 import { TenantMiddleware } from './common/middleware';
 
 @Module({
-  controllers: [AppController],
+  controllers: [AppController, SeedController],
   imports: [
     // Configuration
     ConfigModule.forRoot({
