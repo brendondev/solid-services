@@ -176,7 +176,7 @@ export class SeedController {
                 {
                   street: 'Rua das Flores',
                   number: '123',
-                  neighborhood: 'Centro',
+                  district: 'Centro',
                   city: 'São Paulo',
                   state: 'SP',
                   zipCode: '01234-567',
@@ -222,7 +222,7 @@ export class SeedController {
                   street: 'Av. Paulista',
                   number: '1000',
                   complement: 'Sala 501',
-                  neighborhood: 'Bela Vista',
+                  district: 'Bela Vista',
                   city: 'São Paulo',
                   state: 'SP',
                   zipCode: '01310-100',
@@ -389,7 +389,7 @@ export class SeedController {
       return {
         success: false,
         message: 'Erro ao executar seed',
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
   }
