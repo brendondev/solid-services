@@ -318,9 +318,9 @@ export default function FinancialPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => router.push(`/dashboard/financial/${receivable.id}`)}
+                      onClick={() => handleOpenPaymentModal(receivable)}
                       className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Ver detalhes"
+                      title="Ver pagamentos"
                     >
                       <Eye className="w-5 h-5" />
                     </button>

@@ -498,11 +498,7 @@ export class ServiceOrdersService {
    * Remove uma ordem
    */
   async remove(id: string) {
-    const order = await this.findOne(id);
-
-    if (order.status === 'completed') {
-      throw new BadRequestException('Cannot delete completed order');
-    }
+    await this.findOne(id);
 
     return this.prisma.serviceOrder.delete({
       where: { id },

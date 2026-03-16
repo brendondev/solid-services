@@ -63,6 +63,11 @@ export const servicesApi = {
     return response.data;
   },
 
+  toggleStatus: async (id: string): Promise<Service> => {
+    const response = await api.patch(`/services/${id}/toggle-status`);
+    return response.data;
+  },
+
   remove: async (id: string): Promise<void> => {
     await api.delete(`/services/${id}`);
   },

@@ -162,17 +162,27 @@ export class ServicesService {
   }
 
   /**
-   * Remove um serviço (soft delete via status)
+   * Alterna o status de um serviço (ativo/inativo)
    */
-  async remove(id: string) {
-    // Verificar se existe
-    await this.findOne(id);
+  async toggleStatus(id: string) {
+    const service = await this.findOne(id);
 
     return this.prisma.service.update({
       where: { id },
       data: {
-        status: 'inactive',
+        status: service.status === 'active' ? 'inactive' : 'active',
       },
+    });
+  }
+
+  /**
+   * Remove um serviço permanentemente
+   */
+  async remove(id: string) {
+    await this.findOne(id);
+
+    return this.prisma.service.delete({
+      where: { id },
     });
   }
 

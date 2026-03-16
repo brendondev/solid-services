@@ -43,8 +43,22 @@ export default function ServicesPage() {
     }
   };
 
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    const action = currentStatus === 'active' ? 'inativar' : 'ativar';
+    if (!confirm(`Tem certeza que deseja ${action} este serviço?`)) {
+      return;
+    }
+
+    try {
+      await servicesApi.toggleStatus(id);
+      await loadServices();
+    } catch (err: any) {
+      alert(err.response?.data?.message || `Erro ao ${action} serviço`);
+    }
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este serviço?')) {
+    if (!confirm('Tem certeza que deseja EXCLUIR PERMANENTEMENTE este serviço? Esta ação não pode ser desfeita.')) {
       return;
     }
 
@@ -273,9 +287,24 @@ export default function ServicesPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
+                    onClick={() => handleToggleStatus(service.id, service.status)}
+                    className={`p-2 rounded-lg transition-colors ${
+                      service.status === 'active'
+                        ? 'text-gray-600 hover:bg-gray-100'
+                        : 'text-success hover:bg-success/10'
+                    }`}
+                    title={service.status === 'active' ? 'Inativar' : 'Ativar'}
+                  >
+                    {service.status === 'active' ? (
+                      <XCircle className="w-5 h-5" />
+                    ) : (
+                      <CheckCircle className="w-5 h-5" />
+                    )}
+                  </button>
+                  <button
                     onClick={() => handleDelete(service.id)}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                    title="Excluir"
+                    title="Excluir Permanentemente"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>

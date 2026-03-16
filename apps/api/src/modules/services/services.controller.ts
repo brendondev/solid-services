@@ -89,9 +89,17 @@ export class ServicesController {
     return this.servicesService.update(id, updateServiceDto);
   }
 
+  @Patch(':id/toggle-status')
+  @ApiOperation({ summary: 'Alternar status do serviço (ativar/desativar)' })
+  @ApiResponse({ status: 200, description: 'Status alterado' })
+  @ApiResponse({ status: 404, description: 'Serviço não encontrado' })
+  toggleStatus(@Param('id') id: string) {
+    return this.servicesService.toggleStatus(id);
+  }
+
   @Delete(':id')
-  @ApiOperation({ summary: 'Desativar serviço' })
-  @ApiResponse({ status: 200, description: 'Serviço desativado' })
+  @ApiOperation({ summary: 'Excluir serviço permanentemente' })
+  @ApiResponse({ status: 200, description: 'Serviço excluído' })
   @ApiResponse({ status: 404, description: 'Serviço não encontrado' })
   remove(@Param('id') id: string) {
     return this.servicesService.remove(id);
