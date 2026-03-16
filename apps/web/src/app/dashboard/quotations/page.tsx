@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { quotationsApi, Quotation } from '@/lib/api/quotations';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Plus,
   FileText,
@@ -22,6 +23,11 @@ export default function QuotationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    quotationId: string | null;
+  }>({ isOpen: false, quotationId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadQuotations();
@@ -43,17 +49,27 @@ export default function QuotationsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este orçamento?')) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setConfirmDialog({ isOpen: true, quotationId: id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDialog.quotationId) return;
 
     try {
-      await quotationsApi.remove(id);
+      setIsDeleting(true);
+      await quotationsApi.remove(confirmDialog.quotationId);
+      setConfirmDialog({ isOpen: false, quotationId: null });
       await loadQuotations();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao excluir orçamento');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmDialog({ isOpen: false, quotationId: null });
   };
 
   const formatCurrency = (value: number) => {
@@ -267,7 +283,7 @@ export default function QuotationsPage() {
                       Ver Detalhes
                     </button>
                     <button
-                      onClick={() => handleDelete(quotation.id)}
+                      onClick={() => handleDeleteClick(quotation.id)}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Excluir"
                     >
@@ -280,6 +296,18 @@ export default function QuotationsPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Orçamento"
+        message="Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

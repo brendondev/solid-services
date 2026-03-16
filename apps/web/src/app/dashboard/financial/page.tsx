@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { financialApi, Receivable, FinancialDashboard } from '@/lib/api/financial';
 import { PaymentModal } from '@/components/financial/PaymentModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   Plus,
   DollarSign,
@@ -29,6 +30,11 @@ export default function FinancialPage() {
   const [filter, setFilter] = useState<string>('');
   const [selectedReceivable, setSelectedReceivable] = useState<Receivable | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    receivableId: string | null;
+  }>({ isOpen: false, receivableId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -55,17 +61,27 @@ export default function FinancialPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este recebível?')) {
-      return;
-    }
+  const handleDeleteClick = (id: string) => {
+    setConfirmDialog({ isOpen: true, receivableId: id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDialog.receivableId) return;
 
     try {
-      await financialApi.removeReceivable(id);
+      setIsDeleting(true);
+      await financialApi.removeReceivable(confirmDialog.receivableId);
+      setConfirmDialog({ isOpen: false, receivableId: null });
       await loadData();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao excluir recebível');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setConfirmDialog({ isOpen: false, receivableId: null });
   };
 
   const handleOpenPaymentModal = (receivable: Receivable) => {
@@ -325,7 +341,7 @@ export default function FinancialPage() {
                       <Eye className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(receivable.id)}
+                      onClick={() => handleDeleteClick(receivable.id)}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Excluir"
                     >
@@ -345,6 +361,18 @@ export default function FinancialPage() {
         onClose={handleClosePaymentModal}
         receivable={selectedReceivable}
         onSuccess={handlePaymentSuccess}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Recebível"
+        message="Tem certeza que deseja excluir este recebível? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        isLoading={isDeleting}
       />
     </div>
   );
