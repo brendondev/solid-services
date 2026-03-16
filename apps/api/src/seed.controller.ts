@@ -12,6 +12,7 @@ export class SeedController {
   @HttpCode(HttpStatus.OK)
   async runSeed() {
     try {
+      // Seed para popular banco de dados com dados mockup
       console.log('🌱 Iniciando seed via endpoint...');
 
       // Usar tenant existente
