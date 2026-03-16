@@ -7,12 +7,26 @@ const api = axios.create({
   },
 });
 
-// Interceptor para adicionar token
+// Interceptor para adicionar token e tenant-id
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Adicionar tenant-id ao header se disponível
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        if (userData.tenantId) {
+          config.headers['X-Tenant-ID'] = userData.tenantId;
+        }
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
     }
   }
   return config;

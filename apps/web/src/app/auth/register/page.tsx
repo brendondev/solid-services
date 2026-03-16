@@ -13,8 +13,8 @@ const registerSchema = z.object({
     .string()
     .min(3, 'Slug deve ter no mínimo 3 caracteres')
     .regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
-  adminName: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
-  adminEmail: z.string().email('Email inválido'),
+  name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
 });
 
@@ -148,22 +148,22 @@ export default function RegisterPage() {
             {/* Nome do Administrador */}
             <div>
               <label
-                htmlFor="adminName"
+                htmlFor="name"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 Seu Nome
               </label>
               <input
-                {...register('adminName')}
+                {...register('name')}
                 type="text"
-                id="adminName"
+                id="name"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="João Silva"
                 disabled={isLoading}
               />
-              {errors.adminName && (
+              {errors.name && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.adminName.message}
+                  {errors.name.message}
                 </p>
               )}
             </div>
@@ -171,22 +171,22 @@ export default function RegisterPage() {
             {/* Email */}
             <div>
               <label
-                htmlFor="adminEmail"
+                htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 Email
               </label>
               <input
-                {...register('adminEmail')}
+                {...register('email')}
                 type="email"
-                id="adminEmail"
+                id="email"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="joao@minhaempresa.com"
                 disabled={isLoading}
               />
-              {errors.adminEmail && (
+              {errors.email && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.adminEmail.message}
+                  {errors.email.message}
                 </p>
               )}
             </div>
