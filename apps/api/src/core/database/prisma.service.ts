@@ -79,9 +79,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           params.action === 'aggregate'
         ) {
           if (params.args.where) {
-            if (params.args.where.tenantId === undefined) {
-              params.args.where.tenantId = tenantId;
-            }
+            // SEMPRE forçar o tenantId do contexto (segurança!)
+            params.args.where.tenantId = tenantId;
           } else {
             params.args.where = { tenantId };
           }
@@ -89,9 +88,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
         // Injetar tenant_id em queries de escrita
         if (params.action === 'create') {
-          if (params.args.data.tenantId === undefined) {
-            params.args.data.tenantId = tenantId;
-          }
+          // SEMPRE forçar o tenantId do contexto (segurança!)
+          params.args.data.tenantId = tenantId;
         }
 
         if (params.action === 'createMany') {
