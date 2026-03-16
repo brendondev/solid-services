@@ -85,16 +85,16 @@ export default function DashboardMainPage() {
   // Garantir valores padrão para evitar erros
   const safeStats = {
     summary: stats.summary || { customersCount: 0, servicesCount: 0, activeOrdersCount: 0, pendingReceivablesAmount: 0 },
-    quotations: safeStats.quotations || { draft: 0, sent: 0, approved: 0, rejected: 0 },
-    orders: safeStats.orders || { open: 0, scheduled: 0, in_progress: 0, completed: 0 },
-    recentOrders: safeStats.recentOrders || [],
-    upcomingOrders: safeStats.upcomingOrders || []
+    quotations: stats.quotations || { draft: 0, sent: 0, approved: 0, rejected: 0 },
+    orders: stats.orders || { open: 0, scheduled: 0, in_progress: 0, completed: 0 },
+    recentOrders: stats.recentOrders || [],
+    upcomingOrders: stats.upcomingOrders || []
   };
 
   const safeQuickStats = {
-    today: safeQuickStats.today || { scheduledOrders: 0, completedOrders: 0, paymentsReceived: 0, paymentsAmount: 0 },
-    thisWeek: safeQuickStats.thisWeek || { newCustomers: 0, quotationsSent: 0, ordersCompleted: 0, revenue: 0 },
-    thisMonth: safeQuickStats.thisMonth || { totalOrders: 0, completedOrders: 0, totalRevenue: 0, pendingReceivables: 0 }
+    today: quickStats.today || { scheduledOrders: 0, completedOrders: 0, paymentsReceived: 0, paymentsAmount: 0 },
+    thisWeek: quickStats.thisWeek || { newCustomers: 0, quotationsSent: 0, ordersCompleted: 0, revenue: 0 },
+    thisMonth: quickStats.thisMonth || { totalOrders: 0, completedOrders: 0, totalRevenue: 0, pendingReceivables: 0 }
   };
 
   const formatCurrency = (value: number) => {
