@@ -3,6 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { customersApi, Customer } from '@/lib/api/customers';
+import {
+  Plus,
+  Users,
+  Building2,
+  User,
+  Eye,
+  Edit,
+  Trash2,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Mail,
+  Phone
+} from 'lucide-react';
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -44,156 +58,224 @@ export default function CustomersPage() {
     }
   };
 
+  const getStats = () => {
+    const total = customers.length;
+    const active = customers.filter(c => c.status === 'active').length;
+    const companies = customers.filter(c => c.type === 'company').length;
+    const individuals = customers.filter(c => c.type === 'individual').length;
+
+    return { total, active, companies, individuals };
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando clientes...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
+  const stats = getStats();
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeInUp">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
-          <p className="text-gray-600">Gerencie seus clientes</p>
+          <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
+          <p className="text-muted-foreground mt-1">Gerencie sua base de clientes</p>
         </div>
         <button
           onClick={() => router.push('/dashboard/customers/new')}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
         >
-          + Novo Cliente
+          <Plus className="w-5 h-5" />
+          Novo Cliente
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b">
-          <div className="flex items-center space-x-4">
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todos os status</option>
-              <option value="active">Ativos</option>
-              <option value="inactive">Inativos</option>
-            </select>
-
-            <div className="text-sm text-gray-600">
-              Total: <span className="font-semibold">{customers.length}</span> clientes
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total de Clientes</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+            </div>
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <Users className="w-6 h-6 text-primary" />
             </div>
           </div>
         </div>
 
-        {customers.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <p className="text-lg">Nenhum cliente encontrado</p>
-            <p className="text-sm mt-2">Comece adicionando um novo cliente</p>
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Clientes Ativos</p>
+              <p className="text-2xl font-bold text-success mt-1">{stats.active}</p>
+            </div>
+            <div className="p-3 bg-success/10 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-success" />
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nome
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tipo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Telefone
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {customers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {customer.name}
-                      </div>
-                      {customer.taxId && (
-                        <div className="text-xs text-gray-500">
-                          {customer.taxId}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          customer.type === 'company'
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}
-                      >
-                        {customer.type === 'company' ? 'Empresa' : 'Pessoa Física'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {customer.email || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {customer.phone || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          customer.status === 'active'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {customer.status === 'active' ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() =>
-                          router.push(`/dashboard/customers/${customer.id}`)
-                        }
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Ver
-                      </button>
-                      <button
-                        onClick={() =>
-                          router.push(`/dashboard/customers/${customer.id}/edit`)
-                        }
-                        className="text-yellow-600 hover:text-yellow-900"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(customer.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Excluir
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Empresas</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.companies}</p>
+            </div>
+            <div className="p-3 bg-accent rounded-lg">
+              <Building2 className="w-6 h-6 text-accent-foreground" />
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Pessoas Físicas</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.individuals}</p>
+            </div>
+            <div className="p-3 bg-secondary rounded-lg">
+              <User className="w-6 h-6 text-secondary-foreground" />
+            </div>
+          </div>
+        </div>
       </div>
+
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow border border-border">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
+          >
+            <option value="">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="inactive">Inativos</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Customers List */}
+      {customers.length === 0 ? (
+        <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
+          <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-xl font-semibold text-gray-900 mb-2">Nenhum cliente encontrado</p>
+          <p className="text-muted-foreground mb-6">Comece adicionando seu primeiro cliente</p>
+          <button
+            onClick={() => router.push('/dashboard/customers/new')}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            Adicionar Primeiro Cliente
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {customers.map((customer) => (
+            <div
+              key={customer.id}
+              className="bg-white rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      {customer.type === 'company' ? (
+                        <Building2 className="w-5 h-5 text-primary" />
+                      ) : (
+                        <User className="w-5 h-5 text-primary" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {customer.name}
+                      </h3>
+                      {customer.document && (
+                        <p className="text-sm text-muted-foreground">{customer.document}</p>
+                      )}
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                      customer.type === 'company'
+                        ? 'bg-accent/10 text-accent border-accent/20'
+                        : 'bg-primary/10 text-primary border-primary/20'
+                    }`}>
+                      {customer.type === 'company' ? 'Empresa' : 'Pessoa Física'}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${
+                      customer.status === 'active'
+                        ? 'bg-success/10 text-success border-success/20'
+                        : 'bg-gray-100 text-gray-700 border-gray-200'
+                    }`}>
+                      {customer.status === 'active' ? (
+                        <>
+                          <CheckCircle className="w-3 h-3" />
+                          Ativo
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-3 h-3" />
+                          Inativo
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {customer.email && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-gray-900">{customer.email}</span>
+                      </div>
+                    )}
+                    {customer.phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-gray-900">{customer.phone}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 ml-4">
+                  <button
+                    onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Ver
+                  </button>
+                  <button
+                    onClick={() => router.push(`/dashboard/customers/${customer.id}/edit`)}
+                    className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
+                    title="Editar"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(customer.id)}
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
