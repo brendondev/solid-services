@@ -40,12 +40,12 @@ export const servicesApi = {
 
   findActive: async (): Promise<Service[]> => {
     const response = await api.get('/services/active');
-    return response.data.data || [];
+    return response.data || [];
   },
 
   findMostUsed: async (limit: number = 10): Promise<Service[]> => {
     const response = await api.get(`/services/most-used?limit=${limit}`);
-    return response.data.data || [];
+    return response.data || [];
   },
 
   findOne: async (id: string): Promise<Service> => {
