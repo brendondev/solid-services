@@ -3,6 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
+import {
+  ArrowLeft,
+  Calendar,
+  PlayCircle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  User,
+  DollarSign,
+  Package,
+  Loader2,
+  Plus,
+  Square,
+  CheckSquare
+} from 'lucide-react';
 
 export default function OrderDetailPage() {
   const router = useRouter();
@@ -118,89 +133,100 @@ export default function OrderDetailPage() {
     }).format(value);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open':
-        return 'bg-gray-100 text-gray-700';
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-700';
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'completed':
-        return 'bg-green-100 text-green-700';
-      case 'cancelled':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      open: 'Aberta',
-      scheduled: 'Agendada',
-      in_progress: 'Em Andamento',
-      completed: 'Concluída',
-      cancelled: 'Cancelada',
-    };
-    return labels[status] || status;
+  const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+    open: {
+      label: 'Aberta',
+      color: 'bg-gray-100 text-gray-700 border-gray-200',
+      icon: Clock
+    },
+    scheduled: {
+      label: 'Agendada',
+      color: 'bg-blue-100 text-blue-700 border-blue-200',
+      icon: Calendar
+    },
+    in_progress: {
+      label: 'Em Andamento',
+      color: 'bg-warning/10 text-warning border-warning/20',
+      icon: PlayCircle
+    },
+    completed: {
+      label: 'Concluída',
+      color: 'bg-success/10 text-success border-success/20',
+      icon: CheckCircle
+    },
+    cancelled: {
+      label: 'Cancelada',
+      color: 'bg-destructive/10 text-destructive border-destructive/20',
+      icon: XCircle
+    },
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando ordem...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className="space-y-6">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           {error || 'Ordem não encontrada'}
         </div>
         <button
           onClick={() => router.push('/dashboard/orders')}
-          className="text-blue-600 hover:text-blue-700"
+          className="text-primary hover:underline flex items-center gap-2"
         >
-          ← Voltar para ordens
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para ordens
         </button>
       </div>
     );
   }
 
+  const statusInfo = statusConfig[order.status];
+  const StatusIcon = statusInfo?.icon || Clock;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => router.push('/dashboard/orders')}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            ← Voltar
+            <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{order.number}</h1>
-            <p className="text-gray-600">Ordem de Serviço</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Ordem {order.number}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Detalhes e execução da ordem de serviço
+            </p>
           </div>
         </div>
-
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-          {getStatusLabel(order.status)}
-        </span>
+        <div>
+          <span className={`px-4 py-2 rounded-full text-sm font-medium border flex items-center gap-2 ${statusInfo?.color}`}>
+            <StatusIcon className="w-4 h-4" />
+            {statusInfo?.label}
+          </span>
+        </div>
       </div>
 
       {/* Ações de Status */}
-      <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3 flex-wrap">
+      <div className="bg-white p-4 rounded-lg shadow border border-border flex items-center gap-3 flex-wrap">
         {order.status === 'open' && (
           <button
             onClick={() => handleStatusChange('scheduled')}
             disabled={actionLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 font-medium"
           >
-            📅 Agendar
+            {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+            Agendar
           </button>
         )}
 
@@ -208,9 +234,10 @@ export default function OrderDetailPage() {
           <button
             onClick={() => handleStatusChange('in_progress')}
             disabled={actionLoading}
-            className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-warning text-warning-foreground rounded-lg hover:bg-warning/90 transition-colors disabled:opacity-50 font-medium"
           >
-            ▶️ Iniciar Execução
+            {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
+            Iniciar Execução
           </button>
         )}
 
@@ -218,9 +245,10 @@ export default function OrderDetailPage() {
           <button
             onClick={() => handleStatusChange('completed')}
             disabled={actionLoading}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors disabled:opacity-50 font-medium"
           >
-            ✅ Concluir
+            {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+            Concluir
           </button>
         )}
 
@@ -228,68 +256,80 @@ export default function OrderDetailPage() {
           <button
             onClick={() => handleStatusChange('cancelled')}
             disabled={actionLoading}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 font-medium"
           >
-            ❌ Cancelar
+            {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+            Cancelar
           </button>
         )}
       </div>
 
-      {/* Informações Gerais */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Informações Gerais
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-gray-600">Número</label>
-            <p className="text-gray-900 font-medium">{order.number}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-600">Cliente</label>
-            <p className="text-gray-900 font-medium">
-              {order.customer?.name || '-'}
-            </p>
-          </div>
-          {order.scheduledFor && (
+      {/* Info Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <User className="w-6 h-6 text-primary" />
+            </div>
             <div>
-              <label className="text-sm text-gray-600">Agendado para</label>
-              <p className="text-gray-900 font-medium">
-                {new Date(order.scheduledFor).toLocaleString('pt-BR')}
+              <p className="text-sm text-muted-foreground">Cliente</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {order.customer?.name || 'N/A'}
               </p>
             </div>
-          )}
-          {order.assignedToUser && (
-            <div>
-              <label className="text-sm text-gray-600">Responsável</label>
-              <p className="text-gray-900 font-medium">
-                {order.assignedToUser.name}
-              </p>
-            </div>
-          )}
-          <div>
-            <label className="text-sm text-gray-600">Criado em</label>
-            <p className="text-gray-900 font-medium">
-              {new Date(order.createdAt).toLocaleDateString('pt-BR')}
-            </p>
           </div>
-          {order.completedAt && (
-            <div>
-              <label className="text-sm text-gray-600">Concluído em</label>
-              <p className="text-gray-900 font-medium">
-                {new Date(order.completedAt).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-          )}
         </div>
 
-        {order.notes && (
-          <div className="mt-4">
-            <label className="text-sm text-gray-600">Observações</label>
-            <p className="text-gray-900 mt-1">{order.notes}</p>
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-success/10 rounded-lg">
+              <DollarSign className="w-6 h-6 text-success" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Valor Total</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {formatCurrency(Number(order.totalAmount))}
+              </p>
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-warning/10 rounded-lg">
+              <Calendar className="w-6 h-6 text-warning" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Agendamento</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {order.scheduledFor ? new Date(order.scheduledFor).toLocaleDateString('pt-BR') : 'Não agendado'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-accent rounded-lg">
+              <Package className="w-6 h-6 text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Itens</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {order.items?.length || 0}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Observações */}
+      {order.notes && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <h3 className="font-semibold text-gray-900 mb-2">Observações</h3>
+          <p className="text-gray-700 whitespace-pre-wrap">{order.notes}</p>
+        </div>
+      )}
 
       {/* Serviços */}
       <div className="bg-white p-6 rounded-lg shadow">
@@ -353,36 +393,44 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Timeline */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow border border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Timeline</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Timeline de Eventos</h2>
           <button
             onClick={() => setShowTimelineModal(true)}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
             disabled={actionLoading}
           >
-            + Adicionar Evento
+            <Plus className="w-4 h-4" />
+            Adicionar Evento
           </button>
         </div>
 
         {order.timeline && order.timeline.length > 0 ? (
           <div className="space-y-4">
-            {order.timeline.map((event) => (
+            {order.timeline.map((event, index) => (
               <div key={event.id} className="flex gap-4">
-                <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1 pb-4 border-l-2 border-gray-200 pl-4">
+                <div className="flex-shrink-0 w-3 h-3 mt-2 bg-primary rounded-full"></div>
+                <div className={`flex-1 pb-4 ${index < order.timeline.length - 1 ? 'border-l-2 border-border' : ''} pl-4`}>
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">{event.event}</p>
+                      <p className="font-semibold text-gray-900">{event.event}</p>
                       {event.description && (
                         <p className="text-sm text-gray-600 mt-1">
                           {event.description}
                         </p>
                       )}
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(event.createdAt).toLocaleString('pt-BR')} •{' '}
-                        {event.user?.name || 'Sistema'}
-                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(event.createdAt).toLocaleString('pt-BR')}
+                        </p>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <User className="w-3 h-3 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          {event.user?.name || 'Sistema'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -390,22 +438,24 @@ export default function OrderDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-4">
-            Nenhum evento registrado
-          </p>
+          <div className="text-center py-8">
+            <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground">Nenhum evento registrado</p>
+          </div>
         )}
       </div>
 
       {/* Checklist */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-6 rounded-lg shadow border border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Checklist</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Checklist de Tarefas</h2>
           <button
             onClick={() => setShowChecklistModal(true)}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
             disabled={actionLoading}
           >
-            + Adicionar Tarefa
+            <Plus className="w-4 h-4" />
+            Adicionar Tarefa
           </button>
         </div>
 
@@ -414,44 +464,50 @@ export default function OrderDetailPage() {
             {order.checklists.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded"
+                className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg border border-border transition-colors"
               >
-                <input
-                  type="checkbox"
-                  checked={item.isCompleted}
-                  onChange={() =>
-                    handleToggleChecklistItem(item.id, item.isCompleted)
-                  }
+                <button
+                  onClick={() => handleToggleChecklistItem(item.id, item.isCompleted)}
                   disabled={actionLoading}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
+                  className="flex-shrink-0"
+                >
+                  {item.isCompleted ? (
+                    <CheckSquare className="w-5 h-5 text-success" />
+                  ) : (
+                    <Square className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </button>
                 <span
                   className={`flex-1 ${
                     item.isCompleted
-                      ? 'line-through text-gray-500'
-                      : 'text-gray-900'
+                      ? 'line-through text-muted-foreground'
+                      : 'text-gray-900 font-medium'
                   }`}
                 >
                   {item.description}
                 </span>
                 {item.completedAt && (
-                  <span className="text-xs text-gray-500">
-                    ✓ {new Date(item.completedAt).toLocaleDateString('pt-BR')}
-                  </span>
+                  <div className="flex items-center gap-1 text-xs text-success">
+                    <CheckCircle className="w-3 h-3" />
+                    <span>{new Date(item.completedAt).toLocaleDateString('pt-BR')}</span>
+                  </div>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-4">Nenhuma tarefa adicionada</p>
+          <div className="text-center py-8">
+            <CheckSquare className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground">Nenhuma tarefa adicionada</p>
+          </div>
         )}
       </div>
 
       {/* Modal Timeline */}
       {showTimelineModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Adicionar Evento</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4 animate-scaleIn">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Adicionar Evento</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -461,7 +517,7 @@ export default function OrderDetailPage() {
                   type="text"
                   value={timelineEvent}
                   onChange={(e) => setTimelineEvent(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Ex: Chegada no local"
                 />
               </div>
@@ -473,27 +529,28 @@ export default function OrderDetailPage() {
                   value={timelineDescription}
                   onChange={(e) => setTimelineDescription(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Detalhes adicionais..."
                 />
               </div>
-              <div className="flex gap-3 justify-end">
+              <div className="flex gap-3 justify-end pt-2">
                 <button
                   onClick={() => {
                     setShowTimelineModal(false);
                     setTimelineEvent('');
                     setTimelineDescription('');
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                  className="px-4 py-2 border border-border text-gray-700 rounded-lg hover:bg-muted transition-colors"
                   disabled={actionLoading}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleAddTimelineEvent}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                   disabled={actionLoading}
                 >
+                  {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   Adicionar
                 </button>
               </div>
@@ -504,9 +561,9 @@ export default function OrderDetailPage() {
 
       {/* Modal Checklist */}
       {showChecklistModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Adicionar Tarefa</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4 animate-scaleIn">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Adicionar Tarefa</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -516,26 +573,27 @@ export default function OrderDetailPage() {
                   type="text"
                   value={checklistItem}
                   onChange={(e) => setChecklistItem(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="Ex: Testar instalação elétrica"
                 />
               </div>
-              <div className="flex gap-3 justify-end">
+              <div className="flex gap-3 justify-end pt-2">
                 <button
                   onClick={() => {
                     setShowChecklistModal(false);
                     setChecklistItem('');
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                  className="px-4 py-2 border border-border text-gray-700 rounded-lg hover:bg-muted transition-colors"
                   disabled={actionLoading}
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleAddChecklistItem}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                   disabled={actionLoading}
                 >
+                  {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   Adicionar
                 </button>
               </div>
