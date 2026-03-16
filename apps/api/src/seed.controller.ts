@@ -86,6 +86,7 @@ export class SeedController {
 
       // Criar catálogo de serviços
       console.log('🛠️  Criando catálogo de serviços...');
+      console.log('[DEBUG] Versão do seed: 2024-03-16-v2');
 
       const servicesList = [
         {
