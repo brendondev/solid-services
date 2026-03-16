@@ -4,6 +4,33 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { quotationsApi, Quotation } from '@/lib/api/quotations';
 import { ordersApi } from '@/lib/api/orders';
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Mail,
+  Download,
+  ArrowRight,
+  Loader2,
+  User,
+  DollarSign,
+  Calendar,
+  Package
+} from 'lucide-react';
+
+const statusLabels: Record<string, string> = {
+  draft: 'Rascunho',
+  sent: 'Enviado',
+  approved: 'Aprovado',
+  rejected: 'Rejeitado',
+};
+
+const statusColors: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-700',
+  sent: 'bg-blue-100 text-blue-700',
+  approved: 'bg-success/10 text-success',
+  rejected: 'bg-destructive/10 text-destructive',
+};
 
 export default function QuotationDetailPage() {
   const router = useRouter();
@@ -13,7 +40,7 @@ export default function QuotationDetailPage() {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -34,47 +61,68 @@ export default function QuotationDetailPage() {
     }
   };
 
-  const handleStatusChange = async (status: 'sent' | 'approved' | 'rejected') => {
-    if (!confirm(`Tem certeza que deseja marcar como "${getStatusLabel(status)}"?`)) {
-      return;
-    }
-
+  const handleApprove = async () => {
+    if (!quotation) return;
     try {
-      setActionLoading(true);
-      await quotationsApi.updateStatus(id, status);
+      setActionLoading('approve');
+      await quotationsApi.updateStatus(quotation.id, 'approved');
       await loadQuotation();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao atualizar status');
+      setError('Erro ao aprovar orçamento');
     } finally {
-      setActionLoading(false);
+      setActionLoading(null);
     }
   };
 
-  const handleCreateOrder = async () => {
-    if (!confirm('Deseja criar uma ordem de serviço a partir deste orçamento?')) {
-      return;
-    }
-
-    try {
-      setActionLoading(true);
-      const order = await ordersApi.createFromQuotation(id);
-      router.push(`/dashboard/orders/${order.id}`);
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao criar ordem de serviço');
-      setActionLoading(false);
-    }
-  };
-
-  const handleDownloadPdf = async () => {
+  const handleReject = async () => {
     if (!quotation) return;
-
     try {
-      setActionLoading(true);
+      setActionLoading('reject');
+      await quotationsApi.updateStatus(quotation.id, 'rejected');
+      await loadQuotation();
+    } catch (err: any) {
+      setError('Erro ao rejeitar orçamento');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!quotation) return;
+    try {
+      setActionLoading('email');
+      await quotationsApi.updateStatus(quotation.id, 'sent');
+      await loadQuotation();
+      alert('Orçamento marcado como enviado! (Integração de email será implementada)');
+    } catch (err: any) {
+      setError('Erro ao enviar orçamento');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!quotation) return;
+    try {
+      setActionLoading('pdf');
       await quotationsApi.downloadPdf(id, quotation.number);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao gerar PDF');
+      setError('Erro ao gerar PDF');
     } finally {
-      setActionLoading(false);
+      setActionLoading(null);
+    }
+  };
+
+  const handleConvertToOrder = async () => {
+    if (!quotation) return;
+    try {
+      setActionLoading('convert');
+      const order = await ordersApi.createFromQuotation(id);
+      router.push(`/dashboard/service-orders/${order.id}`);
+    } catch (err: any) {
+      setError('Erro ao converter para ordem de serviço');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -85,242 +133,266 @@ export default function QuotationDetailPage() {
     }).format(value);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-gray-100 text-gray-700';
-      case 'sent':
-        return 'bg-blue-100 text-blue-700';
-      case 'approved':
-        return 'bg-green-100 text-green-700';
-      case 'rejected':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      draft: 'Rascunho',
-      sent: 'Enviado',
-      approved: 'Aprovado',
-      rejected: 'Rejeitado',
-    };
-    return labels[status] || status;
+  const formatDate = (date: string | Date) => {
+    return new Intl.DateTimeFormat('pt-BR').format(new Date(date));
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando orçamento...</div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error || !quotation) {
     return (
-      <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+      <div className="space-y-6">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
           {error || 'Orçamento não encontrado'}
         </div>
         <button
           onClick={() => router.push('/dashboard/quotations')}
-          className="text-blue-600 hover:text-blue-700"
+          className="text-primary hover:underline flex items-center gap-2"
         >
-          ← Voltar para orçamentos
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para orçamentos
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => router.push('/dashboard/quotations')}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            ← Voltar
+            <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {quotation.number}
+            <h1 className="text-3xl font-bold text-gray-900">
+              Orçamento {quotation.number}
             </h1>
-            <p className="text-gray-600">Orçamento</p>
+            <p className="text-muted-foreground mt-1">
+              Detalhes e ações do orçamento
+            </p>
           </div>
         </div>
-
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(quotation.status)}`}>
-          {getStatusLabel(quotation.status)}
-        </span>
+        <div>
+          <span className={`px-4 py-2 rounded-full text-sm font-medium ${statusColors[quotation.status]}`}>
+            {statusLabels[quotation.status]}
+          </span>
+        </div>
       </div>
 
-      {/* Ações */}
-      <div className="bg-white p-4 rounded-lg shadow flex items-center gap-3 flex-wrap">
-        {/* Botão de Download PDF - sempre disponível */}
-        <button
-          onClick={handleDownloadPdf}
-          disabled={actionLoading}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          Baixar PDF
-        </button>
-
-        {quotation.status === 'draft' && (
-          <button
-            onClick={() => handleStatusChange('sent')}
-            disabled={actionLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            📤 Enviar para Cliente
-          </button>
-        )}
-
-        {quotation.status === 'sent' && (
-          <>
-            <button
-              onClick={() => handleStatusChange('approved')}
-              disabled={actionLoading}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-            >
-              ✅ Aprovar
-            </button>
-            <button
-              onClick={() => handleStatusChange('rejected')}
-              disabled={actionLoading}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-            >
-              ❌ Rejeitar
-            </button>
-          </>
-        )}
-
-        {quotation.status === 'approved' && (
-          <button
-            onClick={handleCreateOrder}
-            disabled={actionLoading}
-            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50"
-          >
-            📋 Criar Ordem de Serviço
-          </button>
-        )}
-      </div>
-
-      {/* Informações Gerais */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Informações Gerais
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm text-gray-600">Número</label>
-            <p className="text-gray-900 font-medium">{quotation.number}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-600">Cliente</label>
-            <p className="text-gray-900 font-medium">
-              {quotation.customer?.name || '-'}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-600">Data de Criação</label>
-            <p className="text-gray-900 font-medium">
-              {new Date(quotation.createdAt).toLocaleDateString('pt-BR')}
-            </p>
-          </div>
-          {quotation.validUntil && (
+      {/* Info Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <User className="w-6 h-6 text-primary" />
+            </div>
             <div>
-              <label className="text-sm text-gray-600">Válido até</label>
-              <p className="text-gray-900 font-medium">
-                {new Date(quotation.validUntil).toLocaleDateString('pt-BR')}
+              <p className="text-sm text-muted-foreground">Cliente</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {quotation.customer?.name || 'N/A'}
               </p>
             </div>
-          )}
+          </div>
         </div>
 
-        {quotation.notes && (
-          <div className="mt-4">
-            <label className="text-sm text-gray-600">Observações</label>
-            <p className="text-gray-900 mt-1">{quotation.notes}</p>
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-success/10 rounded-lg">
+              <DollarSign className="w-6 h-6 text-success" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Valor Total</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {formatCurrency(Number(quotation.totalAmount))}
+              </p>
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-warning/10 rounded-lg">
+              <Calendar className="w-6 h-6 text-warning" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Válido até</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {quotation.validUntil ? formatDate(quotation.validUntil) : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-accent rounded-lg">
+              <Package className="w-6 h-6 text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Itens</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {quotation.items?.length || 0}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Itens do Orçamento */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Itens do Orçamento
-        </h2>
+      {/* Observações */}
+      {quotation.notes && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <h3 className="font-semibold text-gray-900 mb-2">Observações</h3>
+          <p className="text-gray-700 whitespace-pre-wrap">{quotation.notes}</p>
+        </div>
+      )}
 
+      {/* Items Table */}
+      <div className="bg-white rounded-lg shadow border border-border overflow-hidden">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-xl font-semibold text-gray-900">Itens do Orçamento</h2>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Descrição
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Serviço
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Quantidade
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Qtd
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Preço Unit.
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Total
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Subtotal
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {quotation.items && quotation.items.length > 0 ? (
-                quotation.items.map((item, index) => (
-                  <tr key={item.id || index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">
+            <tbody className="divide-y divide-border">
+              {quotation.items?.map((item, index) => {
+                const subtotal = Number(item.quantity) * Number(item.unitPrice);
+                return (
+                  <tr key={index} className="hover:bg-muted/50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-900">
                       {item.description}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {item.service?.name || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                    <td className="px-6 py-4 text-sm text-gray-900 text-right">
                       {item.quantity}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-right">
-                      {formatCurrency(item.unitPrice)}
+                    <td className="px-6 py-4 text-sm text-gray-900 text-right">
+                      {formatCurrency(Number(item.unitPrice))}
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
-                      {formatCurrency(item.totalPrice)}
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
+                      {formatCurrency(subtotal)}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                    Nenhum item no orçamento
-                  </td>
-                </tr>
-              )}
+                );
+              })}
             </tbody>
+            <tfoot className="bg-muted">
+              <tr>
+                <td colSpan={3} className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                  Total Geral
+                </td>
+                <td className="px-6 py-4 text-right text-lg font-bold text-primary">
+                  {formatCurrency(Number(quotation.totalAmount))}
+                </td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
 
-      {/* Total */}
-      <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-semibold text-gray-900">
-            Valor Total do Orçamento
-          </span>
-          <span className="text-3xl font-bold text-blue-600">
-            {formatCurrency(quotation.totalAmount)}
-          </span>
+      {/* Sticky Action Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {quotation.status === 'draft' && (
+              <>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={actionLoading !== null}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {actionLoading === 'email' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Mail className="w-5 h-5" />
+                  )}
+                  Enviar por Email
+                </button>
+              </>
+            )}
+
+            {quotation.status !== 'approved' && quotation.status !== 'rejected' && (
+              <>
+                <button
+                  onClick={handleReject}
+                  disabled={actionLoading !== null}
+                  className="flex items-center gap-2 px-6 py-3 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {actionLoading === 'reject' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <XCircle className="w-5 h-5" />
+                  )}
+                  Rejeitar
+                </button>
+
+                <button
+                  onClick={handleApprove}
+                  disabled={actionLoading !== null}
+                  className="flex items-center gap-2 px-6 py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {actionLoading === 'approve' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5" />
+                  )}
+                  Aprovar
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={handleDownloadPDF}
+              disabled={actionLoading !== null}
+              className="flex items-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {actionLoading === 'pdf' ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Download className="w-5 h-5" />
+              )}
+              Download PDF
+            </button>
+
+            {quotation.status === 'approved' && (
+              <button
+                onClick={handleConvertToOrder}
+                disabled={actionLoading !== null}
+                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {actionLoading === 'convert' ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <ArrowRight className="w-5 h-5" />
+                )}
+                Converter em OS
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
