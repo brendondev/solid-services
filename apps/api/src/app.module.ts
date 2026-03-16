@@ -6,7 +6,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { SeedController } from './seed.controller';
 import { DebugController } from './debug.controller';
-import { RolesGuard } from '@core/auth';
+import { RolesGuard, JwtAuthGuard } from '@core/auth';
 
 // Core modules
 import { TenantModule } from './core/tenant';
@@ -66,13 +66,21 @@ import { TenantMiddleware } from './common/middleware';
     AuditModule,
   ],
   providers: [
+    // ORDEM CRÍTICA: JwtAuthGuard DEVE vir ANTES de RolesGuard
+    // 1. JwtAuthGuard valida token e popula req.user
+    // 2. RolesGuard verifica permissões de req.user
+    // 3. ThrottlerGuard aplica rate limiting
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

@@ -31,11 +31,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   providers: [
     AuthService,
     JwtStrategy,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    // JwtAuthGuard movido para AppModule para controle de ordem de execução
   ],
-  exports: [AuthService],
+  exports: [AuthService, JwtAuthGuard], // Export para uso no AppModule
 })
 export class AuthModule {}
