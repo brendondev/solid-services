@@ -86,7 +86,7 @@ export const customersApi = {
     if (status) params.append('status', status);
 
     const response = await api.get(`/customers?${params.toString()}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findActive: async (): Promise<Customer[]> => {

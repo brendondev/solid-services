@@ -35,17 +35,17 @@ export const servicesApi = {
     if (status) params.append('status', status);
 
     const response = await api.get(`/services?${params.toString()}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findActive: async (): Promise<Service[]> => {
     const response = await api.get('/services/active');
-    return response.data;
+    return response.data.data || [];
   },
 
   findMostUsed: async (limit: number = 10): Promise<Service[]> => {
     const response = await api.get(`/services/most-used?limit=${limit}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findOne: async (id: string): Promise<Service> => {

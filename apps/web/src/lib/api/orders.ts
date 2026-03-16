@@ -92,7 +92,7 @@ export const ordersApi = {
     if (status) params.append('status', status);
 
     const response = await api.get(`/service-orders?${params.toString()}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findOne: async (id: string): Promise<ServiceOrder> => {

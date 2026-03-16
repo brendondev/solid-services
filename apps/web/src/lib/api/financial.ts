@@ -94,7 +94,7 @@ export const financialApi = {
     if (status) params.append('status', status);
 
     const response = await api.get(`/financial/receivables?${params.toString()}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findOneReceivable: async (id: string): Promise<Receivable> => {

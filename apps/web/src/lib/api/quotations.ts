@@ -57,17 +57,17 @@ export const quotationsApi = {
     if (status) params.append('status', status);
 
     const response = await api.get(`/quotations?${params.toString()}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findPending: async (): Promise<Quotation[]> => {
     const response = await api.get('/quotations/pending');
-    return response.data;
+    return response.data.data || [];
   },
 
   findByCustomer: async (customerId: string): Promise<Quotation[]> => {
     const response = await api.get(`/quotations/customer/${customerId}`);
-    return response.data;
+    return response.data.data || [];
   },
 
   findOne: async (id: string): Promise<Quotation> => {
