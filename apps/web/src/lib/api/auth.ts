@@ -21,8 +21,8 @@ export interface LoginResponse {
 export interface RegisterRequest {
   tenantName: string;
   tenantSlug: string;
-  adminName: string;
-  adminEmail: string;
+  name: string;
+  email: string;
   password: string;
 }
 
