@@ -202,8 +202,8 @@ export default function CustomersPage() {
                       <h3 className="text-xl font-bold text-gray-900">
                         {customer.name}
                       </h3>
-                      {customer.document && (
-                        <p className="text-sm text-muted-foreground">{customer.document}</p>
+                      {customer.taxId && (
+                        <p className="text-sm text-muted-foreground">{customer.taxId}</p>
                       )}
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
