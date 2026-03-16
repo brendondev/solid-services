@@ -36,14 +36,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Tratar erros de autenticação (401 e 403 com mensagem de não autenticado)
-    if (
-      error.response?.status === 401 ||
-      (error.response?.status === 403 &&
-       error.response?.data?.message?.includes('não autenticado'))
-    ) {
+    // Apenas redirecionar para login em caso de 401 (não autenticado)
+    if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        console.error('Erro de autenticação, redirecionando para login...');
+        console.error('Token expirado ou inválido, redirecionando para login...');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/auth/login';
