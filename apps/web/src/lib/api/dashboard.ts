@@ -2,16 +2,18 @@ import api from './client';
 
 export interface DashboardStats {
   summary: {
-    customersCount: number;
-    servicesCount: number;
-    activeOrdersCount: number;
-    pendingReceivablesAmount: number;
+    activeCustomers: number;
+    activeServices: number;
+    ordersThisMonth: number;
+    pendingReceivables: number;
+    pendingAmount: number;
   };
   quotations: {
     draft: number;
     sent: number;
     approved: number;
     rejected: number;
+    total: number;
   };
   orders: {
     open: number;
@@ -19,43 +21,39 @@ export interface DashboardStats {
     in_progress: number;
     completed: number;
     cancelled: number;
+    total: number;
   };
   recentOrders: Array<{
     id: string;
     number: string;
-    customerName: string;
     status: string;
-    scheduledFor: string | null;
+    totalAmount: number;
     createdAt: string;
+    customer: {
+      id: string;
+      name: string;
+    };
   }>;
   upcomingOrders: Array<{
     id: string;
     number: string;
-    customerName: string;
+    status: string;
     scheduledFor: string;
-    assignedToName: string | null;
+    customer: {
+      id: string;
+      name: string;
+    };
+    assignedUser: {
+      id: string;
+      name: string;
+    } | null;
   }>;
 }
 
 export interface QuickStats {
-  today: {
-    scheduledOrders: number;
-    completedOrders: number;
-    paymentsReceived: number;
-    paymentsAmount: number;
-  };
-  thisWeek: {
-    newCustomers: number;
-    quotationsSent: number;
-    ordersCompleted: number;
-    revenue: number;
-  };
-  thisMonth: {
-    totalOrders: number;
-    completedOrders: number;
-    totalRevenue: number;
-    pendingReceivables: number;
-  };
+  pendingQuotations: number;
+  activeOrders: number;
+  overdueReceivables: number;
 }
 
 export interface MonthlyPerformance {
