@@ -1,304 +1,149 @@
 import { Injectable } from '@nestjs/common';
-import { TDocumentDefinitions } from 'pdfmake/interfaces';
-
-// Import usando require para pdfmake (CommonJS module)
-const PdfPrinter = require('pdfmake');
+import * as PDFDocument from 'pdfkit';
 
 @Injectable()
 export class QuotationPdfService {
-  private printer: any;
-
-  constructor() {
-    try {
-      // Usa fontes padrão disponíveis no sistema ou fallback para Courier
-      const fonts = {
-        Courier: {
-          normal: 'Courier',
-          bold: 'Courier-Bold',
-          italics: 'Courier-Oblique',
-          bolditalics: 'Courier-BoldOblique'
-        }
-      };
-
-      this.printer = new PdfPrinter(fonts);
-      this.initializePrinter = () => {}; // Já inicializado
-    } catch (error) {
-      console.warn('PdfMake initialization failed, PDF generation will not work:', error);
-      this.printer = null;
-      this.initializePrinter = () => {};
-    }
-  }
-
-  private initializePrinter: () => void;
-
   async generateQuotationPdf(quotation: any): Promise<Buffer> {
-    // Inicializar printer se necessário
-    this.initializePrinter();
-
-    if (!this.printer) {
-      throw new Error('PDF printer not initialized');
-    }
-
-    const docDefinition: TDocumentDefinitions = {
-      pageSize: 'A4',
-      pageMargins: [40, 60, 40, 60],
-      defaultStyle: {
-        font: 'Courier'
-      },
-
-      header: {
-        margin: [40, 20, 40, 0],
-        columns: [
-          {
-            text: 'ORÇAMENTO',
-            style: 'header',
-            alignment: 'left',
-          },
-          {
-            text: quotation.number,
-            style: 'header',
-            alignment: 'right',
-          },
-        ],
-      },
-
-      footer: (currentPage: number, pageCount: number) => ({
-        margin: [40, 0, 40, 20],
-        text: `Página ${currentPage} de ${pageCount}`,
-        alignment: 'center',
-        style: 'footer',
-      }),
-
-      content: [
-        // Informações da empresa (placeholder - seria do tenant)
-        {
-          text: 'Solid Service',
-          style: 'companyName',
-          margin: [0, 0, 0, 5],
-        },
-        {
-          text: 'Sistema de Gestão para Prestadores de Serviços',
-          style: 'companyInfo',
-          margin: [0, 0, 0, 20],
-        },
-
-        // Linha divisória
-        {
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 515,
-              y2: 0,
-              lineWidth: 1,
-              lineColor: '#e5e7eb',
-            },
-          ],
-          margin: [0, 0, 0, 20],
-        },
-
-        // Informações do cliente
-        {
-          columns: [
-            {
-              width: '50%',
-              stack: [
-                { text: 'CLIENTE', style: 'sectionTitle' },
-                { text: quotation.customer.name, style: 'clientInfo' },
-                {
-                  text: quotation.customer.email || '-',
-                  style: 'clientInfoSecondary',
-                },
-                {
-                  text: quotation.customer.phone || '-',
-                  style: 'clientInfoSecondary',
-                },
-              ],
-            },
-            {
-              width: '50%',
-              stack: [
-                { text: 'INFORMAÇÕES', style: 'sectionTitle' },
-                {
-                  text: `Data: ${new Date(quotation.createdAt).toLocaleDateString('pt-BR')}`,
-                  style: 'infoText',
-                },
-                {
-                  text: `Status: ${this.translateStatus(quotation.status)}`,
-                  style: 'infoText',
-                },
-                {
-                  text: `Validade: ${quotation.validUntil ? new Date(quotation.validUntil).toLocaleDateString('pt-BR') : 'Não informada'}`,
-                  style: 'infoText',
-                },
-              ],
-            },
-          ],
-          margin: [0, 0, 0, 30],
-        },
-
-        // Tabela de itens
-        {
-          text: 'ITENS DO ORÇAMENTO',
-          style: 'sectionTitle',
-          margin: [0, 0, 0, 10],
-        },
-        {
-          table: {
-            headerRows: 1,
-            widths: ['*', 60, 80, 100],
-            body: [
-              [
-                { text: 'Descrição', style: 'tableHeader' },
-                { text: 'Qtd', style: 'tableHeader', alignment: 'center' },
-                { text: 'Valor Unit.', style: 'tableHeader', alignment: 'right' },
-                { text: 'Total', style: 'tableHeader', alignment: 'right' },
-              ],
-              ...quotation.items.map((item: any) => [
-                { text: item.description || item.service?.name || '-', style: 'tableCell' },
-                { text: item.quantity.toString(), style: 'tableCell', alignment: 'center' },
-                {
-                  text: this.formatCurrency(Number(item.unitPrice)),
-                  style: 'tableCell',
-                  alignment: 'right',
-                },
-                {
-                  text: this.formatCurrency(Number(item.quantity) * Number(item.unitPrice)),
-                  style: 'tableCell',
-                  alignment: 'right',
-                },
-              ]),
-            ],
-          },
-          layout: {
-            hLineWidth: (i: number, node: any) => (i === 0 || i === 1 || i === node.table.body.length ? 1 : 0.5),
-            vLineWidth: () => 0,
-            hLineColor: () => '#e5e7eb',
-            paddingLeft: () => 8,
-            paddingRight: () => 8,
-            paddingTop: () => 8,
-            paddingBottom: () => 8,
-          },
-        },
-
-        // Total
-        {
-          margin: [0, 20, 0, 0],
-          table: {
-            widths: ['*', 100],
-            body: [
-              [
-                { text: 'VALOR TOTAL', style: 'totalLabel', alignment: 'right', border: [false, true, false, false] },
-                {
-                  text: this.formatCurrency(Number(quotation.totalAmount)),
-                  style: 'totalValue',
-                  alignment: 'right',
-                  border: [false, true, false, false],
-                },
-              ],
-            ],
-          },
-          layout: {
-            hLineWidth: () => 1,
-            hLineColor: () => '#3b82f6',
-            paddingTop: () => 10,
-            paddingBottom: () => 10,
-          },
-        },
-
-        // Observações
-        ...(quotation.notes
-          ? [
-              {
-                margin: [0, 30, 0, 0] as [number, number, number, number],
-                stack: [
-                  { text: 'OBSERVAÇÕES', style: 'sectionTitle' },
-                  { text: quotation.notes, style: 'notes' },
-                ],
-              },
-            ]
-          : []),
-      ],
-
-      styles: {
-        header: {
-          fontSize: 18,
-          bold: true,
-          color: '#1f2937',
-        },
-        companyName: {
-          fontSize: 20,
-          bold: true,
-          color: '#1f2937',
-        },
-        companyInfo: {
-          fontSize: 10,
-          color: '#6b7280',
-        },
-        sectionTitle: {
-          fontSize: 12,
-          bold: true,
-          color: '#374151',
-          margin: [0, 0, 0, 5],
-        },
-        clientInfo: {
-          fontSize: 12,
-          color: '#1f2937',
-          margin: [0, 2, 0, 0],
-        },
-        clientInfoSecondary: {
-          fontSize: 10,
-          color: '#6b7280',
-          margin: [0, 2, 0, 0],
-        },
-        infoText: {
-          fontSize: 10,
-          color: '#374151',
-          margin: [0, 2, 0, 0],
-        },
-        tableHeader: {
-          fontSize: 10,
-          bold: true,
-          color: '#374151',
-          fillColor: '#f3f4f6',
-        },
-        tableCell: {
-          fontSize: 10,
-          color: '#1f2937',
-        },
-        totalLabel: {
-          fontSize: 14,
-          bold: true,
-          color: '#1f2937',
-        },
-        totalValue: {
-          fontSize: 18,
-          bold: true,
-          color: '#3b82f6',
-        },
-        notes: {
-          fontSize: 10,
-          color: '#374151',
-          margin: [0, 5, 0, 0],
-        },
-        footer: {
-          fontSize: 8,
-          color: '#9ca3af',
-        },
-      },
-    };
-
     return new Promise((resolve, reject) => {
       try {
-        const pdfDoc = this.printer.createPdfKitDocument(docDefinition);
+        const doc = new PDFDocument({
+          size: 'A4',
+          margin: 50,
+        });
+
         const chunks: Buffer[] = [];
 
-        pdfDoc.on('data', (chunk: Buffer) => chunks.push(chunk));
-        pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
-        pdfDoc.on('error', reject);
+        doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
 
-        pdfDoc.end();
+        // Header
+        doc
+          .fontSize(20)
+          .text('ORÇAMENTO', { align: 'center' })
+          .fontSize(14)
+          .text(quotation.number, { align: 'center' })
+          .moveDown();
+
+        // Line separator
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(550, doc.y)
+          .stroke()
+          .moveDown();
+
+        // Company info
+        doc
+          .fontSize(16)
+          .text('Solid Service', { align: 'left' })
+          .fontSize(10)
+          .text('Sistema de Gestão para Prestadores de Serviços')
+          .moveDown();
+
+        // Client and quotation info
+        const startY = doc.y;
+
+        // Left column - Client
+        doc
+          .fontSize(12)
+          .text('CLIENTE', 50, startY)
+          .fontSize(10)
+          .text(quotation.customer.name, 50, startY + 20)
+          .text(quotation.customer.email || '-', 50, startY + 35)
+          .text(quotation.customer.phone || '-', 50, startY + 50);
+
+        // Right column - Info
+        doc
+          .fontSize(12)
+          .text('INFORMAÇÕES', 300, startY)
+          .fontSize(10)
+          .text(`Data: ${new Date(quotation.createdAt).toLocaleDateString('pt-BR')}`, 300, startY + 20)
+          .text(`Status: ${this.translateStatus(quotation.status)}`, 300, startY + 35)
+          .text(`Validade: ${quotation.validUntil ? new Date(quotation.validUntil).toLocaleDateString('pt-BR') : 'Não informada'}`, 300, startY + 50);
+
+        doc.y = startY + 80;
+        doc.moveDown();
+
+        // Items section
+        doc
+          .fontSize(12)
+          .text('ITENS DO ORÇAMENTO')
+          .moveDown(0.5);
+
+        // Table header
+        const tableTop = doc.y;
+        const col1X = 50;
+        const col2X = 320;
+        const col3X = 400;
+        const col4X = 480;
+
+        doc
+          .fontSize(10)
+          .fillColor('#000000')
+          .rect(col1X, tableTop, 500, 20)
+          .fillAndStroke('#f3f4f6', '#e5e7eb');
+
+        doc
+          .fillColor('#000000')
+          .text('Descrição', col1X + 5, tableTop + 5, { width: 260 })
+          .text('Qtd', col2X + 5, tableTop + 5, { width: 70, align: 'center' })
+          .text('Valor Unit.', col3X + 5, tableTop + 5, { width: 70, align: 'right' })
+          .text('Total', col4X + 5, tableTop + 5, { width: 65, align: 'right' });
+
+        let currentY = tableTop + 25;
+
+        // Table rows
+        quotation.items.forEach((item: any, index: number) => {
+          const rowHeight = 25;
+          const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+
+          doc
+            .rect(col1X, currentY, 500, rowHeight)
+            .fill(bgColor);
+
+          doc
+            .fillColor('#000000')
+            .fontSize(9)
+            .text(item.description || item.service?.name || '-', col1X + 5, currentY + 5, { width: 260 })
+            .text(item.quantity.toString(), col2X + 5, currentY + 5, { width: 70, align: 'center' })
+            .text(this.formatCurrency(Number(item.unitPrice)), col3X + 5, currentY + 5, { width: 70, align: 'right' })
+            .text(this.formatCurrency(Number(item.quantity) * Number(item.unitPrice)), col4X + 5, currentY + 5, { width: 65, align: 'right' });
+
+          currentY += rowHeight;
+        });
+
+        // Total
+        doc
+          .moveDown()
+          .fontSize(14)
+          .text('VALOR TOTAL:', col3X - 50, currentY + 20, { width: 120, align: 'right' })
+          .fillColor('#3b82f6')
+          .fontSize(16)
+          .text(this.formatCurrency(Number(quotation.totalAmount)), col4X - 30, currentY + 20, { width: 95, align: 'right' });
+
+        // Notes
+        if (quotation.notes) {
+          doc
+            .fillColor('#000000')
+            .moveDown(2)
+            .fontSize(12)
+            .text('OBSERVAÇÕES')
+            .fontSize(10)
+            .text(quotation.notes, { width: 500 });
+        }
+
+        // Footer
+        doc
+          .fontSize(8)
+          .fillColor('#9ca3af')
+          .text(
+            `Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
+            50,
+            doc.page.height - 50,
+            { align: 'center', width: 500 }
+          );
+
+        doc.end();
       } catch (error) {
         reject(error);
       }
