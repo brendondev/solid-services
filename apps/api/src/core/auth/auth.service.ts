@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../database';
 import { LoginDto, RegisterDto } from './dto';
 import { JwtPayload } from './interfaces';
+import { TurnstileService } from './services/turnstile.service';
 
 /**
  * Service de autenticação
@@ -14,6 +15,7 @@ import { JwtPayload } from './interfaces';
  * - Registro de novos tenants
  * - Geração de tokens JWT
  * - Validação de credenciais
+ * - Validação Turnstile (CAPTCHA)
  *
  * Princípios SOLID:
  * - Single Responsibility: Apenas autenticação
@@ -25,12 +27,18 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly turnstileService: TurnstileService,
   ) {}
 
   /**
    * Realiza login do usuário
    */
   async login(loginDto: LoginDto) {
+    // Validar Turnstile (CAPTCHA)
+    if (loginDto.turnstileToken) {
+      await this.turnstileService.verifyOrThrow(loginDto.turnstileToken);
+    }
+
     // Buscar usuário por email (sem filtro de tenant)
     const user = await this.prisma.user.findFirst({
       where: {
@@ -79,6 +87,11 @@ export class AuthService {
    * Registra novo tenant e usuário admin
    */
   async register(registerDto: RegisterDto) {
+    // Validar Turnstile (CAPTCHA)
+    if (registerDto.turnstileToken) {
+      await this.turnstileService.verifyOrThrow(registerDto.turnstileToken);
+    }
+
     // Verificar se slug já existe
     const existingTenant = await this.prisma.tenant.findUnique({
       where: { slug: registerDto.tenantSlug },

@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '@/lib/api/auth';
+import { Turnstile } from '@/components/auth/Turnstile';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const {
     register,
@@ -32,7 +34,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await authApi.login(data);
+      const response = await authApi.login({
+        ...data,
+        turnstileToken,
+      });
 
       // Salvar tokens e usuário no localStorage
       localStorage.setItem('token', response.accessToken);
@@ -116,6 +121,18 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
+
+            {/* Cloudflare Turnstile */}
+            {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+              <div className="flex justify-center">
+                <Turnstile
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onError={() => setError('Erro ao verificar CAPTCHA. Tente novamente.')}
+                  onExpire={() => setTurnstileToken('')}
+                />
+              </div>
+            )}
 
             <button
               type="submit"

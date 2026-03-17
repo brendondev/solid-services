@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -27,4 +27,13 @@ export class RegisterDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({
+    example: '0.abcdef1234567890',
+    description: 'Cloudflare Turnstile token',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  turnstileToken?: string;
 }

@@ -6,11 +6,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TurnstileService } from './services/turnstile.service';
 
 /**
  * Módulo de autenticação
  *
- * Provê serviços de autenticação JWT para toda a aplicação
+ * Provê serviços de autenticação JWT e validação Turnstile para toda a aplicação
  */
 @Module({
   imports: [
@@ -30,8 +31,9 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   providers: [
     AuthService,
     JwtStrategy,
-    JwtAuthGuard, // Precisa estar nos providers para poder exportar
+    JwtAuthGuard,
+    TurnstileService,
   ],
-  exports: [AuthService, JwtAuthGuard], // Export para uso no AppModule como APP_GUARD
+  exports: [AuthService, JwtAuthGuard],
 })
 export class AuthModule {}

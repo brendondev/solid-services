@@ -3,6 +3,7 @@ import api from './client';
 export interface LoginRequest {
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 export interface LoginResponse {
@@ -24,6 +25,7 @@ export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
+  turnstileToken?: string;
 }
 
 export const authApi = {
