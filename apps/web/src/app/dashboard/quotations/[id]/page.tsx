@@ -115,6 +115,14 @@ export default function QuotationDetailPage() {
 
   const handleConvertToOrder = async () => {
     if (!quotation) return;
+
+    // Se já foi convertido, redirecionar para a OS
+    if (quotation.serviceOrder) {
+      router.push(`/dashboard/orders/${quotation.serviceOrder.id}`);
+      return;
+    }
+
+    // Se não foi convertido, criar nova OS
     try {
       setActionLoading('convert');
       const order = await ordersApi.createFromQuotation(id);
@@ -381,15 +389,26 @@ export default function QuotationDetailPage() {
             {quotation.status === 'approved' && (
               <button
                 onClick={handleConvertToOrder}
-                disabled={actionLoading !== null}
-                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                disabled={actionLoading !== null && !quotation.serviceOrder}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium ${
+                  quotation.serviceOrder
+                    ? 'bg-success text-success-foreground hover:bg-success/90'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
               >
-                {actionLoading === 'convert' ? (
+                {actionLoading === 'convert' && !quotation.serviceOrder ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
+                ) : quotation.serviceOrder ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Ver OS {quotation.serviceOrder.number}
+                  </>
                 ) : (
-                  <ArrowRight className="w-5 h-5" />
+                  <>
+                    <ArrowRight className="w-5 h-5" />
+                    Converter em OS
+                  </>
                 )}
-                Converter em OS
               </button>
             )}
           </div>

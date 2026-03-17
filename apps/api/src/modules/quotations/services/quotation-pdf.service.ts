@@ -10,13 +10,13 @@ export class QuotationPdfService {
 
   constructor() {
     try {
-      // Configuração das fontes
+      // Configuração das fontes - usando fontes padrão do sistema
       const fonts = {
         Roboto: {
-          normal: 'node_modules/pdfmake/build/vfs_fonts.js',
-          bold: 'node_modules/pdfmake/build/vfs_fonts.js',
-          italics: 'node_modules/pdfmake/build/vfs_fonts.js',
-          bolditalics: 'node_modules/pdfmake/build/vfs_fonts.js',
+          normal: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-Regular.ttf'], 'base64'),
+          bold: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-Medium.ttf'], 'base64'),
+          italics: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-Italic.ttf'], 'base64'),
+          bolditalics: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-MediumItalic.ttf'], 'base64'),
         },
       };
 

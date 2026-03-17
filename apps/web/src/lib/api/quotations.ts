@@ -15,6 +15,10 @@ export interface Quotation {
     name: string;
   };
   items?: QuotationItem[];
+  serviceOrder?: {
+    id: string;
+    number: string;
+  };
 }
 
 export interface QuotationItem {
