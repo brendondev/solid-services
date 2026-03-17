@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 
 const statusLabels: Record<string, string> = {
+  pending: 'Pendente',
   draft: 'Rascunho',
   sent: 'Enviado',
   approved: 'Aprovado',
@@ -26,6 +27,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-700',
   draft: 'bg-gray-100 text-gray-700',
   sent: 'bg-blue-100 text-blue-700',
   approved: 'bg-success/10 text-success',
@@ -326,7 +328,7 @@ export default function QuotationDetailPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-wrap items-center justify-end gap-3">
-            {quotation.status === 'draft' && (
+            {(quotation.status === 'pending' || quotation.status === 'draft') && (
               <>
                 <button
                   onClick={handleSendEmail}

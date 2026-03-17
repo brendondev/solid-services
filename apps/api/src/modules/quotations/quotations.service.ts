@@ -97,7 +97,7 @@ export class QuotationsService {
         tenantId,
         customerId: createQuotationDto.customerId,
         number,
-        status: 'draft',
+        status: 'pending',
         totalAmount,
         validUntil: new Date(createQuotationDto.validUntil),
         notes: createQuotationDto.notes,
