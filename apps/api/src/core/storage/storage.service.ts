@@ -29,11 +29,12 @@ export class StorageService {
   private readonly localStoragePath: string;
 
   constructor() {
-    const endpoint = process.env.S3_ENDPOINT;
-    const region = process.env.S3_REGION || 'us-east-1';
-    const accessKeyId = process.env.S3_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-    this.bucket = process.env.S3_BUCKET || 'solid-service';
+    // Suporta tanto S3_* quanto AWS_* (Railway usa AWS_*)
+    const endpoint = process.env.S3_ENDPOINT || process.env.AWS_ENDPOINT_URL;
+    const region = process.env.S3_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1';
+    const accessKeyId = process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY;
+    this.bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET_NAME || 'solid-service';
     this.localStoragePath = process.env.LOCAL_STORAGE_PATH || './uploads';
 
     // DEBUG: Log todas as variáveis S3
