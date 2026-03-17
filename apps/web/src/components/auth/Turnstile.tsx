@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface TurnstileProps {
   siteKey: string;
@@ -8,6 +8,10 @@ interface TurnstileProps {
   onError?: () => void;
   onExpire?: () => void;
 }
+
+// Flag global para evitar carregar script múltiplas vezes
+let scriptLoaded = false;
+let scriptLoading = false;
 
 /**
  * Componente Cloudflare Turnstile (CAPTCHA)
@@ -20,18 +24,16 @@ interface TurnstileProps {
 export function Turnstile({ siteKey, onVerify, onError, onExpire }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Carregar script do Turnstile
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
+    // Função para renderizar o widget
+    const renderWidget = () => {
+      if (!containerRef.current || widgetIdRef.current || !window.turnstile) {
+        return;
+      }
 
-    script.onload = () => {
-      if (containerRef.current && window.turnstile) {
-        // Renderizar widget
+      try {
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           callback: onVerify,
@@ -40,15 +42,70 @@ export function Turnstile({ siteKey, onVerify, onError, onExpire }: TurnstilePro
           theme: 'light',
           size: 'normal',
         });
+      } catch (error) {
+        console.error('[Turnstile] Erro ao renderizar widget:', error);
       }
     };
+
+    // Se o script já está carregado, renderizar imediatamente
+    if (scriptLoaded && window.turnstile) {
+      renderWidget();
+      return;
+    }
+
+    // Se o script já está sendo carregado, aguardar
+    if (scriptLoading) {
+      const checkInterval = setInterval(() => {
+        if (scriptLoaded && window.turnstile) {
+          clearInterval(checkInterval);
+          renderWidget();
+        }
+      }, 100);
+
+      return () => clearInterval(checkInterval);
+    }
+
+    // Carregar script pela primeira vez
+    scriptLoading = true;
+
+    // Verificar se o script já existe no DOM
+    const existingScript = document.querySelector('script[src*="turnstile"]');
+    if (existingScript) {
+      scriptLoaded = true;
+      scriptLoading = false;
+      renderWidget();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+
+    script.onload = () => {
+      scriptLoaded = true;
+      scriptLoading = false;
+      setIsReady(true);
+      renderWidget();
+    };
+
+    script.onerror = () => {
+      scriptLoading = false;
+      console.error('[Turnstile] Erro ao carregar script');
+    };
+
+    document.head.appendChild(script);
 
     return () => {
       // Cleanup: remover widget ao desmontar
       if (widgetIdRef.current && window.turnstile) {
-        window.turnstile.remove(widgetIdRef.current);
+        try {
+          window.turnstile.remove(widgetIdRef.current);
+        } catch (error) {
+          // Ignorar erros ao remover
+        }
+        widgetIdRef.current = null;
       }
-      document.head.removeChild(script);
     };
   }, [siteKey, onVerify, onError, onExpire]);
 
@@ -58,7 +115,7 @@ export function Turnstile({ siteKey, onVerify, onError, onExpire }: TurnstilePro
 // Declaração de tipos para o objeto global turnstile
 declare global {
   interface Window {
-    turnstile: {
+    turnstile?: {
       render: (container: HTMLElement, options: any) => string;
       remove: (widgetId: string) => void;
       reset: (widgetId: string) => void;
