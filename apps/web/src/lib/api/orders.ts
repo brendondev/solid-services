@@ -24,6 +24,7 @@ export interface ServiceOrder {
   items?: OrderItem[];
   timeline?: OrderTimelineEvent[];
   checklists?: OrderChecklistItem[];
+  attachments?: Attachment[];
 }
 
 export interface OrderItem {
@@ -61,6 +62,16 @@ export interface OrderChecklistItem {
   isCompleted: boolean;
   completedAt: string | null;
   order: number;
+}
+
+export interface Attachment {
+  id: string;
+  serviceOrderId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  storageKey: string;
+  createdAt: string;
 }
 
 export interface CreateOrderDto {
@@ -162,5 +173,55 @@ export const ordersApi = {
       `/service-orders/${orderId}/checklist/${checklistId}/uncomplete`
     );
     return response.data;
+  },
+
+  // Attachments
+  uploadAttachment: async (
+    orderId: string,
+    file: File,
+    description?: string,
+    onProgress?: (progress: number) => void
+  ): Promise<Attachment> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+      formData.append('description', description);
+    }
+
+    const response = await api.post(
+      `/service-orders/${orderId}/attachments`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onProgress(progress);
+          }
+        },
+      }
+    );
+    return response.data;
+  },
+
+  getAttachmentDownloadUrl: async (
+    orderId: string,
+    attachmentId: string
+  ): Promise<{ url: string }> => {
+    const response = await api.get(
+      `/service-orders/${orderId}/attachments/${attachmentId}/download`
+    );
+    return response.data;
+  },
+
+  deleteAttachment: async (
+    orderId: string,
+    attachmentId: string
+  ): Promise<void> => {
+    await api.delete(`/service-orders/${orderId}/attachments/${attachmentId}`);
   },
 };

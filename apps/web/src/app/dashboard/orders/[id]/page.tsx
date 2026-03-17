@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
+import { AttachmentsSection } from '@/components/orders/AttachmentsSection';
 import {
   ArrowLeft,
   Calendar,
@@ -602,6 +603,13 @@ export default function OrderDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Attachments */}
+      <AttachmentsSection
+        orderId={id}
+        attachments={order.attachments || []}
+        onAttachmentsChange={loadOrder}
+      />
     </div>
   );
 }
