@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import * as PDFDocument from 'pdfkit';
+
+// Import PDFKit usando require (CommonJS module)
+const PDFDocument = require('pdfkit');
 
 @Injectable()
 export class QuotationPdfService {
