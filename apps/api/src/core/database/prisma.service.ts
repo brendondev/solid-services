@@ -60,8 +60,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       if (requiresTenant) {
         const tenantId = this.tenantContext.getTenantIdOrNull();
 
+        // LOG CRÍTICO: Verificar se contexto está sendo recebido
+        console.log(`[Prisma Middleware] Model: ${params.model}, Action: ${params.action}, TenantId: ${tenantId || 'NULL'}`);
+
         // Se não há contexto de tenant, permitir (para seeds, migrations, etc)
         if (!tenantId) {
+          console.warn(`[Prisma Middleware] ⚠️  NO TENANT CONTEXT - Query will return ALL data!`);
           return next(params);
         }
 
