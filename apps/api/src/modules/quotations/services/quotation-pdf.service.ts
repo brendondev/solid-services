@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import * as path from 'path';
-import * as fs from 'fs';
 
 // Import usando require para pdfmake (CommonJS module)
 const PdfPrinter = require('pdfmake');
@@ -12,9 +10,6 @@ export class QuotationPdfService {
 
   constructor() {
     try {
-      // Tenta carregar as fontes do Roboto do pdfmake
-      const fontPath = path.join(process.cwd(), 'node_modules', 'pdfmake', 'build');
-
       // Usa fontes padrão disponíveis no sistema ou fallback para Courier
       const fonts = {
         Courier: {
