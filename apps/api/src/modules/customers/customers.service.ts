@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto';
@@ -163,6 +163,47 @@ export class CustomersService {
       data: {
         status: 'inactive',
       },
+    });
+  }
+
+  /**
+   * Alterna o status do cliente (ativo/inativo)
+   */
+  async toggleStatus(id: string) {
+    const customer = await this.findOne(id);
+
+    return this.prisma.customer.update({
+      where: { id },
+      data: {
+        status: customer.status === 'active' ? 'inactive' : 'active',
+      },
+    });
+  }
+
+  /**
+   * Deleta permanentemente um cliente
+   * Só permite se não houver orçamentos, ordens ou recebíveis associados
+   */
+  async delete(id: string) {
+    // Verificar se existe
+    const customer = await this.findOne(id);
+
+    // Verificar se há dependências
+    const [quotationsCount, ordersCount, receivablesCount] = await Promise.all([
+      this.prisma.quotation.count({ where: { customerId: id } }),
+      this.prisma.serviceOrder.count({ where: { customerId: id } }),
+      this.prisma.receivable.count({ where: { customerId: id } }),
+    ]);
+
+    if (quotationsCount > 0 || ordersCount > 0 || receivablesCount > 0) {
+      throw new BadRequestException(
+        `Não é possível excluir este cliente pois ele possui ${quotationsCount} orçamento(s), ${ordersCount} ordem(ns) e ${receivablesCount} recebível(is). Inative-o ao invés de excluir.`
+      );
+    }
+
+    // Deletar permanentemente
+    return this.prisma.customer.delete({
+      where: { id },
     });
   }
 

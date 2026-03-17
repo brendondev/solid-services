@@ -195,16 +195,37 @@ export class CustomersController {
     };
   }
 
+  @Patch(':id/toggle-status')
+  @ApiOperation({ summary: 'Alternar status do cliente (ativar/desativar)' })
+  @ApiResponse({ status: 200, description: 'Status alterado' })
+  @ApiResponse({ status: 404, description: 'Cliente não encontrado' })
+  async toggleStatus(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    const oldCustomer = await this.customersService.findOne(id);
+    const updated = await this.customersService.toggleStatus(id);
+
+    // Audit log
+    await this.auditService.logUpdate({
+      userId,
+      entity: 'Customer',
+      entityId: id,
+      oldData: { status: oldCustomer.status },
+      newData: { status: updated.status },
+    });
+
+    return updated;
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles('admin')
-  @ApiOperation({ summary: 'Remover cliente (soft delete)' })
-  @ApiResponse({ status: 204, description: 'Cliente removido' })
+  @ApiOperation({ summary: 'Excluir cliente permanentemente' })
+  @ApiResponse({ status: 204, description: 'Cliente excluído permanentemente' })
+  @ApiResponse({ status: 400, description: 'Cliente possui dependências e não pode ser excluído' })
   @ApiResponse({ status: 404, description: 'Cliente não encontrado' })
   @ApiResponse({ status: 403, description: 'Sem permissão (apenas admin)' })
-  async remove(@Param('id') id: string, @CurrentUser('id') userId: string) {
+  async delete(@Param('id') id: string, @CurrentUser('id') userId: string) {
     const customer = await this.customersService.findOne(id);
-    await this.customersService.remove(id);
+    await this.customersService.delete(id);
 
     // Audit log
     await this.auditService.logDelete({

@@ -109,6 +109,11 @@ export const customersApi = {
     return response.data;
   },
 
+  toggleStatus: async (id: string): Promise<Customer> => {
+    const response = await api.patch(`/customers/${id}/toggle-status`);
+    return response.data;
+  },
+
   remove: async (id: string): Promise<void> => {
     await api.delete(`/customers/${id}`);
   },

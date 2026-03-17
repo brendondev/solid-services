@@ -16,7 +16,9 @@ import {
   CheckCircle,
   XCircle,
   Mail,
-  Phone
+  Phone,
+  Power,
+  PowerOff
 } from 'lucide-react';
 
 export default function CustomersPage() {
@@ -30,6 +32,7 @@ export default function CustomersPage() {
     customerId: string | null;
   }>({ isOpen: false, customerId: null });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     loadCustomers();
@@ -72,6 +75,18 @@ export default function CustomersPage() {
 
   const handleDeleteCancel = () => {
     setConfirmDialog({ isOpen: false, customerId: null });
+  };
+
+  const handleToggleStatus = async (id: string) => {
+    try {
+      setIsTogglingStatus(id);
+      await customersApi.toggleStatus(id);
+      await loadCustomers();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao alterar status do cliente');
+    } finally {
+      setIsTogglingStatus(null);
+    }
   };
 
   const getStats = () => {
@@ -282,9 +297,27 @@ export default function CustomersPage() {
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
+                    onClick={() => handleToggleStatus(customer.id)}
+                    disabled={isTogglingStatus === customer.id}
+                    className={`p-2 rounded-lg transition-colors ${
+                      customer.status === 'active'
+                        ? 'text-gray-600 hover:bg-gray-100'
+                        : 'text-green-600 hover:bg-green-50'
+                    } disabled:opacity-50`}
+                    title={customer.status === 'active' ? 'Desativar' : 'Ativar'}
+                  >
+                    {isTogglingStatus === customer.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : customer.status === 'active' ? (
+                      <PowerOff className="w-5 h-5" />
+                    ) : (
+                      <Power className="w-5 h-5" />
+                    )}
+                  </button>
+                  <button
                     onClick={() => handleDeleteClick(customer.id)}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                    title="Excluir"
+                    title="Excluir Permanentemente"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -300,9 +333,9 @@ export default function CustomersPage() {
         isOpen={confirmDialog.isOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        title="Excluir Cliente"
-        message="Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita."
-        confirmText="Excluir"
+        title="Excluir Cliente Permanentemente"
+        message="⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL e o cliente será excluído permanentemente do banco de dados. Só é possível excluir clientes que não possuem orçamentos, ordens ou recebíveis associados. Se você deseja apenas desativar o cliente, use o botão de ativar/desativar ao invés de excluir."
+        confirmText="Sim, excluir permanentemente"
         cancelText="Cancelar"
         variant="danger"
         isLoading={isDeleting}
