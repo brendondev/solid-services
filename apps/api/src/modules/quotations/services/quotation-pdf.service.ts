@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Import usando require para pdfmake (CommonJS module)
 const PdfPrinter = require('pdfmake');
@@ -10,23 +12,21 @@ export class QuotationPdfService {
 
   constructor() {
     try {
-      // Configuração das fontes - usando fontes padrão do sistema
-      const fonts = {
-        Roboto: {
-          normal: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-Regular.ttf'], 'base64'),
-          bold: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-Medium.ttf'], 'base64'),
-          italics: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-Italic.ttf'], 'base64'),
-          bolditalics: Buffer.from(require('pdfmake/build/vfs_fonts').pdfMake.vfs['Roboto-MediumItalic.ttf'], 'base64'),
-        },
-      };
+      // Tenta carregar as fontes do Roboto do pdfmake
+      const fontPath = path.join(process.cwd(), 'node_modules', 'pdfmake', 'build');
 
-      // Lazy initialization - apenas inicializa quando realmente usado
-      this.printer = null;
-      this.initializePrinter = () => {
-        if (!this.printer) {
-          this.printer = new PdfPrinter(fonts);
+      // Usa fontes padrão disponíveis no sistema ou fallback para Courier
+      const fonts = {
+        Courier: {
+          normal: 'Courier',
+          bold: 'Courier-Bold',
+          italics: 'Courier-Oblique',
+          bolditalics: 'Courier-BoldOblique'
         }
       };
+
+      this.printer = new PdfPrinter(fonts);
+      this.initializePrinter = () => {}; // Já inicializado
     } catch (error) {
       console.warn('PdfMake initialization failed, PDF generation will not work:', error);
       this.printer = null;
@@ -40,9 +40,16 @@ export class QuotationPdfService {
     // Inicializar printer se necessário
     this.initializePrinter();
 
+    if (!this.printer) {
+      throw new Error('PDF printer not initialized');
+    }
+
     const docDefinition: TDocumentDefinitions = {
       pageSize: 'A4',
       pageMargins: [40, 60, 40, 60],
+      defaultStyle: {
+        font: 'Courier'
+      },
 
       header: {
         margin: [40, 20, 40, 0],
