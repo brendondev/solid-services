@@ -186,7 +186,7 @@ export class CustomersService {
    */
   async delete(id: string) {
     // Verificar se existe
-    const customer = await this.findOne(id);
+    await this.findOne(id);
 
     // Verificar se há dependências
     const [quotationsCount, ordersCount, receivablesCount] = await Promise.all([
