@@ -57,16 +57,19 @@ export class CustomersService {
    * Lista todos os clientes com paginação
    */
   async findAll(page: number = 1, limit: number = 10, search?: string) {
+    const tenantId = this.tenantContext.getTenantId();
     const skip = (page - 1) * limit;
 
-    const where = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { document: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
+    const where: any = {
+      tenantId,
+    };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' as const } },
+        { document: { contains: search, mode: 'insensitive' as const } },
+      ];
+    }
 
     const [customers, total] = await Promise.all([
       this.prisma.customer.findMany({
@@ -211,8 +214,11 @@ export class CustomersService {
    * Busca clientes ativos
    */
   async findActive() {
+    const tenantId = this.tenantContext.getTenantId();
+
     return this.prisma.customer.findMany({
       where: {
+        tenantId,
         status: 'active',
       },
       select: {

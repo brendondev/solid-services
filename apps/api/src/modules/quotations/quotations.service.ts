@@ -134,9 +134,12 @@ export class QuotationsService {
    * Lista todos os orçamentos com paginação
    */
   async findAll(page: number = 1, limit: number = 10, search?: string, status?: string) {
+    const tenantId = this.tenantContext.getTenantId();
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      tenantId,
+    };
 
     if (search) {
       where.OR = [
@@ -326,8 +329,11 @@ export class QuotationsService {
    * Busca orçamentos por cliente
    */
   async findByCustomer(customerId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
     return this.prisma.quotation.findMany({
       where: {
+        tenantId,
         customerId,
       },
       include: {
@@ -347,8 +353,11 @@ export class QuotationsService {
    * Busca orçamentos pendentes (draft ou sent)
    */
   async findPending() {
+    const tenantId = this.tenantContext.getTenantId();
+
     return this.prisma.quotation.findMany({
       where: {
+        tenantId,
         status: {
           in: ['draft', 'sent'],
         },

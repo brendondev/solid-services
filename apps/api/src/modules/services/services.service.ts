@@ -41,9 +41,12 @@ export class ServicesService {
    * Lista todos os serviços com paginação e filtros
    */
   async findAll(page: number = 1, limit: number = 10, search?: string, status?: string) {
+    const tenantId = this.tenantContext.getTenantId();
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      tenantId,
+    };
 
     if (search) {
       where.OR = [
@@ -213,8 +216,11 @@ export class ServicesService {
    * Busca apenas serviços ativos
    */
   async findActive() {
+    const tenantId = this.tenantContext.getTenantId();
+
     return this.prisma.service.findMany({
       where: {
+        tenantId,
         status: 'active',
       },
       select: {
@@ -234,8 +240,11 @@ export class ServicesService {
    * Busca serviços mais utilizados
    */
   async findMostUsed(limit: number = 10) {
+    const tenantId = this.tenantContext.getTenantId();
+
     const services = await this.prisma.service.findMany({
       where: {
+        tenantId,
         status: 'active',
       },
       include: {

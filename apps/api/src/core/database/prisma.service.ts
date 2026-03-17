@@ -43,6 +43,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    */
   private setupTenantMiddleware() {
     this.$use(async (params, next) => {
+      // LOG GLOBAL: Ver TODAS as queries do Prisma
+      console.log(`[Prisma] Query intercepted: ${params.model}.${params.action}`);
+
       // Lista de modelos que possuem tenant_id
       const tenantModels = [
         'customer',

@@ -234,9 +234,12 @@ export class ServiceOrdersService {
    * Lista todas as ordens
    */
   async findAll(page: number = 1, limit: number = 10, search?: string, status?: string) {
+    const tenantId = this.tenantContext.getTenantId();
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      tenantId,
+    };
 
     if (search) {
       where.OR = [
@@ -516,6 +519,7 @@ export class ServiceOrdersService {
    * Busca ordens agendadas para uma data
    */
   async findScheduled(date: Date) {
+    const tenantId = this.tenantContext.getTenantId();
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -524,6 +528,7 @@ export class ServiceOrdersService {
 
     return this.prisma.serviceOrder.findMany({
       where: {
+        tenantId,
         scheduledFor: {
           gte: startOfDay,
           lte: endOfDay,
@@ -556,8 +561,11 @@ export class ServiceOrdersService {
    * Busca ordens por técnico
    */
   async findByTechnician(technicianId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
     return this.prisma.serviceOrder.findMany({
       where: {
+        tenantId,
         assignedTo: technicianId,
         status: {
           in: ['scheduled', 'in_progress'],

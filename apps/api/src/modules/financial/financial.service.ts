@@ -102,9 +102,12 @@ export class FinancialService {
     status?: string,
     overdue?: boolean,
   ) {
+    const tenantId = this.tenantContext.getTenantId();
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = {
+      tenantId,
+    };
 
     if (status) {
       where.status = status;
@@ -286,8 +289,11 @@ export class FinancialService {
    * Busca recebíveis por cliente
    */
   async findByCustomer(customerId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
     return this.prisma.receivable.findMany({
       where: {
+        tenantId,
         customerId,
       },
       include: {
