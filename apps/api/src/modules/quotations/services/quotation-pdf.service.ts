@@ -390,15 +390,4 @@ export class QuotationPdfService {
       currency: 'BRL',
     }).format(value);
   }
-
-  private translateStatus(status: string): string {
-    const statusMap: Record<string, string> = {
-      pending: 'Pendente',
-      draft: 'Rascunho',
-      sent: 'Enviado',
-      approved: 'Aprovado',
-      rejected: 'Rejeitado',
-    };
-    return statusMap[status] || status;
-  }
 }
