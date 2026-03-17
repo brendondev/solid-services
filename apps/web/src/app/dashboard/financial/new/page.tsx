@@ -15,7 +15,7 @@ const receivableSchema = z.object({
   serviceOrderId: z.string().optional(),
   amount: z.coerce.number().positive('Valor deve ser positivo'),
   dueDate: z.string().min(1, 'Data de vencimento é obrigatória'),
-  notes: z.string().optional(),
+  description: z.string().optional(),
 });
 
 type ReceivableFormData = z.infer<typeof receivableSchema>;
@@ -92,7 +92,7 @@ export default function NewReceivablePage() {
         serviceOrderId: data.serviceOrderId || undefined,
         amount: data.amount,
         dueDate: data.dueDate,
-        notes: data.notes || undefined,
+        description: data.description || undefined,
       });
 
       router.push('/dashboard/financial');
@@ -229,17 +229,17 @@ export default function NewReceivablePage() {
             )}
           </div>
 
-          {/* Observações */}
+          {/* Descrição/Observações */}
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-              Observações
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              Descrição/Observações
             </label>
             <textarea
-              {...register('notes')}
-              id="notes"
+              {...register('description')}
+              id="description"
               rows={3}
               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-              placeholder="Informações adicionais..."
+              placeholder="Informações adicionais sobre este recebível..."
               disabled={isSubmitting}
             />
           </div>
