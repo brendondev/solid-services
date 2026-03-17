@@ -14,8 +14,9 @@ async function bootstrap() {
   // Compression - comprime respostas HTTP (gzip)
   app.use(compression());
 
-  // CORS - SECURITY: Usar whitelist específica, não regex genérica
+  // CORS - SECURITY: Whitelist específica
   const allowedOrigins = [
+    'https://solid-services-api.vercel.app',
     process.env.WEB_URL,
     'http://localhost:3001',
     'http://localhost:3000',
@@ -45,9 +46,9 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      // Em produção, bloquear origens não autorizadas
+      // Em produção, bloquear silenciosamente (sem lançar erro)
       console.error(`[SECURITY] CORS blocked origin: ${origin}`);
-      return callback(new Error('Not allowed by CORS'), false);
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
