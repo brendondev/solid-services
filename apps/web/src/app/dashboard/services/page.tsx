@@ -303,7 +303,7 @@ export default function ServicesPage() {
 
                 <div className="flex items-center gap-2 ml-4">
                   <button
-                    onClick={() => router.push(`/dashboard/services/${service.id}/edit`)}
+                    onClick={() => router.push(`/dashboard/services/${service.id}`)}
                     className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
                     title="Editar"
                   >
