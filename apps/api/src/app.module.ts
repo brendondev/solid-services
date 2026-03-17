@@ -4,9 +4,21 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
-import { SeedController } from './seed.controller';
-import { DebugController } from './debug.controller';
 import { RolesGuard, JwtAuthGuard } from '@core/auth';
+
+// SECURITY: Controllers de desenvolvimento apenas em ambiente não-produção
+const devControllers: any[] = [];
+if (process.env.NODE_ENV !== 'production') {
+  // Lazy imports para evitar carregar em produção
+  try {
+    const { SeedController } = require('./seed.controller');
+    const { DebugController } = require('./debug.controller');
+    devControllers.push(SeedController, DebugController);
+    console.log('[SECURITY] Dev controllers loaded (non-production environment)');
+  } catch (e) {
+    // Silently ignore if files don't exist
+  }
+}
 
 // Core modules
 import { TenantModule } from './core/tenant';
@@ -31,7 +43,7 @@ import { TenantMiddleware } from './common/middleware';
 import { TenantContextInterceptor } from './common/interceptors';
 
 @Module({
-  controllers: [AppController, SeedController, DebugController],
+  controllers: [AppController, ...devControllers],
   imports: [
     // Configuration
     ConfigModule.forRoot({

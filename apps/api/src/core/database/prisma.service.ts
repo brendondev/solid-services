@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, ForbiddenException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { TenantContextService } from '../tenant';
 
@@ -10,6 +10,9 @@ import { TenantContextService } from '../tenant';
  * 2. Injeta automaticamente tenant_id em todas as queries
  * 3. Previne vazamento de dados entre tenants
  *
+ * SECURITY: O middleware REJEITA queries sem tenant context em produção.
+ * Apenas em desenvolvimento, queries sem tenant são permitidas (para seeds).
+ *
  * Princípios SOLID:
  * - Single Responsibility: Gerencia conexão com banco e isolamento de tenant
  * - Open/Closed: Pode ser estendido sem modificar o código base
@@ -17,9 +20,12 @@ import { TenantContextService } from '../tenant';
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private readonly isProduction = process.env.NODE_ENV === 'production';
+  private allowBypassTenant = false; // Flag para operações administrativas
+
   constructor(private readonly tenantContext: TenantContextService) {
     super({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     });
 
     // Middleware para injetar tenant_id automaticamente
@@ -40,12 +46,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * Este middleware é CRÍTICO para a segurança multi-tenant!
    * Ele garante que todas as queries sejam filtradas automaticamente
    * pelo tenant_id do contexto atual.
+   *
+   * SECURITY: Em produção, queries sem tenant context são BLOQUEADAS.
    */
   private setupTenantMiddleware() {
     this.$use(async (params, next) => {
-      // LOG GLOBAL: Ver TODAS as queries do Prisma
-      console.log(`[Prisma] Query intercepted: ${params.model}.${params.action}`);
-
       // Lista de modelos que possuem tenant_id
       const tenantModels = [
         'customer',
@@ -63,12 +68,24 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       if (requiresTenant) {
         const tenantId = this.tenantContext.getTenantIdOrNull();
 
-        // LOG CRÍTICO: Verificar se contexto está sendo recebido
-        console.log(`[Prisma Middleware] Model: ${params.model}, Action: ${params.action}, TenantId: ${tenantId || 'NULL'}`);
-
-        // Se não há contexto de tenant, permitir (para seeds, migrations, etc)
+        // SECURITY: Bloquear queries sem tenant context em produção
         if (!tenantId) {
-          console.warn(`[Prisma Middleware] ⚠️  NO TENANT CONTEXT - Query will return ALL data!`);
+          // Permitir bypass apenas se flag estiver ativa (operações administrativas)
+          if (this.allowBypassTenant) {
+            return next(params);
+          }
+
+          // Em produção, REJEITAR queries sem tenant
+          if (this.isProduction) {
+            throw new ForbiddenException(
+              `[SECURITY] Query blocked: ${params.model}.${params.action} - No tenant context in production`
+            );
+          }
+
+          // Em desenvolvimento, apenas avisar mas permitir (para seeds)
+          console.warn(
+            `[SECURITY WARNING] Query without tenant: ${params.model}.${params.action} - Only allowed in development`
+          );
           return next(params);
         }
 
@@ -139,11 +156,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * Executa uma operação SEM filtro de tenant
    * ATENÇÃO: Use apenas para operações administrativas!
    *
+   * SECURITY: Este método permite bypass do filtro de tenant.
+   * Use com extrema cautela e apenas quando absolutamente necessário.
+   *
    * @param fn Função a executar sem filtro de tenant
    */
   async withoutTenant<T>(fn: () => Promise<T>): Promise<T> {
-    // Temporariamente desabilita o middleware de tenant
-    // Implementação simplificada - em produção, considere uma abordagem mais robusta
-    return fn();
+    // SECURITY: Em produção, apenas permitir com flag explícita
+    if (this.isProduction) {
+      console.warn('[SECURITY] withoutTenant called in production - ensure this is intentional');
+    }
+
+    try {
+      this.allowBypassTenant = true;
+      const result = await fn();
+      return result;
+    } finally {
+      this.allowBypassTenant = false;
+    }
   }
 }

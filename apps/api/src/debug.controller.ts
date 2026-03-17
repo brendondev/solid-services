@@ -1,14 +1,26 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from './core/database/prisma.service';
 import { Public } from './core/auth/decorators/public.decorator';
 
+/**
+ * SECURITY: Controller de debug - APENAS para desenvolvimento local
+ * Este controller NÃO deve ser carregado em produção.
+ * Verificação adicional em cada método como defesa em profundidade.
+ */
 @Controller('dev')
 export class DebugController {
   constructor(private prisma: PrismaService) {}
 
+  private checkDevEnvironment() {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException('Debug endpoints disabled in production');
+    }
+  }
+
   @Public()
   @Post('clean-orphaned-data')
   async cleanOrphanedData() {
+    this.checkDevEnvironment();
     try {
       // Deletar dados órfãos (que não pertencem a nenhum tenant válido)
       // Ou dados que foram criados com tenant errado durante o bug
@@ -34,6 +46,7 @@ export class DebugController {
   @Public()
   @Get('debug')
   async debug() {
+    this.checkDevEnvironment();
     try {
       // Buscar tenant
       const tenant = await this.prisma.tenant.findUnique({

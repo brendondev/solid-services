@@ -1,16 +1,28 @@
-import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from './core/database/prisma.service';
 import { Public } from './core/auth/decorators/public.decorator';
 import * as bcrypt from 'bcrypt';
 
+/**
+ * SECURITY: Controller de seed - APENAS para desenvolvimento local
+ * Este controller NÃO deve ser carregado em produção.
+ * Verificação adicional em cada método como defesa em profundidade.
+ */
 @Controller('dev')
 export class SeedController {
   constructor(private prisma: PrismaService) {}
+
+  private checkDevEnvironment() {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException('Seed endpoints disabled in production');
+    }
+  }
 
   @Public()
   @Post('seed')
   @HttpCode(HttpStatus.OK)
   async runSeed() {
+    this.checkDevEnvironment();
     try {
       // Seed para popular banco de dados com dados mockup
       console.log('🌱 Iniciando seed via endpoint...');

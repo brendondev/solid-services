@@ -13,6 +13,8 @@ import { JwtPayload } from '../interfaces';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private readonly isDev = process.env.NODE_ENV !== 'production';
+
   constructor(
     configService: ConfigService,
     private readonly prisma: PrismaService,
@@ -25,7 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    console.log('[JwtStrategy] Validating token for user:', payload.sub, 'tenant:', payload.tenantId);
+    // SECURITY: Logs apenas em desenvolvimento
+    if (this.isDev) {
+      console.log('[JwtStrategy] Validating token for user:', payload.sub);
+    }
 
     // Buscar usuário no banco SEM filtro de tenant (pois o contexto ainda não foi definido)
     // O TenantContextInterceptor vai definir o contexto DEPOIS
@@ -37,16 +42,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user || user.status !== 'active') {
-      console.error('[JwtStrategy] User not found or inactive:', payload.sub);
+      // SECURITY: Não vazar detalhes em produção
+      if (this.isDev) {
+        console.error('[JwtStrategy] User not found or inactive:', payload.sub);
+      }
       throw new UnauthorizedException('User not found or inactive');
     }
-
-    console.log('[JwtStrategy] User validated successfully:', {
-      id: user.id,
-      email: user.email,
-      tenantId: user.tenantId,
-      roles: user.roles,
-    });
 
     // Retornar dados do usuário (será anexado ao request)
     // O TenantContextInterceptor usará req.user.tenantId para criar o contexto

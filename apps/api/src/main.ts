@@ -14,14 +14,44 @@ async function bootstrap() {
   // Compression - comprime respostas HTTP (gzip)
   app.use(compression());
 
-  // CORS
+  // CORS - SECURITY: Usar whitelist específica, não regex genérica
+  const allowedOrigins = [
+    process.env.WEB_URL,
+    'http://localhost:3001',
+    'http://localhost:3000',
+  ].filter(Boolean) as string[];
+
+  // Adicionar origens adicionais da variável de ambiente (separadas por vírgula)
+  if (process.env.CORS_ALLOWED_ORIGINS) {
+    const additionalOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim());
+    allowedOrigins.push(...additionalOrigins);
+  }
+
   app.enableCors({
-    origin: [
-      process.env.WEB_URL || 'http://localhost:3001',
-      'http://localhost:3001',
-      /\.vercel\.app$/,  // Permite todos subdomínios vercel.app
-    ],
+    origin: (origin, callback) => {
+      // Permitir requests sem origin (ex: mobile apps, Postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Verificar se a origem está na whitelist
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Em desenvolvimento, ser mais permissivo (mas logar)
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[CORS] Origin not in whitelist (allowed in dev): ${origin}`);
+        return callback(null, true);
+      }
+
+      // Em produção, bloquear origens não autorizadas
+      console.error(`[SECURITY] CORS blocked origin: ${origin}`);
+      return callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID'],
   });
 
   // Global prefix
@@ -58,8 +88,11 @@ async function bootstrap() {
   const port = Number(process.env.PORT || process.env.API_PORT || 3000);
   await app.listen(port);
 
-  console.log(`API running on port ${port}`);
-  console.log(`API docs path: /api/docs`);
+  // SECURITY: Logs apenas em desenvolvimento
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`API running on port ${port}`);
+    console.log(`API docs path: /api/docs`);
+  }
 }
 
 bootstrap();

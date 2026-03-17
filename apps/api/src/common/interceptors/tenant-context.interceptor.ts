@@ -31,8 +31,6 @@ export class TenantContextInterceptor implements NestInterceptor {
 
     // Se há usuário autenticado, executar dentro do contexto do tenant
     if (user?.tenantId) {
-      console.log('[TenantContextInterceptor] Running with tenant context:', user.tenantId);
-
       // CRÍTICO: .run() garante que TODA a execução subsequente
       // (incluindo queries do Prisma) aconteça com o contexto correto
       return new Observable((subscriber) => {
@@ -50,7 +48,6 @@ export class TenantContextInterceptor implements NestInterceptor {
     }
 
     // Se não há usuário, executar normalmente (rotas públicas)
-    console.log('[TenantContextInterceptor] No tenant context (public route)');
     return next.handle();
   }
 }
