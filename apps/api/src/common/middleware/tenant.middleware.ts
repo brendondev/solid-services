@@ -24,14 +24,21 @@ export class TenantMiddleware implements NestMiddleware {
     const tenantId = this.extractTenantId(req);
     const userId = (req as any).user?.id;
 
-    if (!tenantId) {
-      // Para rotas públicas, permitir sem tenant
-      // Para rotas protegidas, o AuthGuard vai bloquear
-      return next();
+    // CRÍTICO: SEMPRE criar o contexto AsyncLocal, mesmo sem tenant inicial
+    // O JwtStrategy vai definir o tenant correto depois usando setTenantId()
+    // Isso é necessário porque setTenantId() só funciona dentro de um contexto existente
+    const context: any = {};
+
+    if (tenantId) {
+      context.tenantId = tenantId;
     }
 
-    // Executar a requisição dentro do contexto do tenant
-    this.tenantContext.run({ tenantId, userId }, () => {
+    if (userId) {
+      context.userId = userId;
+    }
+
+    // Executar a requisição dentro do contexto (mesmo se vazio)
+    this.tenantContext.run(context, () => {
       next();
     });
   }

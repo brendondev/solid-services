@@ -118,7 +118,7 @@ export default function QuotationDetailPage() {
     try {
       setActionLoading('convert');
       const order = await ordersApi.createFromQuotation(id);
-      router.push(`/dashboard/service-orders/${order.id}`);
+      router.push(`/dashboard/orders/${order.id}`);
     } catch (err: any) {
       setError('Erro ao converter para ordem de serviço');
     } finally {

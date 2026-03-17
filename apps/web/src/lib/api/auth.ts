@@ -37,9 +37,15 @@ export const authApi = {
     return response.data;
   },
 
+  refresh: async (refreshToken: string): Promise<LoginResponse> => {
+    const response = await api.post('/auth/refresh', { refreshToken });
+    return response.data;
+  },
+
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
     }
   },
@@ -55,6 +61,13 @@ export const authApi = {
   getStoredToken: () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('token');
+    }
+    return null;
+  },
+
+  getStoredRefreshToken: () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('refreshToken');
     }
     return null;
   },

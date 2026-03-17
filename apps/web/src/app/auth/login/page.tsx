@@ -34,8 +34,9 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(data);
 
-      // Salvar token e usuário no localStorage
+      // Salvar tokens e usuário no localStorage
       localStorage.setItem('token', response.accessToken);
+      localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
 
       // Redirecionar para dashboard
