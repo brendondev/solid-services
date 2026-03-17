@@ -224,3 +224,4 @@ export class StorageService {
     return contentTypes[extension.toLowerCase()] || 'application/octet-stream';
   }
 }
+// Force redeploy ter, 17 de mar de 2026 09:11:01

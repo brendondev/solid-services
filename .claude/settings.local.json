@@ -31,7 +31,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:shadboard.vercel.app)",
       "WebSearch",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(timeout 30 bash -c 'while ! git fetch origin 2>/dev/null; do sleep 2; done; echo \"\"Fetch completo\"\"')",
+      "Bash(git restore:*)"
     ]
   }
 }
