@@ -14,7 +14,7 @@
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
-    "@prisma/client": "^5.9.1",
+    "@prisma/client": "^7.5.0",
     "bcrypt": "^5.1.1"
   },
   "devDependencies": {
