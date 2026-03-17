@@ -36,6 +36,15 @@ export class StorageService {
     this.bucket = process.env.S3_BUCKET || 'solid-service';
     this.localStoragePath = process.env.LOCAL_STORAGE_PATH || './uploads';
 
+    // DEBUG: Log todas as variáveis S3
+    this.logger.log('=== S3 Configuration Debug ===');
+    this.logger.log(`S3_ENDPOINT: ${endpoint || 'NOT SET'}`);
+    this.logger.log(`S3_REGION: ${region}`);
+    this.logger.log(`S3_BUCKET: ${this.bucket}`);
+    this.logger.log(`S3_ACCESS_KEY_ID: ${accessKeyId ? `${accessKeyId.substring(0, 10)}...` : 'NOT SET'}`);
+    this.logger.log(`S3_SECRET_ACCESS_KEY: ${secretAccessKey ? `${secretAccessKey.substring(0, 10)}...` : 'NOT SET'}`);
+    this.logger.log('==============================');
+
     // Verificar se S3 está configurado
     this.useS3 = !!(accessKeyId && secretAccessKey);
 
@@ -49,11 +58,11 @@ export class StorageService {
         },
         forcePathStyle: !!endpoint, // Necessário para MinIO
       });
-      this.logger.log(`Storage inicializado: ${endpoint ? 'MinIO' : 'AWS S3'} - bucket: ${this.bucket}`);
+      this.logger.log(`✅ Storage inicializado: ${endpoint ? 'MinIO/T3' : 'AWS S3'} - bucket: ${this.bucket} - region: ${region}`);
     } else {
       this.s3Client = null;
       this.logger.warn(
-        `S3 não configurado. Usando armazenamento local em: ${this.localStoragePath}. ` +
+        `❌ S3 não configurado. Usando armazenamento local em: ${this.localStoragePath}. ` +
         `Configure S3_ACCESS_KEY_ID e S3_SECRET_ACCESS_KEY para usar S3.`
       );
       // Criar diretório de uploads se não existir
@@ -119,18 +128,22 @@ export class StorageService {
    */
   async getSignedDownloadUrl(key: string, expiresIn: number = 3600): Promise<string> {
     try {
+      this.logger.log(`Getting download URL for key: ${key} | useS3: ${this.useS3} | s3Client: ${!!this.s3Client}`);
+
       if (this.useS3 && this.s3Client) {
         // Gerar URL assinada do S3
+        this.logger.log(`Generating S3 signed URL for bucket: ${this.bucket}, key: ${key}`);
         const command = new GetObjectCommand({
           Bucket: this.bucket,
           Key: key,
         });
 
         const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+        this.logger.log(`✅ S3 signed URL generated: ${url.substring(0, 50)}...`);
         return url;
       } else {
         // Para storage local, retornar endpoint de download
-        // O controller precisa servir esses arquivos
+        this.logger.log(`❌ Using local storage URL (S3 not configured)`);
         return `/api/v1/storage/download/${encodeURIComponent(key)}`;
       }
     } catch (error: any) {
