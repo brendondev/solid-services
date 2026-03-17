@@ -1,7 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { SeedController } from './seed.controller';
@@ -26,8 +26,9 @@ import { CustomerPortalModule } from './modules/customer-portal';
 import { NotificationsModule } from './modules/notifications';
 import { AuditModule } from './modules/audit';
 
-// Middleware
+// Middleware & Interceptors
 import { TenantMiddleware } from './common/middleware';
+import { TenantContextInterceptor } from './common/interceptors';
 
 @Module({
   controllers: [AppController, SeedController, DebugController],
@@ -66,7 +67,7 @@ import { TenantMiddleware } from './common/middleware';
     AuditModule,
   ],
   providers: [
-    // ORDEM CRÍTICA: JwtAuthGuard DEVE vir ANTES de RolesGuard
+    // ORDEM CRÍTICA:
     // 1. JwtAuthGuard valida token e popula req.user
     // 2. RolesGuard verifica permissões de req.user
     // 3. ThrottlerGuard aplica rate limiting
@@ -81,6 +82,12 @@ import { TenantMiddleware } from './common/middleware';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    // TenantContextInterceptor garante que toda execução aconteça
+    // dentro do contexto AsyncLocal do tenant
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TenantContextInterceptor,
     },
   ],
 })
