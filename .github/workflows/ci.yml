@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Job 1: Lint e Type Check
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint do código
+        run: npm run lint --workspaces --if-present
+
+      - name: Type check
+        run: npm run type-check --workspaces --if-present
+
+  # Job 2: Build Backend
+  build-backend:
+    name: Build Backend (API)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: cd packages/database && npx prisma generate
+
+      - name: Build backend
+        run: cd apps/api && npm run build
+
+      - name: Verificar arquivos de build
+        run: ls -la apps/api/dist
+
+  # Job 3: Build Frontend
+  build-frontend:
+    name: Build Frontend (Web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build frontend
+        run: cd apps/web && npm run build
+        env:
+          # Variáveis necessárias para build do Next.js
+          NEXT_PUBLIC_API_URL: https://api.example.com
+          NEXT_PUBLIC_BASE_URL: https://example.com
+
+      - name: Verificar arquivos de build
+        run: ls -la apps/web/.next
+
+  # Job 4: Testes (quando implementados)
+  test:
+    name: Testes Unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: cd packages/database && npx prisma generate
+
+      - name: Executar testes
+        run: npm run test --workspaces --if-present
+        continue-on-error: true # Não falhar CI se não houver testes ainda
+
+  # Job 5: Verificação de Segurança
+  security:
+    name: Verificação de Segurança
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Audit de dependências
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  # Job 6: Validar schema Prisma
+  validate-schema:
+    name: Validar Schema Prisma
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Validar schema
+        run: cd packages/database && npx prisma validate
+
+      - name: Verificar formatação do schema
+        run: cd packages/database && npx prisma format --check

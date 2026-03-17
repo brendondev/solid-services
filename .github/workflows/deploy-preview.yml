@@ -1,0 +1,45 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  # Preview do frontend no Vercel (automático via Vercel GitHub App)
+  # Preview do backend poderia ser feito no Railway com PR deployments
+
+  build-check:
+    name: Verificar Build antes do Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar Prisma Client
+        run: cd packages/database && npx prisma generate
+
+      - name: Build completo
+        run: npm run build
+
+      - name: Comentar no PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Build verificado com sucesso! O deploy está pronto para produção.'
+            })
