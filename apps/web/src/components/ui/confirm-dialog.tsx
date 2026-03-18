@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, ModalHeader, ModalBody, ModalFooter } from './Modal';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from './modal';
 import { Button } from './button';
 import { AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
 

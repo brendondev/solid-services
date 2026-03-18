@@ -34,7 +34,18 @@
       "Bash(cd:*)",
       "Bash(timeout 30 bash -c 'while ! git fetch origin 2>/dev/null; do sleep 2; done; echo \"\"Fetch completo\"\"')",
       "Bash(git restore:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git -C \"C:\\\\Users\\\\blima\\\\Desktop\\\\Documentos\\\\solid-service\" status --short)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(del Button.tsx)",
+      "Bash(del:*)",
+      "Bash(del Badge.tsx)",
+      "Bash(del Select.tsx)",
+      "Bash(test:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git mv:*)"
     ]
   }
 }

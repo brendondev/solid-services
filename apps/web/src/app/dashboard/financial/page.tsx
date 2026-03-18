@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { financialApi, Receivable, FinancialDashboard } from '@/lib/api/financial';
 import { PaymentModal } from '@/components/financial/PaymentModal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Plus,
   DollarSign,
