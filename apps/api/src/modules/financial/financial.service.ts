@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
-import { CreateReceivableDto, CreatePaymentDto, UpdateReceivableDto } from './dto';
+import {
+  CreateReceivableDto,
+  CreatePaymentDto,
+  UpdateReceivableDto,
+  CreatePayableDto,
+  UpdatePayableDto,
+  CreatePayablePaymentDto,
+} from './dto';
 
 @Injectable()
 export class FinancialService {
@@ -315,8 +322,244 @@ export class FinancialService {
     });
   }
 
+  // ============================================================================
+  // PAYABLES (Contas a Pagar)
+  // ============================================================================
+
   /**
-   * Dashboard financeiro
+   * Cria uma conta a pagar
+   */
+  async createPayable(createPayableDto: CreatePayableDto) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    return this.prisma.payable.create({
+      data: {
+        tenantId,
+        ...createPayableDto,
+        dueDate: new Date(createPayableDto.dueDate),
+        status: 'pending',
+        paidAmount: 0,
+      },
+      include: {
+        supplier: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Lista contas a pagar
+   */
+  async findAllPayables(
+    page: number = 1,
+    limit: number = 10,
+    status?: string,
+    overdue?: boolean,
+  ) {
+    const tenantId = this.tenantContext.getTenantId();
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      tenantId,
+    };
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (overdue) {
+      where.status = 'pending';
+      where.dueDate = {
+        lt: new Date(),
+      };
+    }
+
+    const [payables, total] = await Promise.all([
+      this.prisma.payable.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          supplier: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: {
+              payments: true,
+            },
+          },
+        },
+        orderBy: {
+          dueDate: 'asc',
+        },
+      }),
+      this.prisma.payable.count({ where }),
+    ]);
+
+    return {
+      data: payables,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Busca uma conta a pagar por ID
+   */
+  async findOnePayable(id: string) {
+    const payable = await this.prisma.payable.findUnique({
+      where: { id },
+      include: {
+        supplier: true,
+        payments: {
+          include: {
+            registeredUser: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            paidAt: 'desc',
+          },
+        },
+      },
+    });
+
+    if (!payable) {
+      throw new NotFoundException(`Payable with ID ${id} not found`);
+    }
+
+    return payable;
+  }
+
+  /**
+   * Atualiza uma conta a pagar
+   */
+  async updatePayable(id: string, updatePayableDto: UpdatePayableDto) {
+    await this.findOnePayable(id);
+
+    const data: any = { ...updatePayableDto };
+
+    if (updatePayableDto.dueDate) {
+      data.dueDate = new Date(updatePayableDto.dueDate);
+    }
+
+    return this.prisma.payable.update({
+      where: { id },
+      data,
+      include: {
+        supplier: true,
+      },
+    });
+  }
+
+  /**
+   * Registra um pagamento de conta a pagar
+   */
+  async registerPayablePayment(
+    payableId: string,
+    createPayablePaymentDto: CreatePayablePaymentDto,
+    userId: string,
+  ) {
+    const payable = await this.findOnePayable(payableId);
+
+    // Verificar se valor não excede o pendente
+    const pendingAmount = Number(payable.amount) - Number(payable.paidAmount);
+
+    if (createPayablePaymentDto.amount > pendingAmount) {
+      throw new BadRequestException('Payment amount exceeds pending amount');
+    }
+
+    // Criar pagamento
+    const payment = await this.prisma.payablePayment.create({
+      data: {
+        payableId,
+        amount: createPayablePaymentDto.amount,
+        method: createPayablePaymentDto.method,
+        paidAt: new Date(createPayablePaymentDto.paidAt),
+        registeredBy: userId,
+        notes: createPayablePaymentDto.notes,
+      },
+      include: {
+        registeredUser: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Atualizar conta a pagar
+    const newPaidAmount = Number(payable.paidAmount) + createPayablePaymentDto.amount;
+    const isPaid = newPaidAmount >= Number(payable.amount);
+
+    await this.prisma.payable.update({
+      where: { id: payableId },
+      data: {
+        paidAmount: newPaidAmount,
+        status: isPaid ? 'paid' : 'partial',
+        paidAt: isPaid ? new Date() : null,
+      },
+    });
+
+    return payment;
+  }
+
+  /**
+   * Remove uma conta a pagar
+   */
+  async removePayable(id: string) {
+    const payable = await this.findOnePayable(id);
+
+    if (Number(payable.paidAmount) > 0) {
+      throw new BadRequestException('Cannot delete payable with payments');
+    }
+
+    return this.prisma.payable.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Busca contas a pagar por fornecedor
+   */
+  async findPayablesBySupplier(supplierId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    return this.prisma.payable.findMany({
+      where: {
+        tenantId,
+        supplierId,
+      },
+      include: {
+        _count: {
+          select: {
+            payments: true,
+          },
+        },
+      },
+      orderBy: {
+        dueDate: 'desc',
+      },
+    });
+  }
+
+  /**
+   * Dashboard financeiro completo (Receivables + Payables)
    */
   async getDashboard() {
     const tenantId = this.tenantContext.getTenantId();
@@ -324,9 +567,13 @@ export class FinancialService {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const next30Days = new Date(now);
+    next30Days.setDate(next30Days.getDate() + 30);
+
+    // ========== RECEIVABLES (Contas a Receber) ==========
 
     // Total a receber (pending)
-    const totalPending = await this.prisma.receivable.aggregate({
+    const totalPendingReceivables = await this.prisma.receivable.aggregate({
       where: {
         tenantId,
         status: {
@@ -355,8 +602,8 @@ export class FinancialService {
       },
     });
 
-    // Vencidos
-    const overdue = await this.prisma.receivable.count({
+    // Receivables vencidos
+    const overdueReceivables = await this.prisma.receivable.count({
       where: {
         tenantId,
         status: {
@@ -368,12 +615,130 @@ export class FinancialService {
       },
     });
 
-    const pendingAmount = Number(totalPending._sum.amount || 0) - Number(totalPending._sum.paidAmount || 0);
+    // ========== PAYABLES (Contas a Pagar) ==========
+
+    // Total a pagar (pending)
+    const totalPendingPayables = await this.prisma.payable.aggregate({
+      where: {
+        tenantId,
+        status: {
+          in: ['pending', 'partial'],
+        },
+      },
+      _sum: {
+        amount: true,
+        paidAmount: true,
+      },
+    });
+
+    // Total pago no mês
+    const totalPaidThisMonth = await this.prisma.payablePayment.aggregate({
+      where: {
+        payable: {
+          tenantId,
+        },
+        paidAt: {
+          gte: firstDayOfMonth,
+          lte: lastDayOfMonth,
+        },
+      },
+      _sum: {
+        amount: true,
+      },
+    });
+
+    // Payables vencidos
+    const overduePayables = await this.prisma.payable.count({
+      where: {
+        tenantId,
+        status: {
+          in: ['pending', 'partial'],
+        },
+        dueDate: {
+          lt: now,
+        },
+      },
+    });
+
+    // ========== FLUXO DE CAIXA ==========
+
+    // Próximas entradas (30 dias)
+    const upcomingReceivables = await this.prisma.receivable.aggregate({
+      where: {
+        tenantId,
+        status: {
+          in: ['pending', 'partial'],
+        },
+        dueDate: {
+          gte: now,
+          lte: next30Days,
+        },
+      },
+      _sum: {
+        amount: true,
+        paidAmount: true,
+      },
+    });
+
+    // Próximas saídas (30 dias)
+    const upcomingPayables = await this.prisma.payable.aggregate({
+      where: {
+        tenantId,
+        status: {
+          in: ['pending', 'partial'],
+        },
+        dueDate: {
+          gte: now,
+          lte: next30Days,
+        },
+      },
+      _sum: {
+        amount: true,
+        paidAmount: true,
+      },
+    });
+
+    // Cálculos
+    const pendingReceivablesAmount =
+      Number(totalPendingReceivables._sum.amount || 0) -
+      Number(totalPendingReceivables._sum.paidAmount || 0);
+
+    const pendingPayablesAmount =
+      Number(totalPendingPayables._sum.amount || 0) -
+      Number(totalPendingPayables._sum.paidAmount || 0);
+
+    const upcomingReceivablesAmount =
+      Number(upcomingReceivables._sum.amount || 0) -
+      Number(upcomingReceivables._sum.paidAmount || 0);
+
+    const upcomingPayablesAmount =
+      Number(upcomingPayables._sum.amount || 0) -
+      Number(upcomingPayables._sum.paidAmount || 0);
+
+    const cashBalance = pendingReceivablesAmount - pendingPayablesAmount;
+    const projectedCashFlow = upcomingReceivablesAmount - upcomingPayablesAmount;
+    const monthlyProfit =
+      Number(totalReceivedThisMonth._sum.amount || 0) -
+      Number(totalPaidThisMonth._sum.amount || 0);
 
     return {
-      pendingAmount,
-      receivedThisMonth: Number(totalReceivedThisMonth._sum.amount || 0),
-      overdueCount: overdue,
+      receivables: {
+        pending: pendingReceivablesAmount,
+        receivedThisMonth: Number(totalReceivedThisMonth._sum.amount || 0),
+        overdueCount: overdueReceivables,
+        upcoming30Days: upcomingReceivablesAmount,
+      },
+      payables: {
+        pending: pendingPayablesAmount,
+        paidThisMonth: Number(totalPaidThisMonth._sum.amount || 0),
+        overdueCount: overduePayables,
+        upcoming30Days: upcomingPayablesAmount,
+      },
+      cashFlow: {
+        currentBalance: cashBalance,
+        projected30Days: projectedCashFlow,
+        monthlyProfit,
+      },
     };
   }
 }

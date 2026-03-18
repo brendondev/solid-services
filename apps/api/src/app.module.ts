@@ -32,6 +32,7 @@ import { ServicesModule } from './modules/services';
 import { QuotationsModule } from './modules/quotations';
 import { ServiceOrdersModule } from './modules/service-orders';
 import { FinancialModule } from './modules/financial';
+import { SuppliersModule } from './modules/suppliers';
 import { DashboardModule } from './modules/dashboard';
 import { SchedulingModule } from './modules/scheduling';
 import { CustomerPortalModule } from './modules/customer-portal';
@@ -72,6 +73,7 @@ import { TenantContextInterceptor } from './common/interceptors';
     QuotationsModule,
     ServiceOrdersModule,
     FinancialModule,
+    SuppliersModule,
     DashboardModule,
     SchedulingModule,
     CustomerPortalModule,

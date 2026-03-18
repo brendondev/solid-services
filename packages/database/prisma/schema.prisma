@@ -1,4 +1,4 @@
-// Schema para PostgreSQL (Produção)
+// Schema para PostgreSQL (Produção e Desenvolvimento)
 
 generator client {
   provider = "prisma-client-js"
@@ -28,6 +28,8 @@ model Tenant {
   quotations    Quotation[]
   serviceOrders ServiceOrder[]
   receivables   Receivable[]
+  suppliers     Supplier[]
+  payables      Payable[]
 
   @@map("tenants")
 }
@@ -43,10 +45,11 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  tenant             Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  assignedOrders     ServiceOrder[] @relation("AssignedOrders")
-  registeredPayments Payment[]      @relation("RegisteredPayments")
-  auditLogs          AuditLog[]
+  tenant                    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedOrders            ServiceOrder[]    @relation("AssignedOrders")
+  registeredPayments        Payment[]         @relation("RegisteredPayments")
+  registeredPayablePayments PayablePayment[]  @relation("RegisteredPayablePayments")
+  auditLogs                 AuditLog[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -357,6 +360,75 @@ model Payment {
 
   @@index([receivableId])
   @@map("payments")
+}
+
+// ============================================================================
+// SUPPLIERS & PAYABLES
+// ============================================================================
+
+model Supplier {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  document  String?
+  email     String?
+  phone     String?
+  status    String   @default("active")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payables Payable[]
+
+  @@unique([tenantId, document])
+  @@index([tenantId])
+  @@index([tenantId, name])
+  @@index([tenantId, status])
+  @@map("suppliers")
+}
+
+model Payable {
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  supplierId  String?   @map("supplier_id")
+  description String
+  amount      Decimal   @db.Decimal(10, 2)
+  paidAmount  Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  status      String    @default("pending")
+  dueDate     DateTime  @map("due_date")
+  paidAt      DateTime? @map("paid_at")
+  category    String?
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant   Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier Supplier?         @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  payments PayablePayment[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@index([tenantId, supplierId])
+  @@map("payables")
+}
+
+model PayablePayment {
+  id           String   @id @default(uuid())
+  payableId    String   @map("payable_id")
+  amount       Decimal  @db.Decimal(10, 2)
+  method       String
+  paidAt       DateTime @map("paid_at")
+  registeredBy String   @map("registered_by")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  payable        Payable @relation(fields: [payableId], references: [id], onDelete: Cascade)
+  registeredUser User    @relation("RegisteredPayablePayments", fields: [registeredBy], references: [id], onDelete: Restrict)
+
+  @@index([payableId])
+  @@map("payable_payments")
 }
 
 // ============================================================================
