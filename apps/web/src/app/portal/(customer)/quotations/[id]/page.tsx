@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { customerPortalApi, Quotation } from '@/lib/api/customer-portal';
-import { StatusBadge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { StatusBadge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/contexts/ToastContext';
 
 /**

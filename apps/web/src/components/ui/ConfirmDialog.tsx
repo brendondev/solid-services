@@ -1,7 +1,7 @@
 'use client';
 
 import { Modal, ModalHeader, ModalBody, ModalFooter } from './Modal';
-import { Button } from './Button';
+import { Button } from './button';
 import { AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
 
 interface ConfirmDialogProps {
@@ -21,25 +21,25 @@ const variantConfig = {
     icon: XCircle,
     iconColor: 'text-red-600',
     bgColor: 'bg-red-100',
-    buttonVariant: 'danger' as const,
+    buttonVariant: 'destructive' as const,
   },
   warning: {
     icon: AlertTriangle,
     iconColor: 'text-yellow-600',
     bgColor: 'bg-yellow-100',
-    buttonVariant: 'primary' as const,
+    buttonVariant: 'default' as const,
   },
   info: {
     icon: Info,
     iconColor: 'text-blue-600',
     bgColor: 'bg-blue-100',
-    buttonVariant: 'primary' as const,
+    buttonVariant: 'default' as const,
   },
   success: {
     icon: CheckCircle,
     iconColor: 'text-green-600',
     bgColor: 'bg-green-100',
-    buttonVariant: 'primary' as const,
+    buttonVariant: 'default' as const,
   },
 };
 
@@ -89,7 +89,7 @@ export function ConfirmDialog({
           type="button"
           variant={config.buttonVariant}
           onClick={handleConfirm}
-          isLoading={isLoading}
+          disabled={isLoading}
         >
           {confirmText}
         </Button>

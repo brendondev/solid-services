@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { customerPortalApi, Quotation, ServiceOrder } from '@/lib/api/customer-portal';
-import { StatusBadge } from '@/components/ui/Badge';
+import { StatusBadge } from '@/components/ui/badge';
 
 /**
  * Dashboard do Portal do Cliente

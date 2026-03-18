@@ -1,20 +1,22 @@
-import { SelectHTMLAttributes, forwardRef } from 'react';
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
 
 interface SelectOption {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  options: SelectOption[];
-  placeholder?: string;
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string
+  error?: string
+  helperText?: string
+  options: SelectOption[]
+  placeholder?: string
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, helperText, options, placeholder, className = '', ...props }, ref) => {
+const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ label, error, helperText, options, placeholder, className, ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -25,17 +27,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         )}
         <select
           ref={ref}
-          className={`
-            w-full px-3 py-2
-            border ${error ? 'border-red-500' : 'border-gray-300'}
-            rounded-lg
-            bg-white
-            text-gray-900
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-            disabled:bg-gray-100 disabled:cursor-not-allowed
-            transition-colors duration-200
-            ${className}
-          `}
+          className={cn(
+            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            error && "border-red-500",
+            className
+          )}
           {...props}
         >
           {placeholder && (
@@ -56,8 +52,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <p className="mt-1 text-sm text-gray-500">{helperText}</p>
         )}
       </div>
-    );
+    )
   }
-);
+)
 
-Select.displayName = 'Select';
+Select.displayName = "Select"
+
+export { Select }

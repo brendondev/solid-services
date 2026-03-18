@@ -1,49 +1,52 @@
-import { ReactNode } from 'react';
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
-interface BadgeProps {
-  children: ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
+import { cn } from "@/lib/utils"
 
-export function Badge({
-  children,
-  variant = 'default',
-  size = 'md',
-  className = ''
-}: BadgeProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-full';
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        success: "border-transparent bg-green-100 text-green-800",
+        warning: "border-transparent bg-orange-100 text-orange-800",
+        error: "border-transparent bg-red-100 text-red-800",
+        info: "border-transparent bg-blue-100 text-blue-800",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-  const variants = {
-    default: 'bg-gray-100 text-gray-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-orange-100 text-orange-800',
-    error: 'bg-red-100 text-red-800',
-    info: 'bg-blue-100 text-blue-800',
-  };
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
 
-  const sizes = {
-    sm: 'px-2 py-0.5 text-xs',
-    md: 'px-2.5 py-1 text-sm',
-    lg: 'px-3 py-1.5 text-base',
-  };
-
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <span className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}>
-      {children}
-    </span>
-  );
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
 }
 
-// Status badge helper
+Badge.displayName = "Badge"
+
+// Status badge helper for backward compatibility
 interface StatusBadgeProps {
   status: string;
   className?: string;
 }
 
 export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
-  const statusMap: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+  const statusMap: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' | 'secondary' | 'destructive' | 'outline' }> = {
     // Customer status
     active: { label: 'Ativo', variant: 'success' },
     inactive: { label: 'Inativo', variant: 'default' },
@@ -75,3 +78,5 @@ export function StatusBadge({ status, className = '' }: StatusBadgeProps) {
     </Badge>
   );
 }
+
+export { Badge, badgeVariants }

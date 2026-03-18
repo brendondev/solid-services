@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
+import { customersApi, Customer } from '@/lib/api/customers';
 import { showToast } from '@/lib/toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
@@ -13,44 +13,56 @@ import {
   Eye,
   Edit,
   Trash2,
-  Loader2,
   CheckCircle,
   XCircle,
-  Mail,
-  Phone,
-  Power,
-  PowerOff
+  MoreHorizontal,
+  Search,
 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 export default function CustomersPage() {
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [data, setData] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState<string>('');
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
     isOpen: false,
     id: null,
   });
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
   const [deleteErrorLinks, setDeleteErrorLinks] = useState<any[]>([]);
+
+  // Search filter state (external control)
+  const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
     loadCustomers();
-  }, [filter]);
+  }, []);
 
   const loadCustomers = async () => {
     try {
       setLoading(true);
       setError('');
-      const data = filter
-        ? await customersApi.findAll(filter)
-        : await customersApi.findAll();
-      setCustomers(Array.isArray(data) ? data : []);
+      const result = await customersApi.findAll();
+      setData(Array.isArray(result) ? result : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar clientes');
-      setCustomers([]);
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -79,37 +91,182 @@ export default function CustomersPage() {
     }
   };
 
-  const handleToggleStatus = async (id: string) => {
-    try {
-      setIsTogglingStatus(id);
-      await customersApi.toggleStatus(id);
-      showToast.success('Status do cliente alterado com sucesso');
-      await loadCustomers();
-    } catch (err: any) {
-      showToast.error(err.response?.data?.message || 'Erro ao alterar status do cliente');
-    } finally {
-      setIsTogglingStatus(null);
-    }
-  };
 
   const getStats = () => {
-    const total = customers.length;
-    const active = customers.filter(c => c.status === 'active').length;
-    const companies = customers.filter(c => c.type === 'company').length;
-    const individuals = customers.filter(c => c.type === 'individual').length;
+    const total = data.length;
+    const active = data.filter(c => c.status === 'active').length;
+    const companies = data.filter(c => c.type === 'company').length;
+    const individuals = data.filter(c => c.type === 'individual').length;
 
     return { total, active, companies, individuals };
   };
 
+  // Define columns
+  const columns = useMemo<ColumnDef<Customer>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Nome" />
+        ),
+        cell: ({ row }) => {
+          const customer = row.original;
+          return (
+            <Link
+              href={`/dashboard/customers/${customer.id}`}
+              className="font-medium hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {customer.name}
+            </Link>
+          );
+        },
+      },
+      {
+        accessorKey: 'type',
+        header: 'Tipo',
+        cell: ({ row }) => {
+          const type = row.getValue('type') as string;
+          return (
+            <Badge variant={type === 'company' ? 'default' : 'secondary'}>
+              {type === 'company' ? 'Empresa' : 'Pessoa Física'}
+            </Badge>
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+      },
+      {
+        accessorKey: 'document',
+        header: 'CPF/CNPJ',
+        cell: ({ row }) => {
+          const document = row.getValue('document') as string | null;
+          return document || '-';
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          const status = row.getValue('status') as string;
+          return (
+            <Badge
+              variant={status === 'active' ? 'default' : 'secondary'}
+              className={
+                status === 'active'
+                  ? 'bg-green-100 text-green-800 hover:bg-green-100/80'
+                  : ''
+              }
+            >
+              {status === 'active' ? 'Ativo' : 'Inativo'}
+            </Badge>
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+      },
+      {
+        id: 'actions',
+        cell: ({ row }) => {
+          const customer = row.original;
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Abrir menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/customers/${customer.id}`);
+                  }}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver detalhes
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/customers/${customer.id}/edit`);
+                  }}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteDialog({ isOpen: true, id: customer.id });
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [router]
+  );
+
+  const stats = getStats();
+
+  // Filter data based on global filter
+  const filteredData = useMemo(() => {
+    if (!globalFilter) return data;
+
+    return data.filter((customer) =>
+      customer.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      customer.document?.toLowerCase().includes(globalFilter.toLowerCase())
+    );
+  }, [data, globalFilter]);
+
+  // Loading skeleton
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-6 animate-fadeInUp">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-5 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-11 w-40" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow border border-border">
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow border border-border">
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="bg-white rounded-lg shadow border border-border">
+          <div className="p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-12 w-full mb-2" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
-
-  const stats = getStats();
 
   return (
     <div className="space-y-6 animate-fadeInUp">
@@ -119,13 +276,13 @@ export default function CustomersPage() {
           <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
           <p className="text-muted-foreground mt-1">Gerencie sua base de clientes</p>
         </div>
-        <button
+        <Button
           onClick={() => router.push('/dashboard/customers/new')}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
+          className="flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Novo Cliente
-        </button>
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -185,150 +342,51 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border border-border">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
-          >
-            <option value="">Todos os status</option>
-            <option value="active">Ativos</option>
-            <option value="inactive">Inativos</option>
-          </select>
+      {/* Filter Bar */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar clientes por nome ou documento..."
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Button variant="outline" disabled>
+          Filtros Avançados
+        </Button>
       </div>
 
-      {/* Customers List */}
-      {customers.length === 0 ? (
+      {/* Data Table or Empty State */}
+      {filteredData.length === 0 && !loading ? (
         <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
           <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-xl font-semibold text-gray-900 mb-2">Nenhum cliente encontrado</p>
-          <p className="text-muted-foreground mb-6">Comece adicionando seu primeiro cliente</p>
-          <button
-            onClick={() => router.push('/dashboard/customers/new')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            Adicionar Primeiro Cliente
-          </button>
+          <p className="text-xl font-semibold text-gray-900 mb-2">
+            {data.length === 0 ? 'Nenhum cliente encontrado' : 'Nenhum resultado encontrado'}
+          </p>
+          <p className="text-muted-foreground mb-6">
+            {data.length === 0
+              ? 'Comece adicionando seu primeiro cliente'
+              : 'Tente ajustar os filtros de busca'}
+          </p>
+          {data.length === 0 && (
+            <Button
+              onClick={() => router.push('/dashboard/customers/new')}
+              className="inline-flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Adicionar Primeiro Cliente
+            </Button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {customers.map((customer) => {
-            const primaryContact = getPrimaryContact(customer);
-            return (
-            <div
-              key={customer.id}
-              className="bg-white rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      {customer.type === 'company' ? (
-                        <Building2 className="w-5 h-5 text-primary" />
-                      ) : (
-                        <User className="w-5 h-5 text-primary" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {customer.name}
-                      </h3>
-                      {customer.document && (
-                        <p className="text-sm text-muted-foreground">{customer.document}</p>
-                      )}
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                      customer.type === 'company'
-                        ? 'bg-accent/10 text-accent border-accent/20'
-                        : 'bg-primary/10 text-primary border-primary/20'
-                    }`}>
-                      {customer.type === 'company' ? 'Empresa' : 'Pessoa Física'}
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${
-                      customer.status === 'active'
-                        ? 'bg-success/10 text-success border-success/20'
-                        : 'bg-gray-100 text-gray-700 border-gray-200'
-                    }`}>
-                      {customer.status === 'active' ? (
-                        <>
-                          <CheckCircle className="w-3 h-3" />
-                          Ativo
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-3 h-3" />
-                          Inativo
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    {primaryContact.email && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-gray-900">{primaryContact.email}</span>
-                      </div>
-                    )}
-                    {primaryContact.phone && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-gray-900">{primaryContact.phone}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 ml-4">
-                  <button
-                    onClick={() => router.push(`/dashboard/customers/${customer.id}`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Ver
-                  </button>
-                  <button
-                    onClick={() => router.push(`/dashboard/customers/${customer.id}/edit`)}
-                    className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
-                    title="Editar"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleToggleStatus(customer.id)}
-                    disabled={isTogglingStatus === customer.id}
-                    className={`p-2 rounded-lg transition-colors ${
-                      customer.status === 'active'
-                        ? 'text-gray-600 hover:bg-gray-100'
-                        : 'text-green-600 hover:bg-green-50'
-                    } disabled:opacity-50`}
-                    title={customer.status === 'active' ? 'Desativar' : 'Ativar'}
-                  >
-                    {isTogglingStatus === customer.id ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : customer.status === 'active' ? (
-                      <PowerOff className="w-5 h-5" />
-                    ) : (
-                      <Power className="w-5 h-5" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setDeleteDialog({ isOpen: true, id: customer.id })}
-                    className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                    title="Excluir Permanentemente"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            );
-          })}
+        <div className="bg-white rounded-lg shadow border border-border p-6">
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            onRowClick={(row) => router.push(`/dashboard/customers/${row.id}`)}
+          />
         </div>
       )}
 

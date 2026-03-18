@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api/auth';
 import { Toaster } from 'react-hot-toast';
+import { CommandPalette, CommandPaletteTrigger } from '@/components/command-palette';
 import {
   LayoutDashboard,
   Users,
@@ -76,6 +77,7 @@ export default function DashboardLayout({
   return (
     <>
       <Toaster />
+      <CommandPalette />
       <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
@@ -158,13 +160,17 @@ export default function DashboardLayout({
       >
         {/* Top bar */}
         <header className="bg-white border-b border-border shadow-sm sticky top-0 z-40">
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4 px-6 py-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
+
+            <div className="flex-1 max-w-2xl">
+              <CommandPaletteTrigger />
+            </div>
 
             <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
