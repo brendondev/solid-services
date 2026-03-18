@@ -334,9 +334,12 @@ export default function FinancialPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => handleOpenPaymentModal(receivable)}
+                      onClick={() => {
+                        setSelectedReceivable(receivable);
+                        setIsPaymentModalOpen(true);
+                      }}
                       className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Ver pagamentos"
+                      title="Ver detalhes e pagamentos"
                     >
                       <Eye className="w-5 h-5" />
                     </button>
