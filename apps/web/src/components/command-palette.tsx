@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CommandDialog,
@@ -35,12 +35,23 @@ interface RecentItem {
   type: 'customer' | 'order' | 'quotation';
 }
 
-export function CommandPalette() {
-  const router = useRouter();
+// Context para compartilhar estado do Command Palette
+const CommandPaletteContext = createContext<{
+  open: boolean;
+  setOpen: (open: boolean) => void;
+} | null>(null);
+
+const useCommandPalette = () => {
+  const context = useContext(CommandPaletteContext);
+  if (!context) {
+    throw new Error('useCommandPalette must be used within CommandPaletteProvider');
+  }
+  return context;
+};
+
+// Provider que envolve toda a aplicação
+export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Keyboard shortcut to open command palette
   useEffect(() => {
@@ -54,6 +65,21 @@ export function CommandPalette() {
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
   }, []);
+
+  return (
+    <CommandPaletteContext.Provider value={{ open, setOpen }}>
+      {children}
+      <CommandPaletteDialog />
+    </CommandPaletteContext.Provider>
+  );
+}
+
+function CommandPaletteDialog() {
+  const router = useRouter();
+  const { open, setOpen } = useCommandPalette();
+  const [search, setSearch] = useState('');
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load recent items when opening
   useEffect(() => {
@@ -212,19 +238,7 @@ export function CommandPalette() {
 
 // Trigger button for command palette (to be used in header)
 export function CommandPaletteTrigger() {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
-  }, []);
+  const { setOpen } = useCommandPalette();
 
   return (
     <button

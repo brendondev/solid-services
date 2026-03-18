@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api/auth';
 import { Toaster } from 'react-hot-toast';
-import { CommandPalette, CommandPaletteTrigger } from '@/components/command-palette';
+import { CommandPaletteProvider, CommandPaletteTrigger } from '@/components/command-palette';
 import {
   LayoutDashboard,
   Users,
@@ -75,9 +75,8 @@ export default function DashboardLayout({
   }
 
   return (
-    <>
+    <CommandPaletteProvider>
       <Toaster />
-      <CommandPalette />
       <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
@@ -193,6 +192,6 @@ export default function DashboardLayout({
         />
       )}
       </div>
-    </>
+    </CommandPaletteProvider>
   );
 }
