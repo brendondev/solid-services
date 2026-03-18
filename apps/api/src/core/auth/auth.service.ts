@@ -35,12 +35,10 @@ export class AuthService {
    */
   async login(loginDto: LoginDto) {
     // Validar Turnstile (CAPTCHA)
-    // Em produção, SEMPRE exigir token
-    if (process.env.NODE_ENV === 'production' && !loginDto.turnstileToken) {
-      throw new UnauthorizedException('Turnstile verification is required');
-    }
+    // Apenas valida se TURNSTILE_SECRET_KEY estiver configurada
+    const turnstileEnabled = !!this.configService.get<string>('TURNSTILE_SECRET_KEY');
 
-    if (loginDto.turnstileToken) {
+    if (turnstileEnabled && loginDto.turnstileToken) {
       await this.turnstileService.verifyOrThrow(loginDto.turnstileToken);
     }
 
@@ -93,12 +91,10 @@ export class AuthService {
    */
   async register(registerDto: RegisterDto) {
     // Validar Turnstile (CAPTCHA)
-    // Em produção, SEMPRE exigir token
-    if (process.env.NODE_ENV === 'production' && !registerDto.turnstileToken) {
-      throw new UnauthorizedException('Turnstile verification is required');
-    }
+    // Apenas valida se TURNSTILE_SECRET_KEY estiver configurada
+    const turnstileEnabled = !!this.configService.get<string>('TURNSTILE_SECRET_KEY');
 
-    if (registerDto.turnstileToken) {
+    if (turnstileEnabled && registerDto.turnstileToken) {
       await this.turnstileService.verifyOrThrow(registerDto.turnstileToken);
     }
 
