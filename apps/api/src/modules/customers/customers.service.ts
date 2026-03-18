@@ -191,17 +191,65 @@ export class CustomersService {
     // Verificar se existe
     await this.findOne(id);
 
-    // Verificar se há dependências
-    const [quotationsCount, ordersCount, receivablesCount] = await Promise.all([
-      this.prisma.quotation.count({ where: { customerId: id } }),
-      this.prisma.serviceOrder.count({ where: { customerId: id } }),
-      this.prisma.receivable.count({ where: { customerId: id } }),
+    // Buscar dependências (limitado a 5 de cada tipo)
+    const [quotations, orders, receivables] = await Promise.all([
+      this.prisma.quotation.findMany({
+        where: { customerId: id },
+        select: {
+          id: true,
+          number: true,
+          totalAmount: true,
+          status: true,
+        },
+        take: 5,
+      }),
+      this.prisma.serviceOrder.findMany({
+        where: { customerId: id },
+        select: {
+          id: true,
+          number: true,
+          totalAmount: true,
+          status: true,
+        },
+        take: 5,
+      }),
+      this.prisma.receivable.findMany({
+        where: { customerId: id },
+        select: {
+          id: true,
+          notes: true,
+          amount: true,
+          status: true,
+        },
+        take: 5,
+      }),
     ]);
 
-    if (quotationsCount > 0 || ordersCount > 0 || receivablesCount > 0) {
-      throw new BadRequestException(
-        `Não é possível excluir este cliente pois ele possui ${quotationsCount} orçamento(s), ${ordersCount} ordem(ns) e ${receivablesCount} recebível(is). Inative-o ao invés de excluir.`
-      );
+    if (quotations.length > 0 || orders.length > 0 || receivables.length > 0) {
+      // Construir array de links para os registros vinculados
+      const links = [
+        ...quotations.map(q => ({
+          id: q.id,
+          label: `Orçamento ${q.number} - R$ ${q.totalAmount}`,
+          type: 'quotation',
+        })),
+        ...orders.map(o => ({
+          id: o.id,
+          label: `Ordem ${o.number} - R$ ${o.totalAmount}`,
+          type: 'order',
+        })),
+        ...receivables.map(r => ({
+          id: r.id,
+          label: r.notes || `Recebível de R$ ${r.amount}`,
+          type: 'receivable',
+        })),
+      ];
+
+      throw new BadRequestException({
+        message: 'Não é possível excluir cliente que possui registros vinculados',
+        links,
+        total: quotations.length + orders.length + receivables.length,
+      });
     }
 
     // Deletar permanentemente

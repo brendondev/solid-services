@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { customersApi } from '@/lib/api/customers';
+import { showToast } from '@/lib/toast';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -56,11 +57,12 @@ export default function NewCustomerPage() {
       }
 
       const customer = await customersApi.create(payload);
+      showToast.success('Cliente criado com sucesso');
       router.push(`/dashboard/customers/${customer.id}`);
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || 'Erro ao criar cliente'
-      );
+      const errorMessage = err.response?.data?.message || 'Erro ao criar cliente';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

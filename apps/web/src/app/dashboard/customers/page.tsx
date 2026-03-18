@@ -34,6 +34,7 @@ export default function CustomersPage() {
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
+  const [deleteErrorLinks, setDeleteErrorLinks] = useState<any[]>([]);
 
   useEffect(() => {
     loadCustomers();
@@ -60,12 +61,19 @@ export default function CustomersPage() {
 
     try {
       setIsDeleting(true);
+      setDeleteErrorLinks([]); // Limpar links anteriores
       await customersApi.remove(deleteDialog.id);
       showToast.success('Cliente excluído com sucesso');
       setDeleteDialog({ isOpen: false, id: null });
       await loadCustomers();
     } catch (err: any) {
-      showToast.error(err.response?.data?.message || 'Erro ao excluir cliente');
+      const errorData = err.response?.data;
+      showToast.error(errorData?.message || 'Erro ao excluir cliente');
+
+      // Capturar links de relacionamentos
+      if (errorData?.links && Array.isArray(errorData.links)) {
+        setDeleteErrorLinks(errorData.links);
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -336,8 +344,12 @@ export default function CustomersPage() {
         reasonLabel="Motivo da exclusão"
         reasonPlaceholder="Informe o motivo para fins de auditoria..."
         isLoading={isDeleting}
+        errorLinks={deleteErrorLinks}
         onConfirm={handleDelete}
-        onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
+        onCancel={() => {
+          setDeleteDialog({ isOpen: false, id: null });
+          setDeleteErrorLinks([]);
+        }}
       />
     </div>
   );

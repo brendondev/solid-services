@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { customersApi, Customer } from '@/lib/api/customers';
+import { showToast } from '@/lib/toast';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -55,7 +56,9 @@ export default function EditCustomerPage() {
         status: data.status as 'active' | 'inactive',
       });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar cliente');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar cliente';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoadingCustomer(false);
     }
@@ -74,9 +77,12 @@ export default function EditCustomerPage() {
       };
 
       await customersApi.update(id, cleanData);
+      showToast.success('Cliente atualizado com sucesso');
       router.push(`/dashboard/customers/${id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao atualizar cliente');
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar cliente';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
