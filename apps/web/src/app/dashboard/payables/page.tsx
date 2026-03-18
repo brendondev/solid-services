@@ -1,49 +1,67 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { financialApi, Payable } from '@/lib/api/financial';
 import { showToast } from '@/lib/toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
   Plus,
-  DollarSign,
+  Receipt,
   Clock,
   CheckCircle,
   AlertCircle,
-  Calendar,
   Eye,
   Trash2,
-  Loader2,
-  Building2,
-  FileText,
+  MoreHorizontal,
+  Search,
+  DollarSign,
 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 export default function PayablesPage() {
   const router = useRouter();
-  const [payables, setPayables] = useState<Payable[]>([]);
+  const [data, setData] = useState<Payable[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState<string>('');
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
     isOpen: false,
     id: null,
   });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteErrorLinks, setDeleteErrorLinks] = useState<any[]>([]);
+
+  // Search filter state (external control)
+  const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
     loadPayables();
-  }, [filter]);
+  }, []);
 
   const loadPayables = async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await financialApi.findAllPayables(1, 50, filter || undefined);
-      setPayables(response.data || []);
+      const response = await financialApi.findAllPayables(1, 1000);
+      setData(Array.isArray(response.data) ? response.data : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar contas a pagar');
-      setPayables([]);
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -54,14 +72,34 @@ export default function PayablesPage() {
 
     try {
       setIsDeleting(true);
+      setDeleteErrorLinks([]);
       await financialApi.removePayable(deleteDialog.id);
       showToast.success('Conta a pagar excluída com sucesso');
       setDeleteDialog({ isOpen: false, id: null });
       await loadPayables();
     } catch (err: any) {
-      showToast.error(err.response?.data?.message || 'Erro ao excluir conta a pagar');
+      const errorData = err.response?.data;
+      showToast.error(errorData?.message || 'Erro ao excluir conta a pagar');
+
+      if (errorData?.links && Array.isArray(errorData.links)) {
+        setDeleteErrorLinks(errorData.links);
+      }
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handlePayPayable = async (id: string, amount: number) => {
+    try {
+      await financialApi.registerPayablePayment(id, {
+        amount,
+        method: 'cash',
+        paidAt: new Date().toISOString(),
+      });
+      showToast.success('Pagamento registrado com sucesso');
+      await loadPayables();
+    } catch (err: any) {
+      showToast.error(err.response?.data?.message || 'Erro ao registrar pagamento');
     }
   };
 
@@ -72,38 +110,202 @@ export default function PayablesPage() {
     }).format(value);
   };
 
-  const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
-    pending: {
-      label: 'Pendente',
-      color: 'bg-warning/10 text-warning border-warning/20',
-      icon: Clock,
-    },
-    partial: {
-      label: 'Parcial',
-      color: 'bg-blue-100 text-blue-700 border-blue-200',
-      icon: AlertCircle,
-    },
-    paid: {
-      label: 'Pago',
-      color: 'bg-success/10 text-success border-success/20',
-      icon: CheckCircle,
-    },
+  const getStats = () => {
+    const total = data.length;
+    const pending = data.filter(p => p.status === 'pending').length;
+    const paid = data.filter(p => p.status === 'paid').length;
+    const totalPending = data
+      .filter(p => p.status === 'pending')
+      .reduce((sum, p) => sum + (Number(p.amount) - Number(p.paidAmount)), 0);
+
+    return { total, pending, paid, totalPending };
   };
 
-  const categoryLabels: Record<string, string> = {
-    rent: 'Aluguel',
-    utilities: 'Utilidades',
-    supplies: 'Suprimentos',
-    salary: 'Salário',
-    tax: 'Impostos',
-    service: 'Serviços',
-    other: 'Outros',
-  };
+  // Define columns
+  const columns = useMemo<ColumnDef<Payable>[]>(
+    () => [
+      {
+        accessorKey: 'description',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Descrição" />
+        ),
+        cell: ({ row }) => {
+          const payable = row.original;
+          return (
+            <Link
+              href={`/dashboard/payables/${payable.id}`}
+              className="font-medium hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {payable.description}
+            </Link>
+          );
+        },
+      },
+      {
+        accessorKey: 'supplier.name',
+        header: 'Fornecedor',
+        cell: ({ row }) => {
+          const payable = row.original;
+          return payable.supplier ? (
+            <Badge variant="outline">
+              {payable.supplier.name}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          );
+        },
+      },
+      {
+        accessorKey: 'amount',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Valor" />
+        ),
+        cell: ({ row }) => {
+          const amount = Number(row.getValue('amount'));
+          return <span className="font-medium">{formatCurrency(amount)}</span>;
+        },
+      },
+      {
+        accessorKey: 'dueDate',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Vencimento" />
+        ),
+        cell: ({ row }) => {
+          const dueDate = row.getValue('dueDate') as string;
+          return new Date(dueDate).toLocaleDateString('pt-BR');
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          const status = row.getValue('status') as string;
+          const statusConfig = {
+            pending: {
+              label: 'Pendente',
+              className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80',
+            },
+            paid: {
+              label: 'Pago',
+              className: 'bg-green-100 text-green-800 hover:bg-green-100/80',
+            },
+            overdue: {
+              label: 'Vencido',
+              className: 'bg-red-100 text-red-800 hover:bg-red-100/80',
+            },
+          };
+          const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+          return (
+            <Badge variant="default" className={config.className}>
+              {config.label}
+            </Badge>
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+      },
+      {
+        id: 'actions',
+        cell: ({ row }) => {
+          const payable = row.original;
 
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Abrir menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/payables/${payable.id}`);
+                  }}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver detalhes
+                </DropdownMenuItem>
+                {payable.status === 'pending' && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const remainingAmount = payable.amount - payable.paidAmount;
+                      handlePayPayable(payable.id, remainingAmount);
+                    }}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Marcar como pago
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteDialog({ isOpen: true, id: payable.id });
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [router]
+  );
+
+  const stats = getStats();
+
+  // Filter data based on global filter
+  const filteredData = useMemo(() => {
+    if (!globalFilter) return data;
+
+    return data.filter((payable) =>
+      payable.description.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      payable.supplier?.name?.toLowerCase().includes(globalFilter.toLowerCase())
+    );
+  }, [data, globalFilter]);
+
+  // Loading skeleton
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-6 animate-fadeInUp">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-5 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-11 w-40" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow border border-border">
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow border border-border">
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="bg-white rounded-lg shadow border border-border">
+          <div className="p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-12 w-full mb-2" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -116,13 +318,64 @@ export default function PayablesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Contas a Pagar</h1>
           <p className="text-muted-foreground mt-1">Gerencie suas despesas e fornecedores</p>
         </div>
-        <button
+        <Button
           onClick={() => router.push('/dashboard/payables/new')}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
+          className="flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Nova Conta a Pagar
-        </button>
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Total de Contas</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+            </div>
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <Receipt className="w-6 h-6 text-primary" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Pendentes</p>
+              <p className="text-2xl font-bold text-warning mt-1">{stats.pending}</p>
+            </div>
+            <div className="p-3 bg-warning/10 rounded-lg">
+              <Clock className="w-6 h-6 text-warning" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Pagas</p>
+              <p className="text-2xl font-bold text-success mt-1">{stats.paid}</p>
+            </div>
+            <div className="p-3 bg-success/10 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-success" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Valor Total Pendente</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalPending)}</p>
+            </div>
+            <div className="p-3 bg-accent rounded-lg">
+              <DollarSign className="w-6 h-6 text-accent-foreground" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {error && (
@@ -131,154 +384,72 @@ export default function PayablesPage() {
         </div>
       )}
 
-      {/* Filter */}
-      <div className="bg-white p-4 rounded-lg shadow border border-border">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
-          >
-            <option value="">Todos os status</option>
-            <option value="pending">Pendente</option>
-            <option value="partial">Parcial</option>
-            <option value="paid">Pago</option>
-          </select>
+      {/* Filter Bar */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar contas por descrição ou fornecedor..."
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Button variant="outline" disabled>
+          Filtros Avançados
+        </Button>
       </div>
 
-      {/* Payables List */}
-      {payables.length === 0 ? (
+      {/* Data Table or Empty State */}
+      {filteredData.length === 0 && !loading ? (
         <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
-          <DollarSign className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-xl font-semibold text-gray-900 mb-2">Nenhuma conta a pagar encontrada</p>
-          <p className="text-muted-foreground mb-6">Registre uma nova despesa</p>
-          <button
-            onClick={() => router.push('/dashboard/payables/new')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            Adicionar Primeira Conta
-          </button>
+          <Receipt className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-xl font-semibold text-gray-900 mb-2">
+            {data.length === 0 ? 'Nenhuma conta a pagar encontrada' : 'Nenhum resultado encontrado'}
+          </p>
+          <p className="text-muted-foreground mb-6">
+            {data.length === 0
+              ? 'Comece registrando sua primeira conta'
+              : 'Tente ajustar os filtros de busca'}
+          </p>
+          {data.length === 0 && (
+            <Button
+              onClick={() => router.push('/dashboard/payables/new')}
+              className="inline-flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Registrar Primeira Conta
+            </Button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {payables.map((payable) => {
-            const statusInfo = statusConfig[payable.status];
-            const StatusIcon = statusInfo?.icon || Clock;
-            const remaining = Number(payable.amount) - Number(payable.paidAmount);
-
-            return (
-              <div
-                key={payable.id}
-                className="bg-white rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-destructive/10 rounded-lg">
-                        <DollarSign className="w-5 h-5 text-destructive" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">{payable.description}</h3>
-                        {payable.supplier && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Building2 className="w-4 h-4 text-muted-foreground" />
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/dashboard/suppliers/${payable.supplierId}`);
-                              }}
-                              className="text-primary hover:text-primary/80 hover:underline transition-colors"
-                            >
-                              {payable.supplier.name}
-                            </button>
-                          </div>
-                        )}
-                        {payable.category && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <FileText className="w-4 h-4" />
-                            <span>{categoryLabels[payable.category] || payable.category}</span>
-                          </div>
-                        )}
-                      </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${statusInfo?.color}`}
-                      >
-                        <StatusIcon className="w-3 h-3" />
-                        {statusInfo?.label}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valor Total</p>
-                        <p className="text-base font-bold text-gray-900">
-                          {formatCurrency(Number(payable.amount))}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valor Pago</p>
-                        <p className="text-base font-bold text-success">
-                          {formatCurrency(Number(payable.paidAmount))}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">A Pagar</p>
-                        <p className="text-base font-bold text-destructive">
-                          {formatCurrency(remaining)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Vencimento</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <p className="text-base font-medium text-gray-900">
-                            {new Date(payable.dueDate).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 ml-4">
-                    <button
-                      onClick={() => router.push(`/dashboard/payables/${payable.id}`)}
-                      className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Ver Detalhes
-                    </button>
-                    <button
-                      onClick={() => setDeleteDialog({ isOpen: true, id: payable.id })}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                      title="Excluir"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="bg-white rounded-lg shadow border border-border p-6">
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            onRowClick={(row) => router.push(`/dashboard/payables/${row.id}`)}
+          />
         </div>
       )}
 
       {/* Confirm Delete Dialog */}
       <ConfirmDialog
         isOpen={deleteDialog.isOpen}
-        title="Excluir Conta a Pagar"
-        message="Tem certeza que deseja excluir esta conta a pagar?"
-        confirmText="Excluir"
+        title="Excluir Conta a Pagar Permanentemente"
+        message="⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL e a conta a pagar será excluída permanentemente do banco de dados."
+        confirmText="Sim, excluir permanentemente"
         cancelText="Cancelar"
         variant="danger"
         requireReason={true}
         reasonLabel="Motivo da exclusão"
         reasonPlaceholder="Informe o motivo para fins de auditoria..."
         isLoading={isDeleting}
+        errorLinks={deleteErrorLinks}
         onConfirm={handleDelete}
-        onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
+        onCancel={() => {
+          setDeleteDialog({ isOpen: false, id: null });
+          setDeleteErrorLinks([]);
+        }}
       />
     </div>
   );

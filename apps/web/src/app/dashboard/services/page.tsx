@@ -1,96 +1,94 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { servicesApi, Service } from '@/lib/api/services';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { showToast } from '@/lib/toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
   Plus,
+  Wrench,
   Package,
+  Tag,
   DollarSign,
+  Eye,
   Edit,
   Trash2,
-  Loader2,
   CheckCircle,
-  XCircle,
-  Clock,
-  Tag
+  MoreHorizontal,
+  Search,
 } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/data-table/data-table';
+import { DataTableColumnHeader } from '@/components/data-table/data-table-column-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 export default function ServicesPage() {
   const router = useRouter();
-  const [services, setServices] = useState<Service[]>([]);
+  const [data, setData] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState<string>('');
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    type: 'delete' | 'toggle' | null;
-    serviceId: string | null;
-    currentStatus?: string;
-  }>({ isOpen: false, type: null, serviceId: null });
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteErrorLinks, setDeleteErrorLinks] = useState<any[]>([]);
+
+  // Search filter state (external control)
+  const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
     loadServices();
-  }, [filter]);
+  }, []);
 
   const loadServices = async () => {
     try {
       setLoading(true);
       setError('');
-      const data = filter
-        ? await servicesApi.findAll(filter)
-        : await servicesApi.findAll();
-      setServices(Array.isArray(data) ? data : []);
+      const result = await servicesApi.findAll();
+      setData(Array.isArray(result) ? result : []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao carregar serviços');
-      setServices([]);
+      setData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleStatusClick = (id: string, currentStatus: string) => {
-    setConfirmDialog({
-      isOpen: true,
-      type: 'toggle',
-      serviceId: id,
-      currentStatus,
-    });
-  };
-
-  const handleDeleteClick = (id: string) => {
-    setConfirmDialog({
-      isOpen: true,
-      type: 'delete',
-      serviceId: id,
-    });
-  };
-
-  const handleConfirm = async () => {
-    if (!confirmDialog.serviceId || !confirmDialog.type) return;
+  const handleDelete = async (reason?: string) => {
+    if (!deleteDialog.id) return;
 
     try {
-      setIsProcessing(true);
-
-      if (confirmDialog.type === 'toggle') {
-        await servicesApi.toggleStatus(confirmDialog.serviceId);
-      } else if (confirmDialog.type === 'delete') {
-        await servicesApi.remove(confirmDialog.serviceId);
-      }
-
-      setConfirmDialog({ isOpen: false, type: null, serviceId: null });
+      setIsDeleting(true);
+      setDeleteErrorLinks([]); // Limpar links anteriores
+      await servicesApi.remove(deleteDialog.id);
+      showToast.success('Serviço excluído com sucesso');
+      setDeleteDialog({ isOpen: false, id: null });
       await loadServices();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao processar ação');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+      const errorData = err.response?.data;
+      showToast.error(errorData?.message || 'Erro ao excluir serviço');
 
-  const handleCancel = () => {
-    setConfirmDialog({ isOpen: false, type: null, serviceId: null });
+      // Capturar links de relacionamentos
+      if (errorData?.links && Array.isArray(errorData.links)) {
+        setDeleteErrorLinks(errorData.links);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -109,25 +107,194 @@ export default function ServicesPage() {
   };
 
   const getStats = () => {
-    const total = services.length;
-    const active = services.filter(s => s.status === 'active').length;
-    const avgPrice = services.length > 0
-      ? services.reduce((sum, s) => sum + Number(s.defaultPrice), 0) / services.length
+    const total = data.length;
+    const active = data.filter(s => s.status === 'active').length;
+    const categories = new Set(data.map(s => s.category).filter(Boolean)).size;
+    const avgPrice = data.length > 0
+      ? data.reduce((sum, s) => sum + Number(s.defaultPrice), 0) / data.length
       : 0;
-    const categories = new Set(services.map(s => s.category).filter(Boolean)).size;
 
-    return { total, active, avgPrice, categories };
+    return { total, active, categories, avgPrice };
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  };
+  // Define columns
+  const columns = useMemo<ColumnDef<Service>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Nome do Serviço" />
+        ),
+        cell: ({ row }) => {
+          const service = row.original;
+          return (
+            <Link
+              href={`/dashboard/services/${service.id}`}
+              className="font-medium hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {service.name}
+            </Link>
+          );
+        },
+      },
+      {
+        accessorKey: 'category',
+        header: 'Categoria',
+        cell: ({ row }) => {
+          const category = row.getValue('category') as string | null;
+          return category ? (
+            <Badge variant="secondary">{category}</Badge>
+          ) : (
+            '-'
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+      },
+      {
+        accessorKey: 'defaultPrice',
+        header: 'Preço Padrão',
+        cell: ({ row }) => {
+          const price = row.getValue('defaultPrice') as number;
+          return (
+            <span className="font-semibold text-gray-900">
+              {formatCurrency(Number(price))}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: 'estimatedDuration',
+        header: 'Duração Estimada',
+        cell: ({ row }) => {
+          const duration = row.getValue('estimatedDuration') as number | null;
+          return formatDuration(duration);
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => {
+          const status = row.getValue('status') as string;
+          return (
+            <Badge
+              variant={status === 'active' ? 'default' : 'secondary'}
+              className={
+                status === 'active'
+                  ? 'bg-green-100 text-green-800 hover:bg-green-100/80'
+                  : ''
+              }
+            >
+              {status === 'active' ? 'Ativo' : 'Inativo'}
+            </Badge>
+          );
+        },
+        filterFn: (row, id, value) => {
+          return value.includes(row.getValue(id));
+        },
+      },
+      {
+        id: 'actions',
+        cell: ({ row }) => {
+          const service = row.original;
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Abrir menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/services/${service.id}`);
+                  }}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver detalhes
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/dashboard/services/${service.id}`);
+                  }}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteDialog({ isOpen: true, id: service.id });
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [router]
+  );
 
   const stats = getStats();
+
+  // Filter data based on global filter
+  const filteredData = useMemo(() => {
+    if (!globalFilter) return data;
+
+    return data.filter((service) =>
+      service.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      service.category?.toLowerCase().includes(globalFilter.toLowerCase())
+    );
+  }, [data, globalFilter]);
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fadeInUp">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-5 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-11 w-40" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow border border-border">
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow border border-border">
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <div className="bg-white rounded-lg shadow border border-border">
+          <div className="p-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-12 w-full mb-2" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fadeInUp">
@@ -137,13 +304,13 @@ export default function ServicesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Serviços</h1>
           <p className="text-muted-foreground mt-1">Catálogo de serviços oferecidos</p>
         </div>
-        <button
+        <Button
           onClick={() => router.push('/dashboard/services/new')}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
+          className="flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Novo Serviço
-        </button>
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -163,11 +330,23 @@ export default function ServicesPage() {
         <div className="bg-white p-6 rounded-lg shadow border border-border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Serviços Ativos</p>
+              <p className="text-sm text-muted-foreground">Ativos</p>
               <p className="text-2xl font-bold text-success mt-1">{stats.active}</p>
             </div>
             <div className="p-3 bg-success/10 rounded-lg">
               <CheckCircle className="w-6 h-6 text-success" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Categorias</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.categories}</p>
+            </div>
+            <div className="p-3 bg-accent rounded-lg">
+              <Tag className="w-6 h-6 text-accent-foreground" />
             </div>
           </div>
         </div>
@@ -185,18 +364,6 @@ export default function ServicesPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Categorias</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.categories}</p>
-            </div>
-            <div className="p-3 bg-accent rounded-lg">
-              <Tag className="w-6 h-6 text-accent-foreground" />
-            </div>
-          </div>
-        </div>
       </div>
 
       {error && (
@@ -205,167 +372,72 @@ export default function ServicesPage() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border border-border">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
-          >
-            <option value="">Todos os status</option>
-            <option value="active">Ativos</option>
-            <option value="inactive">Inativos</option>
-          </select>
+      {/* Filter Bar */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar serviços por nome ou categoria..."
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Button variant="outline" disabled>
+          Filtros Avançados
+        </Button>
       </div>
 
-      {/* Services List */}
-      {services.length === 0 ? (
+      {/* Data Table or Empty State */}
+      {filteredData.length === 0 && !loading ? (
         <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
-          <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-xl font-semibold text-gray-900 mb-2">Nenhum serviço encontrado</p>
-          <p className="text-muted-foreground mb-6">Comece adicionando seu primeiro serviço</p>
-          <button
-            onClick={() => router.push('/dashboard/services/new')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            Adicionar Primeiro Serviço
-          </button>
+          <Wrench className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-xl font-semibold text-gray-900 mb-2">
+            {data.length === 0 ? 'Nenhum serviço encontrado' : 'Nenhum resultado encontrado'}
+          </p>
+          <p className="text-muted-foreground mb-6">
+            {data.length === 0
+              ? 'Comece criando seu primeiro serviço'
+              : 'Tente ajustar os filtros de busca'}
+          </p>
+          {data.length === 0 && (
+            <Button
+              onClick={() => router.push('/dashboard/services/new')}
+              className="inline-flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Criar Primeiro Serviço
+            </Button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className="bg-white rounded-lg shadow border border-border p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Package className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {service.name}
-                      </h3>
-                      {service.description && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {service.description}
-                        </p>
-                      )}
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 ${
-                      service.status === 'active'
-                        ? 'bg-success/10 text-success border-success/20'
-                        : 'bg-gray-100 text-gray-700 border-gray-200'
-                    }`}>
-                      {service.status === 'active' ? (
-                        <>
-                          <CheckCircle className="w-3 h-3" />
-                          Ativo
-                        </>
-                      ) : (
-                        <>
-                          <XCircle className="w-3 h-3" />
-                          Inativo
-                        </>
-                      )}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    {service.category && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Tag className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-gray-900">{service.category}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 text-sm">
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-gray-900 font-semibold">
-                        {formatCurrency(Number(service.defaultPrice))}
-                      </span>
-                    </div>
-                    {service.estimatedDuration && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-gray-900">
-                          {formatDuration(service.estimatedDuration)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 ml-4">
-                  <button
-                    onClick={() => router.push(`/dashboard/services/${service.id}`)}
-                    className="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors"
-                    title="Editar"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleToggleStatusClick(service.id, service.status)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      service.status === 'active'
-                        ? 'text-gray-600 hover:bg-gray-100'
-                        : 'text-success hover:bg-success/10'
-                    }`}
-                    title={service.status === 'active' ? 'Inativar' : 'Ativar'}
-                  >
-                    {service.status === 'active' ? (
-                      <XCircle className="w-5 h-5" />
-                    ) : (
-                      <CheckCircle className="w-5 h-5" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(service.id)}
-                    className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                    title="Excluir Permanentemente"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="bg-white rounded-lg shadow border border-border p-6">
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            onRowClick={(row) => router.push(`/dashboard/services/${row.id}`)}
+          />
         </div>
       )}
 
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        onClose={handleCancel}
-        onConfirm={handleConfirm}
-        title={
-          confirmDialog.type === 'delete'
-            ? 'Excluir Serviço'
-            : confirmDialog.currentStatus === 'active'
-            ? 'Inativar Serviço'
-            : 'Ativar Serviço'
-        }
-        message={
-          confirmDialog.type === 'delete'
-            ? 'Tem certeza que deseja excluir permanentemente este serviço?\n\nEsta ação não pode ser desfeita. Se o serviço estiver em uso, você deverá inativá-lo ao invés de excluir.'
-            : confirmDialog.currentStatus === 'active'
-            ? 'Tem certeza que deseja inativar este serviço?\n\nEle não aparecerá mais nas listagens ativas, mas poderá ser reativado depois.'
-            : 'Tem certeza que deseja ativar este serviço?\n\nEle voltará a aparecer nas listagens ativas.'
-        }
-        confirmText={
-          confirmDialog.type === 'delete'
-            ? 'Excluir'
-            : confirmDialog.currentStatus === 'active'
-            ? 'Inativar'
-            : 'Ativar'
-        }
+        isOpen={deleteDialog.isOpen}
+        title="Excluir Serviço Permanentemente"
+        message="⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL e o serviço será excluído permanentemente do banco de dados. Só é possível excluir serviços que não possuem orçamentos ou ordens associados. Se você deseja apenas desativar o serviço, use o botão de ativar/desativar ao invés de excluir."
+        confirmText="Sim, excluir permanentemente"
         cancelText="Cancelar"
-        variant={confirmDialog.type === 'delete' ? 'danger' : 'info'}
-        isLoading={isProcessing}
+        variant="danger"
+        requireReason={true}
+        reasonLabel="Motivo da exclusão"
+        reasonPlaceholder="Informe o motivo para fins de auditoria..."
+        isLoading={isDeleting}
+        errorLinks={deleteErrorLinks}
+        onConfirm={handleDelete}
+        onCancel={() => {
+          setDeleteDialog({ isOpen: false, id: null });
+          setDeleteErrorLinks([]);
+        }}
       />
     </div>
   );
