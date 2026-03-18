@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { showToast } from '@/lib/toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
   Plus,
   ClipboardList,
@@ -25,10 +26,10 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    orderId: string | null;
-  }>({ isOpen: false, orderId: null });
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
+  });
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -49,27 +50,20 @@ export default function OrdersPage() {
     }
   };
 
-  const handleDeleteClick = (id: string) => {
-    setConfirmDialog({ isOpen: true, orderId: id });
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!confirmDialog.orderId) return;
+  const handleDelete = async (reason?: string) => {
+    if (!deleteDialog.id) return;
 
     try {
       setIsDeleting(true);
-      await ordersApi.remove(confirmDialog.orderId);
-      setConfirmDialog({ isOpen: false, orderId: null });
+      await ordersApi.remove(deleteDialog.id);
+      showToast.success('Ordem de serviço excluída com sucesso');
+      setDeleteDialog({ isOpen: false, id: null });
       await loadOrders();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao excluir ordem');
+      showToast.error(err.response?.data?.message || 'Erro ao excluir ordem de serviço');
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const handleDeleteCancel = () => {
-    setConfirmDialog({ isOpen: false, orderId: null });
   };
 
   const formatCurrency = (value: number) => {
@@ -303,7 +297,7 @@ export default function OrdersPage() {
                       Ver Detalhes
                     </button>
                     <button
-                      onClick={() => handleDeleteClick(order.id)}
+                      onClick={() => setDeleteDialog({ isOpen: true, id: order.id })}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Excluir"
                     >
@@ -317,16 +311,20 @@ export default function OrdersPage() {
         </div>
       )}
 
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
+        isOpen={deleteDialog.isOpen}
         title="Excluir Ordem de Serviço"
-        message="Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita."
+        message="Tem certeza que deseja excluir esta ordem de serviço?"
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="danger"
+        requireReason={true}
+        reasonLabel="Motivo da exclusão"
+        reasonPlaceholder="Informe o motivo para fins de auditoria..."
         isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
       />
     </div>
   );

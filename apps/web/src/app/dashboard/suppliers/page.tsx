@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { suppliersApi, Supplier } from '@/lib/api/suppliers';
+import { showToast } from '@/lib/toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { Plus, Building2, Mail, Phone, FileText, Edit, Trash2, Loader2 } from 'lucide-react';
 
 export default function SuppliersPage() {
@@ -11,6 +13,11 @@ export default function SuppliersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadSuppliers();
@@ -30,14 +37,19 @@ export default function SuppliersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este fornecedor?')) return;
+  const handleDelete = async (reason?: string) => {
+    if (!deleteDialog.id) return;
 
     try {
-      await suppliersApi.remove(id);
+      setIsDeleting(true);
+      await suppliersApi.remove(deleteDialog.id);
+      showToast.success('Fornecedor excluído com sucesso');
+      setDeleteDialog({ isOpen: false, id: null });
       await loadSuppliers();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao excluir fornecedor');
+      showToast.error(err.response?.data?.message || 'Erro ao excluir fornecedor');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -165,7 +177,7 @@ export default function SuppliersPage() {
                   Editar
                 </button>
                 <button
-                  onClick={() => handleDelete(supplier.id)}
+                  onClick={() => setDeleteDialog({ isOpen: true, id: supplier.id })}
                   className="px-4 py-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                   title="Excluir"
                 >
@@ -176,6 +188,22 @@ export default function SuppliersPage() {
           ))}
         </div>
       )}
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title="Excluir Fornecedor"
+        message="Tem certeza que deseja excluir este fornecedor?"
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        requireReason={true}
+        reasonLabel="Motivo da exclusão"
+        reasonPlaceholder="Informe o motivo para fins de auditoria..."
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
+      />
     </div>
   );
 }

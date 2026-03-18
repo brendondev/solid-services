@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { showToast } from '@/lib/toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
   Plus,
   Users,
@@ -27,10 +28,10 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    customerId: string | null;
-  }>({ isOpen: false, customerId: null });
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
+  });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState<string | null>(null);
 
@@ -54,36 +55,30 @@ export default function CustomersPage() {
     }
   };
 
-  const handleDeleteClick = (id: string) => {
-    setConfirmDialog({ isOpen: true, customerId: id });
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!confirmDialog.customerId) return;
+  const handleDelete = async (reason?: string) => {
+    if (!deleteDialog.id) return;
 
     try {
       setIsDeleting(true);
-      await customersApi.remove(confirmDialog.customerId);
-      setConfirmDialog({ isOpen: false, customerId: null });
+      await customersApi.remove(deleteDialog.id);
+      showToast.success('Cliente excluído com sucesso');
+      setDeleteDialog({ isOpen: false, id: null });
       await loadCustomers();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao excluir cliente');
+      showToast.error(err.response?.data?.message || 'Erro ao excluir cliente');
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const handleDeleteCancel = () => {
-    setConfirmDialog({ isOpen: false, customerId: null });
   };
 
   const handleToggleStatus = async (id: string) => {
     try {
       setIsTogglingStatus(id);
       await customersApi.toggleStatus(id);
+      showToast.success('Status do cliente alterado com sucesso');
       await loadCustomers();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao alterar status do cliente');
+      showToast.error(err.response?.data?.message || 'Erro ao alterar status do cliente');
     } finally {
       setIsTogglingStatus(null);
     }
@@ -315,7 +310,7 @@ export default function CustomersPage() {
                     )}
                   </button>
                   <button
-                    onClick={() => handleDeleteClick(customer.id)}
+                    onClick={() => setDeleteDialog({ isOpen: true, id: customer.id })}
                     className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                     title="Excluir Permanentemente"
                   >
@@ -329,16 +324,20 @@ export default function CustomersPage() {
         </div>
       )}
 
+      {/* Confirm Delete Dialog */}
       <ConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
+        isOpen={deleteDialog.isOpen}
         title="Excluir Cliente Permanentemente"
         message="⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL e o cliente será excluído permanentemente do banco de dados. Só é possível excluir clientes que não possuem orçamentos, ordens ou recebíveis associados. Se você deseja apenas desativar o cliente, use o botão de ativar/desativar ao invés de excluir."
         confirmText="Sim, excluir permanentemente"
         cancelText="Cancelar"
         variant="danger"
+        requireReason={true}
+        reasonLabel="Motivo da exclusão"
+        reasonPlaceholder="Informe o motivo para fins de auditoria..."
         isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
       />
     </div>
   );
