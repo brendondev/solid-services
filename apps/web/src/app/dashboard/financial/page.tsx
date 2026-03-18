@@ -105,6 +105,10 @@ export default function FinancialPage() {
     }).format(value);
   };
 
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('pt-BR').format(value);
+  };
+
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
     pending: {
       label: 'Pendente',
@@ -141,16 +145,25 @@ export default function FinancialPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Financeiro</h1>
-          <p className="text-muted-foreground mt-1">Contas a receber e pagamentos</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Financeiro</h1>
+          <p className="text-muted-foreground mt-1">Visão geral do fluxo de caixa</p>
         </div>
-        <button
-          onClick={() => router.push('/dashboard/financial/new')}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
-        >
-          <Plus className="w-5 h-5" />
-          Novo Recebível
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/dashboard/payables')}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-gray-50 transition-colors font-medium"
+          >
+            <TrendingDown className="w-5 h-5" />
+            Ver Contas a Pagar
+          </button>
+          <button
+            onClick={() => router.push('/dashboard/financial/new')}
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
+          >
+            <Plus className="w-5 h-5" />
+            Novo Recebível
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -159,82 +172,182 @@ export default function FinancialPage() {
         </div>
       )}
 
-      {/* Dashboard Financeiro */}
-      {dashboard && dashboard.summary && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-6 rounded-lg shadow border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total a Receber</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(dashboard.summary.totalReceivables || 0)}
-                </p>
+      {/* Dashboard Financeiro - Fluxo de Caixa */}
+      {dashboard && dashboard.cashFlow && (
+        <>
+          {/* Cards de Fluxo de Caixa */}
+          <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6 border border-primary/20">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Fluxo de Caixa</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Saldo Atual</p>
+                    <p className={`text-2xl font-bold mt-1 ${
+                      dashboard.cashFlow.currentBalance >= 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {formatCurrency(dashboard.cashFlow.currentBalance || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Receitas - Despesas
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${
+                    dashboard.cashFlow.currentBalance >= 0 ? 'bg-success/10' : 'bg-destructive/10'
+                  }`}>
+                    <DollarSign className={`w-6 h-6 ${
+                      dashboard.cashFlow.currentBalance >= 0 ? 'text-success' : 'text-destructive'
+                    }`} />
+                  </div>
+                </div>
               </div>
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <DollarSign className="w-6 h-6 text-primary" />
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Projeção 30 Dias</p>
+                    <p className={`text-2xl font-bold mt-1 ${
+                      dashboard.cashFlow.projected30Days >= 0 ? 'text-primary' : 'text-warning'
+                    }`}>
+                      {formatCurrency(dashboard.cashFlow.projected30Days || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Previsão próximo mês
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${
+                    dashboard.cashFlow.projected30Days >= 0 ? 'bg-primary/10' : 'bg-warning/10'
+                  }`}>
+                    <Calendar className={`w-6 h-6 ${
+                      dashboard.cashFlow.projected30Days >= 0 ? 'text-primary' : 'text-warning'
+                    }`} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Lucro Mensal</p>
+                    <p className={`text-2xl font-bold mt-1 ${
+                      dashboard.cashFlow.monthlyProfit >= 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {formatCurrency(dashboard.cashFlow.monthlyProfit || 0)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Recebido - Pago no mês
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${
+                    dashboard.cashFlow.monthlyProfit >= 0 ? 'bg-success/10' : 'bg-destructive/10'
+                  }`}>
+                    {dashboard.cashFlow.monthlyProfit >= 0 ? (
+                      <TrendingUp className="w-6 h-6 text-success" />
+                    ) : (
+                      <TrendingDown className="w-6 h-6 text-destructive" />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow border border-border">
-            <div className="flex items-center justify-between">
+          {/* Contas a Receber */}
+          <div className="bg-white rounded-lg shadow border border-border p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-success" />
+              Contas a Receber
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Recebido</p>
-                <p className="text-2xl font-bold text-success mt-1">
-                  {formatCurrency(dashboard.summary.paidAmount || 0)}
+                <p className="text-sm text-muted-foreground">A Receber</p>
+                <p className="text-xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(dashboard.receivables?.pending || 0)}
                 </p>
               </div>
-              <div className="p-3 bg-success/10 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-success" />
+              <div>
+                <p className="text-sm text-muted-foreground">Recebido no Mês</p>
+                <p className="text-xl font-bold text-success mt-1">
+                  {formatCurrency(dashboard.receivables?.receivedThisMonth || 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Vencidos</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <p className="text-xl font-bold text-destructive">
+                    {formatNumber(dashboard.receivables?.overdueCount || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">conta(s)</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Próximos 30 Dias</p>
+                <p className="text-xl font-bold text-primary mt-1">
+                  {formatCurrency(dashboard.receivables?.upcoming30Days || 0)}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow border border-border">
-            <div className="flex items-center justify-between">
+          {/* Contas a Pagar */}
+          <div className="bg-white rounded-lg shadow border border-border p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <TrendingDown className="w-5 h-5 text-destructive" />
+              Contas a Pagar
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Pendente</p>
-                <p className="text-2xl font-bold text-warning mt-1">
-                  {formatCurrency(dashboard.summary.pendingAmount || 0)}
+                <p className="text-sm text-muted-foreground">A Pagar</p>
+                <p className="text-xl font-bold text-gray-900 mt-1">
+                  {formatCurrency(dashboard.payables?.pending || 0)}
                 </p>
               </div>
-              <div className="p-3 bg-warning/10 rounded-lg">
-                <Clock className="w-6 h-6 text-warning" />
+              <div>
+                <p className="text-sm text-muted-foreground">Pago no Mês</p>
+                <p className="text-xl font-bold text-destructive mt-1">
+                  {formatCurrency(dashboard.payables?.paidThisMonth || 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Vencidos</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <p className="text-xl font-bold text-destructive">
+                    {formatNumber(dashboard.payables?.overdueCount || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">conta(s)</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Próximos 30 Dias</p>
+                <p className="text-xl font-bold text-warning mt-1">
+                  {formatCurrency(dashboard.payables?.upcoming30Days || 0)}
+                </p>
               </div>
             </div>
           </div>
-
-          <div className="bg-white p-6 rounded-lg shadow border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Vencido</p>
-                <p className="text-2xl font-bold text-destructive mt-1">
-                  {formatCurrency(dashboard.summary.overdueAmount || 0)}
-                </p>
-              </div>
-              <div className="p-3 bg-destructive/10 rounded-lg">
-                <TrendingDown className="w-6 h-6 text-destructive" />
-              </div>
-            </div>
-          </div>
-        </div>
+        </>
       )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow border border-border">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
-          >
-            <option value="">Todos os status</option>
-            <option value="pending">Pendente</option>
-            <option value="paid">Pago</option>
-            <option value="overdue">Vencido</option>
-            <option value="cancelled">Cancelado</option>
-          </select>
+      {/* Lista de Contas a Receber */}
+      <div className="border-t border-border pt-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Contas a Receber - Detalhes</h2>
+
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-700">Filtrar por status:</label>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white min-w-[200px]"
+            >
+              <option value="">Todos os status</option>
+              <option value="pending">Pendente</option>
+              <option value="paid">Pago</option>
+              <option value="overdue">Vencido</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
         </div>
       </div>
 
