@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { financialApi, Payable, PayablePayment } from '@/lib/api/financial';
+import { financialApi, Receivable, Payment } from '@/lib/api/financial';
 import {
   ArrowLeft,
   DollarSign,
   Loader2,
   Calendar,
-  Building2,
+  User,
   FileText,
   Clock,
   CheckCircle,
@@ -16,12 +16,12 @@ import {
   Plus,
 } from 'lucide-react';
 
-export default function PayableDetailPage() {
+export default function ReceivableDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const payableId = params.id as string;
+  const receivableId = params.id as string;
 
-  const [payable, setPayable] = useState<Payable | null>(null);
+  const [receivable, setReceivable] = useState<Receivable | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -34,16 +34,16 @@ export default function PayableDetailPage() {
   const [savingPayment, setSavingPayment] = useState(false);
 
   useEffect(() => {
-    loadPayable();
-  }, [payableId]);
+    loadReceivable();
+  }, [receivableId]);
 
-  const loadPayable = async () => {
+  const loadReceivable = async () => {
     try {
       setLoading(true);
-      const data = await financialApi.findOnePayable(payableId);
-      setPayable(data);
+      const data = await financialApi.findOneReceivable(receivableId);
+      setReceivable(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar conta a pagar');
+      setError(err.response?.data?.message || 'Erro ao carregar recebível');
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export default function PayableDetailPage() {
 
     try {
       setSavingPayment(true);
-      await financialApi.registerPayablePayment(payableId, {
+      await financialApi.registerPayment(receivableId, {
         amount: parseFloat(paymentForm.amount),
         method: paymentForm.method as any,
         paidAt: paymentForm.paidAt,
@@ -69,7 +69,7 @@ export default function PayableDetailPage() {
         notes: '',
       });
 
-      await loadPayable();
+      await loadReceivable();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao registrar pagamento');
     } finally {
@@ -92,34 +92,34 @@ export default function PayableDetailPage() {
     );
   }
 
-  if (!payable) {
+  if (!receivable) {
     return (
       <div className="text-center py-12">
-        <p className="text-xl text-gray-600">Conta a pagar não encontrada</p>
+        <p className="text-xl text-gray-600">Recebível não encontrado</p>
       </div>
     );
   }
 
-  const remaining = Number(payable.amount) - Number(payable.paidAmount);
+  const remaining = Number(receivable.amount) - Number(receivable.paidAmount);
   const paymentMethodLabels: Record<string, string> = {
     cash: 'Dinheiro',
     pix: 'PIX',
     bank_transfer: 'Transferência',
     debit_card: 'Cartão de Débito',
     credit_card: 'Cartão de Crédito',
-    check: 'Cheque',
+    other: 'Outro',
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => router.push('/dashboard/payables')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <button onClick={() => router.push('/dashboard/financial')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Conta a Pagar</h1>
-          <p className="text-muted-foreground mt-1">{payable.description}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Conta a Receber</h1>
+          <p className="text-muted-foreground mt-1">{receivable.customer?.name || 'Cliente não informado'}</p>
         </div>
         {remaining > 0 && (
           <button
@@ -143,43 +143,38 @@ export default function PayableDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
             <p className="text-sm text-muted-foreground mb-1">Valor Total</p>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(Number(payable.amount))}</p>
+            <p className="text-2xl font-bold text-gray-900">{formatCurrency(Number(receivable.amount))}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Valor Pago</p>
-            <p className="text-2xl font-bold text-success">{formatCurrency(Number(payable.paidAmount))}</p>
+            <p className="text-2xl font-bold text-success">{formatCurrency(Number(receivable.paidAmount))}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-1">A Pagar</p>
-            <p className="text-2xl font-bold text-destructive">{formatCurrency(remaining)}</p>
+            <p className="text-sm text-muted-foreground mb-1">A Receber</p>
+            <p className="text-2xl font-bold text-warning">{formatCurrency(remaining)}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Status</p>
             <div className="flex items-center gap-2 mt-2">
-              {payable.status === 'paid' ? (
+              {receivable.status === 'paid' ? (
                 <CheckCircle className="w-5 h-5 text-success" />
               ) : (
                 <Clock className="w-5 h-5 text-warning" />
               )}
               <span className="text-lg font-semibold">
-                {payable.status === 'paid' ? 'Pago' : payable.status === 'partial' ? 'Parcial' : 'Pendente'}
+                {receivable.status === 'paid' ? 'Pago' : receivable.status === 'partial' ? 'Parcial' : 'Pendente'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
-          {payable.supplier && (
+          {receivable.customer && (
             <div className="flex items-start gap-3">
-              <Building2 className="w-5 h-5 text-muted-foreground mt-0.5" />
+              <User className="w-5 h-5 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-sm text-muted-foreground">Fornecedor</p>
-                <button
-                  onClick={() => router.push(`/dashboard/suppliers/${payable.supplierId}`)}
-                  className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
-                >
-                  {payable.supplier.name}
-                </button>
+                <p className="text-sm text-muted-foreground">Cliente</p>
+                <p className="font-medium text-gray-900">{receivable.customer.name}</p>
               </div>
             </div>
           )}
@@ -188,25 +183,30 @@ export default function PayableDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Vencimento</p>
               <p className="font-medium text-gray-900">
-                {new Date(payable.dueDate).toLocaleDateString('pt-BR')}
+                {new Date(receivable.dueDate).toLocaleDateString('pt-BR')}
               </p>
             </div>
           </div>
-          {payable.category && (
+          {receivable.serviceOrder && (
             <div className="flex items-start gap-3">
               <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-sm text-muted-foreground">Categoria</p>
-                <p className="font-medium text-gray-900">{payable.category}</p>
+                <p className="text-sm text-muted-foreground">Ordem de Serviço</p>
+                <button
+                  onClick={() => router.push(`/dashboard/orders/${receivable.serviceOrder?.id}`)}
+                  className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+                >
+                  {receivable.serviceOrder?.number}
+                </button>
               </div>
             </div>
           )}
         </div>
 
-        {payable.notes && (
+        {receivable.description && (
           <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-sm text-muted-foreground mb-2">Observações</p>
-            <p className="text-gray-900">{payable.notes}</p>
+            <p className="text-sm text-muted-foreground mb-2">Descrição</p>
+            <p className="text-gray-900">{receivable.description}</p>
           </div>
         )}
       </div>
@@ -215,14 +215,14 @@ export default function PayableDetailPage() {
       <div className="bg-white rounded-lg shadow border border-border p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Histórico de Pagamentos</h2>
 
-        {!payable.payments || payable.payments.length === 0 ? (
+        {!receivable.payments || receivable.payments.length === 0 ? (
           <div className="text-center py-8">
             <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground">Nenhum pagamento registrado</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {payable.payments.map((payment) => (
+            {receivable.payments.map((payment) => (
               <div
                 key={payment.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-border"
@@ -240,10 +240,10 @@ export default function PayableDetailPage() {
                     {payment.notes && <p className="text-sm text-muted-foreground mt-1">{payment.notes}</p>}
                   </div>
                 </div>
-                {payment.registeredUser && (
+                {payment.user && (
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Registrado por</p>
-                    <p className="text-sm font-medium text-gray-900">{payment.registeredUser.name}</p>
+                    <p className="text-sm font-medium text-gray-900">{payment.user.name}</p>
                   </div>
                 )}
               </div>
@@ -286,7 +286,7 @@ export default function PayableDetailPage() {
                   <option value="cash">Dinheiro</option>
                   <option value="debit_card">Cartão de Débito</option>
                   <option value="credit_card">Cartão de Crédito</option>
-                  <option value="check">Cheque</option>
+                  <option value="other">Outro</option>
                 </select>
               </div>
 

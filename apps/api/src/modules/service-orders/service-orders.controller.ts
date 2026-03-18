@@ -251,7 +251,27 @@ export class ServiceOrdersController {
   @ApiOperation({ summary: 'Deletar ordem de serviço' })
   @ApiResponse({ status: 200, description: 'Ordem deletada' })
   @ApiResponse({ status: 400, description: 'Não é possível deletar ordem completada' })
-  remove(@Param('id') id: string) {
-    return this.serviceOrdersService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Body('reason') reason: string | undefined,
+    @CurrentUser('id') userId: string,
+  ) {
+    const order = await this.serviceOrdersService.findOne(id);
+    const result = await this.serviceOrdersService.remove(id);
+
+    // Audit log
+    await this.auditService.log({
+      userId,
+      action: 'DELETE',
+      entity: 'ServiceOrder',
+      entityId: id,
+      changes: {
+        number: order.number,
+        status: order.status,
+        reason: reason || 'Sem motivo informado',
+      },
+    });
+
+    return result;
   }
 }

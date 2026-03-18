@@ -499,9 +499,26 @@ export class ServiceOrdersService {
 
   /**
    * Remove uma ordem
+   * Nota: O motivo (reason) é tratado no controller para audit log
    */
   async remove(id: string) {
-    await this.findOne(id);
+    const order = await this.findOne(id);
+
+    // Verificar se pode deletar
+    if (order.status === 'completed') {
+      throw new BadRequestException('Não é possível excluir uma ordem concluída');
+    }
+
+    // Verificar se tem recebíveis vinculados
+    const receivablesCount = await this.prisma.receivable.count({
+      where: { serviceOrderId: id },
+    });
+
+    if (receivablesCount > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir uma ordem que possui contas a receber vinculadas'
+      );
+    }
 
     try {
       return await this.prisma.serviceOrder.delete({

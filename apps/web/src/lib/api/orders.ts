@@ -94,6 +94,8 @@ export interface UpdateOrderDto {
   scheduledFor?: string;
   notes?: string;
   status?: 'open' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  startedAt?: string;
+  completedAt?: string;
 }
 
 export const ordersApi = {
@@ -127,8 +129,10 @@ export const ordersApi = {
     return response.data;
   },
 
-  remove: async (id: string): Promise<void> => {
-    await api.delete(`/service-orders/${id}`);
+  remove: async (id: string, reason?: string): Promise<void> => {
+    await api.delete(`/service-orders/${id}`, {
+      data: { reason },
+    });
   },
 
   // Timeline

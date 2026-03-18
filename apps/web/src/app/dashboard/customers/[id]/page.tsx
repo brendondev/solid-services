@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink, Loader2, Mail, Phone } from 'lucide-react';
 import PortalLinkModal from '@/components/customers/PortalLinkModal';
 
 export default function CustomerDetailPage() {
@@ -62,12 +62,12 @@ export default function CustomerDetailPage() {
   if (error || !customer) {
     return (
       <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           {error || 'Cliente não encontrado'}
         </div>
         <button
           onClick={() => router.push('/dashboard/customers')}
-          className="text-blue-600 hover:text-blue-700"
+          className="text-primary hover:text-primary/80 hover:underline"
         >
           ← Voltar para clientes
         </button>
@@ -96,7 +96,7 @@ export default function CustomerDetailPage() {
           <button
             onClick={handleGeneratePortalLink}
             disabled={generatingToken}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+            className="px-4 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium shadow-sm transition-colors"
           >
             {generatingToken ? (
               <>
@@ -112,7 +112,7 @@ export default function CustomerDetailPage() {
           </button>
           <button
             onClick={() => router.push(`/dashboard/customers/${id}/edit`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium shadow-sm transition-colors"
           >
             Editar
           </button>
@@ -151,10 +151,10 @@ export default function CustomerDetailPage() {
             <label className="text-sm text-gray-600">Status</label>
             <p>
               <span
-                className={`px-2 py-1 text-xs rounded-full ${
+                className={`px-2 py-1 text-xs rounded-full font-medium ${
                   customer.status === 'active'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'bg-success/10 text-success'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {customer.status === 'active' ? 'Ativo' : 'Inativo'}
@@ -178,7 +178,7 @@ export default function CustomerDetailPage() {
                   <p className="font-medium text-gray-900">
                     {contact.name}
                     {contact.isPrimary && (
-                      <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
+                      <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded font-medium">
                         Principal
                       </span>
                     )}
@@ -186,9 +186,19 @@ export default function CustomerDetailPage() {
                   {contact.role && (
                     <p className="text-sm text-gray-600">{contact.role}</p>
                   )}
-                  <div className="text-sm text-gray-500 mt-1 space-y-1">
-                    {contact.email && <p>📧 {contact.email}</p>}
-                    {contact.phone && <p>📱 {contact.phone}</p>}
+                  <div className="text-sm text-muted-foreground mt-1 space-y-1">
+                    {contact.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        <span>{contact.email}</span>
+                      </div>
+                    )}
+                    {contact.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        <span>{contact.phone}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -210,7 +220,7 @@ export default function CustomerDetailPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     {address.isPrimary && (
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded mb-2 inline-block">
+                      <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded mb-2 inline-block font-medium">
                         Principal
                       </span>
                     )}

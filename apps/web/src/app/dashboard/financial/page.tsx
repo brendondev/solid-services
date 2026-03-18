@@ -437,25 +437,22 @@ export default function FinancialPage() {
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
+                    <button
+                      onClick={() => router.push(`/dashboard/financial/receivables/${receivable.id}`)}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Ver Detalhes
+                    </button>
                     {remaining > 0 && (
                       <button
                         onClick={() => handleOpenPaymentModal(receivable)}
                         className="flex items-center gap-2 px-4 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors font-medium"
                       >
                         <CreditCard className="w-4 h-4" />
-                        Registrar Pagamento
+                        Pagar
                       </button>
                     )}
-                    <button
-                      onClick={() => {
-                        setSelectedReceivable(receivable);
-                        setIsPaymentModalOpen(true);
-                      }}
-                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Ver detalhes e pagamentos"
-                    >
-                      <Eye className="w-5 h-5" />
-                    </button>
                     <button
                       onClick={() => handleDeleteClick(receivable.id)}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"

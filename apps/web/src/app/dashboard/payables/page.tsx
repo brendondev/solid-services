@@ -171,9 +171,17 @@ export default function PayablesPage() {
                       <div>
                         <h3 className="text-xl font-bold text-gray-900">{payable.description}</h3>
                         {payable.supplier && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Building2 className="w-4 h-4" />
-                            <span>{payable.supplier.name}</span>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Building2 className="w-4 h-4 text-muted-foreground" />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/dashboard/suppliers/${payable.supplierId}`);
+                              }}
+                              className="text-primary hover:text-primary/80 hover:underline transition-colors"
+                            >
+                              {payable.supplier.name}
+                            </button>
                           </div>
                         )}
                         {payable.category && (

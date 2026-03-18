@@ -17,7 +17,10 @@ import {
   Loader2,
   Plus,
   Square,
-  CheckSquare
+  CheckSquare,
+  Edit,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function OrderDetailPage() {
@@ -28,14 +31,17 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
   // Estados para modals
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showChecklistModal, setShowChecklistModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [timelineEvent, setTimelineEvent] = useState('');
   const [timelineDescription, setTimelineDescription] = useState('');
   const [checklistItem, setChecklistItem] = useState('');
+  const [deleteReason, setDeleteReason] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -128,6 +134,24 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteReason.trim()) {
+      setDeleteError('Por favor, informe o motivo da exclusão');
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      setDeleteError('');
+      await ordersApi.remove(id, deleteReason);
+      router.push('/dashboard/orders');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Erro ao excluir ordem';
+      setDeleteError(errorMessage);
+      setActionLoading(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -211,7 +235,25 @@ export default function OrderDetailPage() {
             </p>
           </div>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
+          {order.status !== 'completed' && order.status !== 'cancelled' && (
+            <>
+              <button
+                onClick={() => router.push(`/dashboard/orders/${order.id}/edit`)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm"
+              >
+                <Edit className="w-4 h-4" />
+                Editar
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors font-medium shadow-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                Excluir
+              </button>
+            </>
+          )}
           <span className={`px-4 py-2 rounded-full text-sm font-medium border flex items-center gap-2 ${statusInfo?.color}`}>
             <StatusIcon className="w-4 h-4" />
             {statusInfo?.label}
@@ -275,9 +317,16 @@ export default function OrderDetailPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Cliente</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {order.customer?.name || 'N/A'}
-              </p>
+              {order.customer ? (
+                <button
+                  onClick={() => router.push(`/dashboard/customers/${order.customerId}`)}
+                  className="text-lg font-semibold text-primary hover:text-primary/80 hover:underline transition-colors"
+                >
+                  {order.customer.name}
+                </button>
+              ) : (
+                <p className="text-lg font-semibold text-gray-900">N/A</p>
+              )}
             </div>
           </div>
         </div>
@@ -597,6 +646,92 @@ export default function OrderDetailPage() {
                 >
                   {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   Adicionar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Exclusão */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4 animate-scaleIn">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-destructive/10 rounded-lg">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Excluir Ordem de Serviço</h3>
+                <p className="text-sm text-muted-foreground mt-1">Esta ação não pode ser desfeita</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-destructive/5 border border-destructive/20 p-4 rounded-lg">
+                <p className="text-sm text-gray-900">
+                  Você está prestes a excluir a ordem <strong>{order.number}</strong>.
+                </p>
+              </div>
+
+              {deleteError && (
+                <div className="bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-destructive">{deleteError}</p>
+                      {deleteError.includes('contas a receber') && (
+                        <button
+                          onClick={() => {
+                            setShowDeleteModal(false);
+                            router.push('/dashboard/financial');
+                          }}
+                          className="mt-2 text-sm text-primary hover:text-primary/80 hover:underline font-medium"
+                        >
+                          Ver Contas a Receber →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Motivo da exclusão *
+                </label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-destructive"
+                  placeholder="Informe o motivo para fins de auditoria..."
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Este motivo será registrado nos logs de auditoria
+                </p>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteReason('');
+                  }}
+                  className="px-4 py-2 border border-border text-gray-700 rounded-lg hover:bg-muted transition-colors"
+                  disabled={actionLoading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                  disabled={actionLoading || !deleteReason.trim()}
+                >
+                  {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <Trash2 className="w-4 h-4" />
+                  Confirmar Exclusão
                 </button>
               </div>
             </div>
