@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { financialApi, Payable } from '@/lib/api/financial';
+import { showToast } from '@/lib/toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import {
   Plus,
   DollarSign,
@@ -23,6 +25,11 @@ export default function PayablesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('');
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({
+    isOpen: false,
+    id: null,
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadPayables();
@@ -42,14 +49,19 @@ export default function PayablesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta conta a pagar?')) return;
+  const handleDelete = async (reason?: string) => {
+    if (!deleteDialog.id) return;
 
     try {
-      await financialApi.removePayable(id);
+      setIsDeleting(true);
+      await financialApi.removePayable(deleteDialog.id);
+      showToast.success('Conta a pagar excluída com sucesso');
+      setDeleteDialog({ isOpen: false, id: null });
       await loadPayables();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao excluir conta a pagar');
+      showToast.error(err.response?.data?.message || 'Erro ao excluir conta a pagar');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -239,7 +251,7 @@ export default function PayablesPage() {
                       Ver Detalhes
                     </button>
                     <button
-                      onClick={() => handleDelete(payable.id)}
+                      onClick={() => setDeleteDialog({ isOpen: true, id: payable.id })}
                       className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                       title="Excluir"
                     >
@@ -252,6 +264,22 @@ export default function PayablesPage() {
           })}
         </div>
       )}
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title="Excluir Conta a Pagar"
+        message="Tem certeza que deseja excluir esta conta a pagar?"
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        requireReason={true}
+        reasonLabel="Motivo da exclusão"
+        reasonPlaceholder="Informe o motivo para fins de auditoria..."
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
+      />
     </div>
   );
 }

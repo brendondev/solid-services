@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api/auth';
+import { Toaster } from 'react-hot-toast';
 import {
   LayoutDashboard,
   Users,
@@ -73,7 +74,9 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <Toaster />
+      <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-border shadow-sm transform transition-transform duration-300 ${
@@ -183,6 +186,7 @@ export default function DashboardLayout({
           onClick={() => setSidebarOpen(false)}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
