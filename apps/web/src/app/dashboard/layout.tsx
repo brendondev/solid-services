@@ -11,6 +11,8 @@ import {
   ClipboardList,
   Calendar,
   DollarSign,
+  Building2,
+  Receipt,
   Menu,
   X,
   LogOut,
@@ -31,6 +33,8 @@ const navigation: NavItem[] = [
   { name: 'Ordens de Serviço', href: '/dashboard/orders', icon: ClipboardList },
   { name: 'Agenda', href: '/dashboard/schedule', icon: Calendar },
   { name: 'Financeiro', href: '/dashboard/financial', icon: DollarSign },
+  { name: 'Fornecedores', href: '/dashboard/suppliers', icon: Building2 },
+  { name: 'Contas a Pagar', href: '/dashboard/payables', icon: Receipt },
 ];
 
 export default function DashboardLayout({
