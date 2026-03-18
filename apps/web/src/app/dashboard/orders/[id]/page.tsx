@@ -22,6 +22,7 @@ import {
   Trash2,
   AlertTriangle
 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 export default function OrderDetailPage() {
   const router = useRouter();
@@ -57,7 +58,9 @@ export default function OrderDetailPage() {
       const data = await ordersApi.findOne(id);
       setOrder(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar ordem');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar ordem';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -72,9 +75,11 @@ export default function OrderDetailPage() {
     try {
       setActionLoading(true);
       await ordersApi.update(id, { status: status as any });
+      showToast.success('Status atualizado com sucesso');
       await loadOrder();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao atualizar status');
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar status';
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -82,7 +87,7 @@ export default function OrderDetailPage() {
 
   const handleAddTimelineEvent = async () => {
     if (!timelineEvent.trim()) {
-      alert('Digite um evento');
+      showToast.error('Digite um evento');
       return;
     }
 
@@ -92,9 +97,11 @@ export default function OrderDetailPage() {
       setTimelineEvent('');
       setTimelineDescription('');
       setShowTimelineModal(false);
+      showToast.success('Evento adicionado com sucesso');
       await loadOrder();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao adicionar evento');
+      const errorMessage = err.response?.data?.message || 'Erro ao adicionar evento';
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -102,7 +109,7 @@ export default function OrderDetailPage() {
 
   const handleAddChecklistItem = async () => {
     if (!checklistItem.trim()) {
-      alert('Digite uma tarefa');
+      showToast.error('Digite uma tarefa');
       return;
     }
 
@@ -111,9 +118,11 @@ export default function OrderDetailPage() {
       await ordersApi.addChecklistItem(id, checklistItem);
       setChecklistItem('');
       setShowChecklistModal(false);
+      showToast.success('Tarefa adicionada com sucesso');
       await loadOrder();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao adicionar tarefa');
+      const errorMessage = err.response?.data?.message || 'Erro ao adicionar tarefa';
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -127,9 +136,11 @@ export default function OrderDetailPage() {
       } else {
         await ordersApi.completeChecklistItem(id, checklistId);
       }
+      showToast.success('Tarefa atualizada com sucesso');
       await loadOrder();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao atualizar tarefa');
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar tarefa';
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -138,6 +149,7 @@ export default function OrderDetailPage() {
   const handleDelete = async () => {
     if (!deleteReason.trim()) {
       setDeleteError('Por favor, informe o motivo da exclusão');
+      showToast.error('Por favor, informe o motivo da exclusão');
       return;
     }
 
@@ -146,6 +158,7 @@ export default function OrderDetailPage() {
       setDeleteError('');
       setDeleteErrorLinks([]);
       await ordersApi.remove(id, deleteReason);
+      showToast.success('Ordem de serviço excluída com sucesso');
       router.push('/dashboard/orders');
     } catch (err: any) {
       const errorData = err.response?.data;
@@ -154,6 +167,7 @@ export default function OrderDetailPage() {
         : errorData?.message || 'Erro ao excluir ordem';
 
       setDeleteError(errorMessage);
+      showToast.error(errorMessage);
 
       // Capturar links de entidades vinculadas
       if (errorData?.links && Array.isArray(errorData.links)) {

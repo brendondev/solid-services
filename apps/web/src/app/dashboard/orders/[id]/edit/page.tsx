@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 const editOrderSchema = z.object({
   customerId: z.string().min(1, 'Selecione um cliente'),
@@ -71,7 +72,9 @@ export default function EditOrderPage() {
         notes: orderData.notes || '',
       });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar ordem');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar ordem';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -90,9 +93,12 @@ export default function EditOrderPage() {
         notes: data.notes || undefined,
       });
 
+      showToast.success('Ordem de serviço atualizada com sucesso');
       router.push(`/dashboard/orders/${orderId}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao atualizar ordem');
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar ordem';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }

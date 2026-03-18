@@ -17,6 +17,7 @@ import {
   Calendar,
   Package
 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 const statusLabels: Record<string, string> = {
   pending: 'Pendente',
@@ -57,7 +58,9 @@ export default function QuotationDetailPage() {
       const data = await quotationsApi.findOne(id);
       setQuotation(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar orçamento');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar orçamento';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,9 +71,12 @@ export default function QuotationDetailPage() {
     try {
       setActionLoading('approve');
       await quotationsApi.updateStatus(quotation.id, 'approved');
+      showToast.success('Orçamento aprovado com sucesso');
       await loadQuotation();
     } catch (err: any) {
-      setError('Erro ao aprovar orçamento');
+      const errorMessage = err.response?.data?.message || 'Erro ao aprovar orçamento';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -81,9 +87,12 @@ export default function QuotationDetailPage() {
     try {
       setActionLoading('reject');
       await quotationsApi.updateStatus(quotation.id, 'rejected');
+      showToast.success('Orçamento rejeitado');
       await loadQuotation();
     } catch (err: any) {
-      setError('Erro ao rejeitar orçamento');
+      const errorMessage = err.response?.data?.message || 'Erro ao rejeitar orçamento';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -94,10 +103,12 @@ export default function QuotationDetailPage() {
     try {
       setActionLoading('email');
       await quotationsApi.updateStatus(quotation.id, 'sent');
+      showToast.success('Orçamento marcado como enviado');
       await loadQuotation();
-      alert('Orçamento marcado como enviado! (Integração de email será implementada)');
     } catch (err: any) {
-      setError('Erro ao enviar orçamento');
+      const errorMessage = err.response?.data?.message || 'Erro ao enviar orçamento';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -108,8 +119,11 @@ export default function QuotationDetailPage() {
     try {
       setActionLoading('pdf');
       await quotationsApi.downloadPdf(id, quotation.number);
+      showToast.success('PDF gerado com sucesso');
     } catch (err: any) {
-      setError('Erro ao gerar PDF');
+      const errorMessage = err.response?.data?.message || 'Erro ao gerar PDF';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -128,9 +142,12 @@ export default function QuotationDetailPage() {
     try {
       setActionLoading('convert');
       const order = await ordersApi.createFromQuotation(id);
+      showToast.success('Ordem de serviço criada com sucesso');
       router.push(`/dashboard/orders/${order.id}`);
     } catch (err: any) {
-      setError('Erro ao converter para ordem de serviço');
+      const errorMessage = err.response?.data?.message || 'Erro ao converter para ordem de serviço';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setActionLoading(null);
     }

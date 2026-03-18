@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { ordersApi } from '@/lib/api/orders';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { servicesApi, Service } from '@/lib/api/services';
+import { showToast } from '@/lib/toast';
 
 const orderItemSchema = z.object({
   serviceId: z.string().min(1, 'Selecione um serviço'),
@@ -78,7 +79,9 @@ export default function NewOrderPage() {
       setCustomers(Array.isArray(customersData) ? customersData : []);
       setServices(Array.isArray(servicesData) ? servicesData : []);
     } catch (err: any) {
-      setError('Erro ao carregar dados iniciais');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar dados iniciais';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoadingData(false);
     }
@@ -131,9 +134,12 @@ export default function NewOrderPage() {
         })),
       });
 
+      showToast.success('Ordem de serviço criada com sucesso');
       router.push(`/dashboard/orders/${order.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar ordem de serviço');
+      const errorMessage = err.response?.data?.message || 'Erro ao criar ordem de serviço';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

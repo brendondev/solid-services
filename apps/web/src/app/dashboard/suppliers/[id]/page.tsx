@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { suppliersApi, Supplier } from '@/lib/api/suppliers';
 import { ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 export default function EditSupplierPage() {
   const router = useRouter();
@@ -40,7 +41,9 @@ export default function EditSupplierPage() {
         notes: data.notes || '',
       });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar fornecedor');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar fornecedor';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -62,9 +65,12 @@ export default function EditSupplierPage() {
         notes: formData.notes || undefined,
       });
 
+      showToast.success('Fornecedor atualizado com sucesso');
       router.push('/dashboard/suppliers');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao atualizar fornecedor');
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar fornecedor';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setSaving(false);
     }

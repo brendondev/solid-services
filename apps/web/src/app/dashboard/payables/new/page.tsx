@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { financialApi } from '@/lib/api/financial';
 import { suppliersApi, Supplier } from '@/lib/api/suppliers';
 import { ArrowLeft, DollarSign, Loader2 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 export default function NewPayablePage() {
   const router = useRouter();
@@ -29,8 +30,10 @@ export default function NewPayablePage() {
     try {
       const data = await suppliersApi.findActive();
       setSuppliers(data);
-    } catch (err) {
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar fornecedores';
       console.error('Erro ao carregar fornecedores:', err);
+      showToast.error(errorMessage);
     } finally {
       setLoadingSuppliers(false);
     }
@@ -52,9 +55,12 @@ export default function NewPayablePage() {
         notes: formData.notes || undefined,
       });
 
+      showToast.success('Conta a pagar criada com sucesso');
       router.push('/dashboard/payables');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar conta a pagar');
+      const errorMessage = err.response?.data?.message || 'Erro ao criar conta a pagar';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }

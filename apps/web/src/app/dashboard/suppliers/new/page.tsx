@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { suppliersApi } from '@/lib/api/suppliers';
 import { ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 export default function NewSupplierPage() {
   const router = useRouter();
@@ -32,9 +33,12 @@ export default function NewSupplierPage() {
         notes: formData.notes || undefined,
       });
 
+      showToast.success('Fornecedor criado com sucesso');
       router.push('/dashboard/suppliers');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar fornecedor');
+      const errorMessage = err.response?.data?.message || 'Erro ao criar fornecedor';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }

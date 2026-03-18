@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { servicesApi } from '@/lib/api/services';
+import { showToast } from '@/lib/toast';
 
 const serviceSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -44,9 +45,12 @@ export default function NewServicePage() {
       };
 
       const service = await servicesApi.create(payload);
+      showToast.success('Serviço criado com sucesso');
       router.push('/dashboard/services');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar serviço');
+      const errorMessage = err.response?.data?.message || 'Erro ao criar serviço';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

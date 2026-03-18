@@ -15,6 +15,7 @@ import {
   CreditCard,
   Plus,
 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 export default function PayableDetailPage() {
   const router = useRouter();
@@ -43,7 +44,9 @@ export default function PayableDetailPage() {
       const data = await financialApi.findOnePayable(payableId);
       setPayable(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar conta a pagar');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar conta a pagar';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -61,6 +64,7 @@ export default function PayableDetailPage() {
         notes: paymentForm.notes || undefined,
       });
 
+      showToast.success('Pagamento registrado com sucesso');
       setIsPaymentModalOpen(false);
       setPaymentForm({
         amount: '',
@@ -71,7 +75,8 @@ export default function PayableDetailPage() {
 
       await loadPayable();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao registrar pagamento');
+      const errorMessage = err.response?.data?.message || 'Erro ao registrar pagamento';
+      showToast.error(errorMessage);
     } finally {
       setSavingPayment(false);
     }

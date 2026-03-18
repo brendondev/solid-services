@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { servicesApi } from '@/lib/api/services';
 import { Loader2 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 const serviceSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -54,7 +55,9 @@ export default function EditServicePage() {
         estimatedDuration: service.estimatedDuration || undefined,
       });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar serviço');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar serviço';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsFetching(false);
     }
@@ -74,9 +77,12 @@ export default function EditServicePage() {
       };
 
       await servicesApi.update(id, payload);
+      showToast.success('Serviço atualizado com sucesso');
       router.push('/dashboard/services');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao atualizar serviço');
+      const errorMessage = err.response?.data?.message || 'Erro ao atualizar serviço';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

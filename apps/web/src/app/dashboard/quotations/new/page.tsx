@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { quotationsApi } from '@/lib/api/quotations';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { servicesApi, Service } from '@/lib/api/services';
+import { showToast } from '@/lib/toast';
 
 const quotationItemSchema = z.object({
   serviceId: z.string().min(1, 'Selecione um serviço'),
@@ -75,7 +76,9 @@ export default function NewQuotationPage() {
       setCustomers(Array.isArray(customersData) ? customersData : []);
       setServices(Array.isArray(servicesData) ? servicesData : []);
     } catch (err: any) {
-      setError('Erro ao carregar dados iniciais');
+      const errorMessage = err.response?.data?.message || 'Erro ao carregar dados iniciais';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoadingData(false);
     }
@@ -127,9 +130,12 @@ export default function NewQuotationPage() {
         })),
       });
 
+      showToast.success('Orçamento criado com sucesso');
       router.push(`/dashboard/quotations/${quotation.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar orçamento');
+      const errorMessage = err.response?.data?.message || 'Erro ao criar orçamento';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
