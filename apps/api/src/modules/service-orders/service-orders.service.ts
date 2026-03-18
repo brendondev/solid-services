@@ -510,14 +510,29 @@ export class ServiceOrdersService {
     }
 
     // Verificar se tem recebíveis vinculados
-    const receivablesCount = await this.prisma.receivable.count({
+    const receivables = await this.prisma.receivable.findMany({
       where: { serviceOrderId: id },
+      select: {
+        id: true,
+        notes: true,
+        amount: true,
+        status: true,
+      },
+      take: 5, // Limitar a 5 para não sobrecarregar
     });
 
-    if (receivablesCount > 0) {
-      throw new BadRequestException(
-        'Não é possível excluir uma ordem que possui contas a receber vinculadas'
-      );
+    if (receivables.length > 0) {
+      const links = receivables.map(r => ({
+        id: r.id,
+        label: r.notes || `Recebível de R$ ${r.amount}`,
+        type: 'receivable',
+      }));
+
+      throw new BadRequestException({
+        message: 'Não é possível excluir uma ordem que possui contas a receber vinculadas',
+        links,
+        total: receivables.length,
+      });
     }
 
     try {

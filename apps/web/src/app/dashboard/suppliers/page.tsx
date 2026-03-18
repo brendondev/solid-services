@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { suppliersApi, Supplier } from '@/lib/api/suppliers';
 import { showToast } from '@/lib/toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import type { RelatedLink } from '@/components/common/ConfirmDialog';
 import { Plus, Building2, Mail, Phone, FileText, Edit, Trash2, Loader2 } from 'lucide-react';
 
 export default function SuppliersPage() {
@@ -18,6 +19,7 @@ export default function SuppliersPage() {
     id: null,
   });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteErrorLinks, setDeleteErrorLinks] = useState<RelatedLink[]>([]);
 
   useEffect(() => {
     loadSuppliers();
@@ -39,15 +41,28 @@ export default function SuppliersPage() {
 
   const handleDelete = async (reason?: string) => {
     if (!deleteDialog.id) return;
-
     try {
       setIsDeleting(true);
+      setDeleteErrorLinks([]);
       await suppliersApi.remove(deleteDialog.id);
       showToast.success('Fornecedor excluído com sucesso');
       setDeleteDialog({ isOpen: false, id: null });
       await loadSuppliers();
     } catch (err: any) {
-      showToast.error(err.response?.data?.message || 'Erro ao excluir fornecedor');
+      const errorData = err.response?.data;
+      const errorMessage = typeof errorData === 'string'
+        ? errorData
+        : errorData?.message || 'Erro ao excluir fornecedor';
+
+      showToast.error(errorMessage);
+
+      // Capturar links de entidades vinculadas
+      if (errorData?.links && Array.isArray(errorData.links)) {
+        setDeleteErrorLinks(errorData.links);
+        setDeleteDialog({ ...deleteDialog, isOpen: true }); // Manter modal aberto
+      } else {
+        setDeleteDialog({ isOpen: false, id: null });
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -201,6 +216,7 @@ export default function SuppliersPage() {
         reasonLabel="Motivo da exclusão"
         reasonPlaceholder="Informe o motivo para fins de auditoria..."
         isLoading={isDeleting}
+        errorLinks={deleteErrorLinks}
         onConfirm={handleDelete}
         onCancel={() => setDeleteDialog({ isOpen: false, id: null })}
       />

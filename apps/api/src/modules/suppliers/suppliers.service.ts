@@ -194,7 +194,29 @@ export class SuppliersService {
 
     // Verificar se tem contas a pagar associadas
     if (supplier._count.payables > 0) {
-      throw new ConflictException('Cannot delete supplier with associated payables');
+      // Buscar detalhes dos payables
+      const payables = await this.prisma.payable.findMany({
+        where: { supplierId: id },
+        select: {
+          id: true,
+          description: true,
+          amount: true,
+          status: true,
+        },
+        take: 5,
+      });
+
+      const links = payables.map(p => ({
+        id: p.id,
+        label: p.description || `Conta a Pagar de R$ ${p.amount}`,
+        type: 'payable',
+      }));
+
+      throw new ConflictException({
+        message: 'Não é possível excluir fornecedor que possui contas a pagar vinculadas',
+        links,
+        total: supplier._count.payables,
+      });
     }
 
     return this.prisma.supplier.delete({

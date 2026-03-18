@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Info, XCircle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { AlertTriangle, Info, XCircle, Loader2, ExternalLink } from 'lucide-react';
+
+export interface RelatedLink {
+  id: string;
+  label: string;
+  type: string;
+}
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -14,6 +21,7 @@ interface ConfirmDialogProps {
   reasonLabel?: string;
   reasonPlaceholder?: string;
   isLoading?: boolean;
+  errorLinks?: RelatedLink[];
   onConfirm: (reason?: string) => void | Promise<void>;
   onCancel: () => void;
 }
@@ -29,9 +37,11 @@ export default function ConfirmDialog({
   reasonLabel = 'Motivo',
   reasonPlaceholder = 'Informe o motivo...',
   isLoading = false,
+  errorLinks = [],
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const router = useRouter();
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
 
@@ -97,6 +107,38 @@ export default function ConfirmDialog({
 
         {/* Body */}
         <div className="p-6 space-y-4">
+          {errorLinks.length > 0 && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <p className="text-sm font-medium text-destructive mb-3">
+                Este registro possui vínculos com:
+              </p>
+              <div className="space-y-2">
+                {errorLinks.map((link) => (
+                  <button
+                    key={link.id}
+                    onClick={() => {
+                      const routes: Record<string, string> = {
+                        receivable: '/dashboard/financial',
+                        payable: '/dashboard/payables',
+                        quotation: '/dashboard/quotations',
+                        order: '/dashboard/orders',
+                      };
+                      const route = routes[link.type] || '/dashboard';
+                      router.push(`${route}/${link.id}`);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 bg-white border border-destructive/20 rounded hover:bg-destructive/5 transition-colors text-left"
+                  >
+                    <ExternalLink className="w-4 h-4 text-destructive flex-shrink-0" />
+                    <span className="text-sm text-gray-900 flex-1">{link.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-3">
+                Remova ou desvincule estes itens antes de excluir
+              </p>
+            </div>
+          )}
+
           {requireReason && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

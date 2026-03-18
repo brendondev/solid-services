@@ -42,6 +42,7 @@ export default function OrderDetailPage() {
   const [timelineDescription, setTimelineDescription] = useState('');
   const [checklistItem, setChecklistItem] = useState('');
   const [deleteReason, setDeleteReason] = useState('');
+  const [deleteErrorLinks, setDeleteErrorLinks] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -143,11 +144,22 @@ export default function OrderDetailPage() {
     try {
       setActionLoading(true);
       setDeleteError('');
+      setDeleteErrorLinks([]);
       await ordersApi.remove(id, deleteReason);
       router.push('/dashboard/orders');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Erro ao excluir ordem';
+      const errorData = err.response?.data;
+      const errorMessage = typeof errorData === 'string'
+        ? errorData
+        : errorData?.message || 'Erro ao excluir ordem';
+
       setDeleteError(errorMessage);
+
+      // Capturar links de entidades vinculadas
+      if (errorData?.links && Array.isArray(errorData.links)) {
+        setDeleteErrorLinks(errorData.links);
+      }
+
       setActionLoading(false);
     }
   };
@@ -674,25 +686,45 @@ export default function OrderDetailPage() {
                 </p>
               </div>
 
-              {deleteError && (
+              {deleteError && !deleteErrorLinks.length && (
                 <div className="bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-destructive">{deleteError}</p>
-                      {deleteError.includes('contas a receber') && (
-                        <button
-                          onClick={() => {
-                            setShowDeleteModal(false);
-                            router.push('/dashboard/financial');
-                          }}
-                          className="mt-2 text-sm text-primary hover:text-primary/80 hover:underline font-medium"
-                        >
-                          Ver Contas a Receber →
-                        </button>
-                      )}
-                    </div>
+                  <p className="text-sm font-medium text-destructive">{deleteError}</p>
+                </div>
+              )}
+
+              {deleteErrorLinks.length > 0 && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                  <p className="text-sm font-medium text-destructive mb-3">
+                    {deleteError}
+                  </p>
+                  <p className="text-sm text-gray-900 mb-3">
+                    Este registro possui vínculos com:
+                  </p>
+                  <div className="space-y-2">
+                    {deleteErrorLinks.map((link: any) => (
+                      <button
+                        key={link.id}
+                        onClick={() => {
+                          setShowDeleteModal(false);
+                          const routes: Record<string, string> = {
+                            receivable: '/dashboard/financial/receivables',
+                            payable: '/dashboard/payables',
+                            quotation: '/dashboard/quotations',
+                            order: '/dashboard/orders',
+                          };
+                          const route = routes[link.type] || '/dashboard';
+                          router.push(`${route}/${link.id}`);
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 bg-white border border-destructive/20 rounded hover:bg-destructive/5 transition-colors text-left"
+                      >
+                        <span className="text-sm text-gray-900 flex-1">{link.label}</span>
+                        <span className="text-xs text-primary">Ver →</span>
+                      </button>
+                    ))}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Remova ou desvincule estes itens antes de excluir
+                  </p>
                 </div>
               )}
 
