@@ -83,11 +83,15 @@ export class SubscriptionsService {
   // SUBSCRIPTION
   // ============================================================================
 
-  async getCurrentSubscription(): Promise<SubscriptionDto> {
-    const tenantId = this.tenantContext.getTenantId();
+  async getCurrentSubscription(tenantId?: string): Promise<SubscriptionDto> {
+    const tid = tenantId || this.tenantContext.getTenantIdOrNull();
+
+    if (!tid) {
+      throw new NotFoundException('Tenant ID não fornecido');
+    }
 
     const subscription = await this.prisma.subscription.findUnique({
-      where: { tenantId },
+      where: { tenantId: tid },
       include: { plan: true },
     });
 
@@ -100,9 +104,9 @@ export class SubscriptionsService {
     return this.mapSubscriptionToDto(subscription);
   }
 
-  async getSubscriptionStatus(): Promise<SubscriptionStatusDto> {
-    const subscription = await this.getCurrentSubscription();
-    const usage = await this.getCurrentUsage();
+  async getSubscriptionStatus(tenantId?: string): Promise<SubscriptionStatusDto> {
+    const subscription = await this.getCurrentSubscription(tenantId);
+    const usage = await this.getCurrentUsage(tenantId);
 
     const now = new Date();
     const daysUntilRenewal = Math.ceil(
@@ -125,9 +129,14 @@ export class SubscriptionsService {
     };
   }
 
-  async getCurrentUsage(): Promise<CurrentUsageDto[]> {
-    const tenantId = this.tenantContext.getTenantId();
-    const subscription = await this.getCurrentSubscription();
+  async getCurrentUsage(tenantId?: string): Promise<CurrentUsageDto[]> {
+    const tid = tenantId || this.tenantContext.getTenantIdOrNull();
+
+    if (!tid) {
+      throw new NotFoundException('Tenant ID não fornecido');
+    }
+
+    const subscription = await this.getCurrentSubscription(tid);
 
     if (!subscription.plan) {
       throw new NotFoundException('Plano não encontrado para a assinatura');
@@ -137,9 +146,9 @@ export class SubscriptionsService {
 
     // Contar uso atual
     const [usersCount, customersCount, ordersCount] = await Promise.all([
-      this.prisma.user.count({ where: { tenantId } }),
-      this.prisma.customer.count({ where: { tenantId } }),
-      this.prisma.serviceOrder.count({ where: { tenantId } }),
+      this.prisma.user.count({ where: { tenantId: tid } }),
+      this.prisma.customer.count({ where: { tenantId: tid } }),
+      this.prisma.serviceOrder.count({ where: { tenantId: tid } }),
     ]);
 
     const usage: CurrentUsageDto[] = [

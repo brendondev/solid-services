@@ -6,10 +6,12 @@ import {
   Body,
   Param,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@core/auth';
 import { Public } from '@core/auth/decorators/public.decorator';
+import { Request } from 'express';
 import { SubscriptionsService } from '../services/subscriptions.service';
 import {
   PlanDto,
@@ -60,8 +62,8 @@ export class SubscriptionsController {
   @ApiOperation({
     summary: 'Obter status completo da assinatura (com uso e limites)',
   })
-  async getSubscriptionStatus(): Promise<SubscriptionStatusDto> {
-    return this.subscriptionsService.getSubscriptionStatus();
+  async getSubscriptionStatus(@Req() req: Request & { user: any }): Promise<SubscriptionStatusDto> {
+    return this.subscriptionsService.getSubscriptionStatus(req.user.tenantId);
   }
 
   @Patch('update')
