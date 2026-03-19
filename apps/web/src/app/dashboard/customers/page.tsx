@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { showToast } from '@/lib/toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { FilterChip, FilterDrawer, FilterSection } from '@/components/filters';
+import { useAutoRegisterShortcuts } from '@/hooks/useKeyboardShortcuts';
 import {
   Plus,
   Users,
@@ -53,10 +54,40 @@ export default function CustomersPage() {
 
   // Search filter state (external control)
   const [globalFilter, setGlobalFilter] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Advanced filters state
   const [showFilters, setShowFilters] = useState(false);
   const { filters, setFilter, removeFilter, clearFilters, hasActiveFilters } = useUrlFilters();
+
+  // Registra atalhos de teclado
+  useAutoRegisterShortcuts([
+    {
+      key: 'n',
+      callback: () => router.push('/dashboard/customers/new'),
+      options: {
+        description: 'Criar novo cliente',
+        category: 'Ações',
+      },
+    },
+    {
+      key: '/',
+      callback: () => searchInputRef.current?.focus(),
+      options: {
+        description: 'Focar na busca',
+        category: 'Navegação',
+      },
+    },
+    {
+      key: 'f',
+      callback: () => setShowFilters(true),
+      options: {
+        description: 'Abrir filtros avançados',
+        category: 'Navegação',
+        ctrl: true,
+      },
+    },
+  ], [router]);
 
   useEffect(() => {
     loadCustomers();
@@ -393,6 +424,7 @@ export default function CustomersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             placeholder="Buscar clientes por nome ou documento..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { customersApi } from '@/lib/api/customers';
 import { showToast } from '@/lib/toast';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -22,6 +23,7 @@ export default function NewCustomerPage() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { registerShortcut } = useKeyboardShortcuts();
 
   const {
     register,
@@ -33,6 +35,29 @@ export default function NewCustomerPage() {
       type: 'individual',
     },
   });
+
+  // Registra atalhos de teclado
+  useEffect(() => {
+    const unregisterSave = registerShortcut('s', () => {
+      handleSubmit(onSubmit)();
+    }, {
+      description: 'Salvar cliente',
+      category: 'Ações',
+      ctrl: true,
+    });
+
+    const unregisterCancel = registerShortcut('escape', () => {
+      router.push('/dashboard/customers');
+    }, {
+      description: 'Cancelar e voltar',
+      category: 'Navegação',
+    });
+
+    return () => {
+      unregisterSave();
+      unregisterCancel();
+    };
+  }, [registerShortcut, handleSubmit, router]);
 
   const onSubmit = async (data: CustomerFormData) => {
     setIsLoading(true);

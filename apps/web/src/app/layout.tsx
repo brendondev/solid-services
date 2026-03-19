@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts";
+import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts";
 
 export const metadata: Metadata = {
   title: "Solid Service - ERP SaaS",
@@ -18,7 +20,10 @@ export default function RootLayout({
       <body className="antialiased" suppressHydrationWarning>
         <QueryProvider>
           <ToastProvider>
-            {children}
+            <KeyboardShortcutsProvider>
+              {children}
+              <KeyboardShortcutsDialog />
+            </KeyboardShortcutsProvider>
           </ToastProvider>
         </QueryProvider>
       </body>
