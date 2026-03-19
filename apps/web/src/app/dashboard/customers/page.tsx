@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { showToast } from '@/lib/toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
+import { FilterChip, FilterDrawer, FilterSection } from '@/components/filters';
 import {
   Plus,
   Users,
@@ -17,6 +19,7 @@ import {
   XCircle,
   MoreHorizontal,
   Search,
+  Filter,
 } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/data-table/data-table';
@@ -33,6 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 
 export default function CustomersPage() {
@@ -49,6 +53,10 @@ export default function CustomersPage() {
 
   // Search filter state (external control)
   const [globalFilter, setGlobalFilter] = useState('');
+
+  // Advanced filters state
+  const [showFilters, setShowFilters] = useState(false);
+  const { filters, setFilter, removeFilter, clearFilters, hasActiveFilters } = useUrlFilters();
 
   useEffect(() => {
     loadCustomers();
@@ -222,15 +230,29 @@ export default function CustomersPage() {
 
   const stats = getStats();
 
-  // Filter data based on global filter
+  // Filter data based on global filter and advanced filters
   const filteredData = useMemo(() => {
-    if (!globalFilter) return data;
+    let result = data;
 
-    return data.filter((customer) =>
-      customer.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
-      customer.document?.toLowerCase().includes(globalFilter.toLowerCase())
-    );
-  }, [data, globalFilter]);
+    // Filtro de busca global
+    if (globalFilter) {
+      result = result.filter((customer) =>
+        customer.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
+        customer.document?.toLowerCase().includes(globalFilter.toLowerCase())
+      );
+    }
+
+    // Filtros avançados
+    if (filters.status) {
+      result = result.filter((customer) => customer.status === filters.status);
+    }
+
+    if (filters.type) {
+      result = result.filter((customer) => customer.type === filters.type);
+    }
+
+    return result;
+  }, [data, globalFilter, filters]);
 
   // Loading skeleton
   if (loading) {
@@ -342,6 +364,30 @@ export default function CustomersPage() {
         </div>
       )}
 
+      {/* Active Filters Chips */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+          {filters.status && (
+            <FilterChip
+              label="Status"
+              value={filters.status === 'active' ? 'Ativo' : 'Inativo'}
+              onRemove={() => removeFilter('status')}
+            />
+          )}
+          {filters.type && (
+            <FilterChip
+              label="Tipo"
+              value={filters.type === 'company' ? 'Empresa' : 'Pessoa Física'}
+              onRemove={() => removeFilter('type')}
+            />
+          )}
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            Limpar tudo
+          </Button>
+        </div>
+      )}
+
       {/* Filter Bar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
@@ -353,8 +399,16 @@ export default function CustomersPage() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" disabled>
+        <Button
+          variant="outline"
+          onClick={() => setShowFilters(true)}
+          className="relative"
+        >
+          <Filter className="h-4 w-4 mr-2" />
           Filtros Avançados
+          {hasActiveFilters && (
+            <Badge className="ml-2">{Object.keys(filters).length}</Badge>
+          )}
         </Button>
       </div>
 
@@ -409,6 +463,87 @@ export default function CustomersPage() {
           setDeleteErrorLinks([]);
         }}
       />
+
+      {/* Filter Drawer */}
+      <FilterDrawer
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onClear={clearFilters}
+      >
+        <FilterSection title="Status" description="Filtrar por status do cliente">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="status-active"
+                checked={filters.status === 'active'}
+                onCheckedChange={(checked) => {
+                  if (checked) setFilter('status', 'active');
+                  else removeFilter('status');
+                }}
+              />
+              <label
+                htmlFor="status-active"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Ativo
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="status-inactive"
+                checked={filters.status === 'inactive'}
+                onCheckedChange={(checked) => {
+                  if (checked) setFilter('status', 'inactive');
+                  else removeFilter('status');
+                }}
+              />
+              <label
+                htmlFor="status-inactive"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Inativo
+              </label>
+            </div>
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Tipo" description="Filtrar por tipo de cliente">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="type-company"
+                checked={filters.type === 'company'}
+                onCheckedChange={(checked) => {
+                  if (checked) setFilter('type', 'company');
+                  else removeFilter('type');
+                }}
+              />
+              <label
+                htmlFor="type-company"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Empresa
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="type-individual"
+                checked={filters.type === 'individual'}
+                onCheckedChange={(checked) => {
+                  if (checked) setFilter('type', 'individual');
+                  else removeFilter('type');
+                }}
+              />
+              <label
+                htmlFor="type-individual"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Pessoa Física
+              </label>
+            </div>
+          </div>
+        </FilterSection>
+      </FilterDrawer>
     </div>
   );
 }

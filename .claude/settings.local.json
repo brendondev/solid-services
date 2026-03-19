@@ -45,7 +45,8 @@
       "Bash(del Select.tsx)",
       "Bash(test:*)",
       "Bash(git ls-tree:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(tree:*)"
     ]
   }
 }
