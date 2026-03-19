@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   LogOut,
-  Loader2
+  Loader2,
+  Crown
 } from 'lucide-react';
 
 interface NavItem {
@@ -123,6 +124,22 @@ export default function DashboardLayout({
                 </a>
               );
             })}
+
+            {/* Separator */}
+            <div className="my-3 border-t border-border"></div>
+
+            {/* Planos link */}
+            <a
+              href="/dashboard/planos"
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+                pathname === '/dashboard/planos'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50'
+              }`}
+            >
+              <Crown className="w-5 h-5 flex-shrink-0" />
+              <span>Planos</span>
+            </a>
           </nav>
 
           {/* User info */}
