@@ -21,6 +21,148 @@ async function main() {
 
   console.log('✅ Tenant encontrado:', tenant.name);
 
+  // Criar planos
+  console.log('💳 Criando planos de assinatura...');
+
+  const plansData = [
+    {
+      slug: 'free',
+      name: 'Gratuito',
+      description: 'Plano gratuito para começar',
+      price: 0,
+      yearlyPrice: 0,
+      limits: {
+        maxUsers: 1,
+        maxCustomers: 10,
+        maxOrders: 5,
+        maxStorage: 100, // MB
+      },
+      features: {
+        nfe: false,
+        whatsapp: false,
+        api: false,
+        reports: true,
+        customization: false,
+        support: 'community',
+      },
+      sortOrder: 1,
+    },
+    {
+      slug: 'basic',
+      name: 'Básico',
+      description: 'Para pequenos negócios',
+      price: 49.90,
+      yearlyPrice: 499.00, // ~2 meses de desconto
+      limits: {
+        maxUsers: 3,
+        maxCustomers: 100,
+        maxOrders: 50,
+        maxStorage: 1024, // 1GB
+      },
+      features: {
+        nfe: false,
+        whatsapp: true,
+        api: false,
+        reports: true,
+        customization: false,
+        support: 'email',
+      },
+      sortOrder: 2,
+    },
+    {
+      slug: 'pro',
+      name: 'Profissional',
+      description: 'Para empresas em crescimento',
+      price: 99.90,
+      yearlyPrice: 999.00,
+      limits: {
+        maxUsers: 10,
+        maxCustomers: 500,
+        maxOrders: 200,
+        maxStorage: 5120, // 5GB
+      },
+      features: {
+        nfe: true,
+        whatsapp: true,
+        api: true,
+        reports: true,
+        customization: true,
+        support: 'priority',
+      },
+      sortOrder: 3,
+    },
+    {
+      slug: 'enterprise',
+      name: 'Enterprise',
+      description: 'Para grandes operações',
+      price: 299.90,
+      yearlyPrice: 2999.00,
+      limits: {
+        maxUsers: -1, // ilimitado
+        maxCustomers: -1,
+        maxOrders: -1,
+        maxStorage: -1,
+      },
+      features: {
+        nfe: true,
+        whatsapp: true,
+        api: true,
+        reports: true,
+        customization: true,
+        support: 'dedicated',
+        multiCompany: true,
+        customDomain: true,
+      },
+      sortOrder: 4,
+    },
+  ];
+
+  const plans = [];
+  for (const planData of plansData) {
+    let plan = await prisma.plan.findUnique({
+      where: { slug: planData.slug },
+    });
+
+    if (!plan) {
+      plan = await prisma.plan.create({
+        data: planData,
+      });
+      console.log(`✅ Plano criado: ${plan.name} (${plan.slug})`);
+    } else {
+      console.log(`ℹ️  Plano já existe: ${plan.name}`);
+    }
+    plans.push(plan);
+  }
+
+  // Criar subscription gratuita para o tenant se não existir
+  console.log('📅 Verificando assinatura do tenant...');
+  let subscription = await prisma.subscription.findUnique({
+    where: { tenantId: tenant.id },
+  });
+
+  if (!subscription) {
+    const freePlan = plans.find(p => p.slug === 'free');
+    if (freePlan) {
+      const now = new Date();
+      const periodEnd = new Date();
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      subscription = await prisma.subscription.create({
+        data: {
+          tenantId: tenant.id,
+          planId: freePlan.id,
+          status: 'active',
+          billingCycle: 'monthly',
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+        },
+      });
+      console.log(`✅ Assinatura criada: ${freePlan.name}`);
+    }
+  } else {
+    console.log('ℹ️  Tenant já possui assinatura');
+  }
+
   // Criar ou buscar usuário admin
   console.log('👤 Criando usuário admin...');
   const passwordHash = await bcrypt.hash('123456', 10);

@@ -38,6 +38,7 @@ import { SchedulingModule } from './modules/scheduling';
 import { CustomerPortalModule } from './modules/customer-portal';
 import { NotificationsModule } from './modules/notifications';
 import { AuditModule } from './modules/audit';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 // Middleware & Interceptors
 import { TenantMiddleware } from './common/middleware';
@@ -79,6 +80,7 @@ import { TenantContextInterceptor } from './common/interceptors';
     CustomerPortalModule,
     NotificationsModule,
     AuditModule,
+    SubscriptionsModule,
   ],
   providers: [
     // ORDEM CRÍTICA:

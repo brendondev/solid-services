@@ -30,6 +30,7 @@ model Tenant {
   receivables   Receivable[]
   suppliers     Supplier[]
   payables      Payable[]
+  subscription  Subscription?
 
   @@map("tenants")
 }
@@ -55,6 +56,83 @@ model User {
   @@index([tenantId])
   @@index([tenantId, email])
   @@map("users")
+}
+
+// ============================================================================
+// SUBSCRIPTIONS & BILLING
+// ============================================================================
+
+model Plan {
+  id          String   @id @default(uuid())
+  slug        String   @unique // "free", "basic", "pro", "enterprise"
+  name        String   // "Gratuito", "Básico", "Profissional", "Enterprise"
+  description String?
+  price       Decimal  @db.Decimal(10, 2) // Preço mensal em R$
+  yearlyPrice Decimal? @map("yearly_price") @db.Decimal(10, 2) // Preço anual (desconto)
+
+  // Limites
+  limits   Json // { maxUsers: 1, maxCustomers: 50, maxOrders: 20, maxStorage: 1024 }
+
+  // Features (funcionalidades habilitadas)
+  features Json // { nfe: false, whatsapp: false, api: false, reports: true }
+
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id         String @id @default(uuid())
+  tenantId   String @unique @map("tenant_id") // 1 subscription por tenant
+  planId     String @map("plan_id")
+
+  status       String @default("active") // active, canceled, past_due, trialing
+  billingCycle String @map("billing_cycle") // monthly, yearly
+
+  // Datas
+  currentPeriodStart DateTime  @map("current_period_start")
+  currentPeriodEnd   DateTime  @map("current_period_end")
+  trialEndsAt        DateTime? @map("trial_ends_at")
+  canceledAt         DateTime? @map("canceled_at")
+
+  // Stripe/Paddle
+  stripeCustomerId     String? @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan         Plan          @relation(fields: [planId], references: [id], onDelete: Restrict)
+  usageRecords UsageRecord[]
+
+  @@index([tenantId])
+  @@index([planId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+model UsageRecord {
+  id             String   @id @default(uuid())
+  subscriptionId String   @map("subscription_id")
+  tenantId       String   @map("tenant_id")
+
+  metric     String   // "customers", "orders", "storage_mb", "api_calls"
+  value      Int      // Quantidade usada
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([tenantId, metric, recordedAt])
+  @@map("usage_records")
 }
 
 // ============================================================================
