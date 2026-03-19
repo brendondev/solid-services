@@ -86,13 +86,38 @@ export class SubscriptionsService {
   async getCurrentSubscription(): Promise<SubscriptionDto> {
     const tenantId = this.tenantContext.getTenantId();
 
-    const subscription = await this.prisma.subscription.findUnique({
+    let subscription = await this.prisma.subscription.findUnique({
       where: { tenantId },
       include: { plan: true },
     });
 
+    // Auto-create FREE subscription if tenant doesn't have one
     if (!subscription) {
-      throw new NotFoundException('Assinatura não encontrada para este tenant');
+      const freePlan = await this.prisma.plan.findUnique({
+        where: { slug: 'free' },
+      });
+
+      if (!freePlan) {
+        throw new NotFoundException(
+          'Plano FREE não encontrado. Execute o seed primeiro.',
+        );
+      }
+
+      const now = new Date();
+      const periodEnd = new Date();
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      subscription = await this.prisma.subscription.create({
+        data: {
+          tenantId,
+          planId: freePlan.id,
+          status: 'active',
+          billingCycle: 'monthly',
+          currentPeriodStart: now,
+          currentPeriodEnd: periodEnd,
+        },
+        include: { plan: true },
+      });
     }
 
     return this.mapSubscriptionToDto(subscription);
