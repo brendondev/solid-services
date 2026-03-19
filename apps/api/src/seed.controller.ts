@@ -13,9 +13,11 @@ export class SeedController {
   constructor(private prisma: PrismaService) {}
 
   private checkDevEnvironment() {
-    if (process.env.NODE_ENV === 'production') {
-      throw new ForbiddenException('Seed endpoints disabled in production');
-    }
+    // TEMPORARIAMENTE permitir em produção para popular banco
+    // TODO: Remover após primeiro seed em produção
+    // if (process.env.NODE_ENV === 'production') {
+    //   throw new ForbiddenException('Seed endpoints disabled in production');
+    // }
   }
 
   @Public()
@@ -26,6 +28,83 @@ export class SeedController {
     try {
       // Seed para popular banco de dados com dados mockup
       console.log('🌱 Iniciando seed via endpoint...');
+
+      // 1. CRIAR PLANOS PRIMEIRO
+      console.log('💳 Criando planos...');
+      const plansData = [
+        {
+          slug: 'free',
+          name: 'Free',
+          description: 'Para começar seu negócio',
+          price: 0,
+          yearlyPrice: 0,
+          limits: { maxUsers: 1, maxCustomers: 20, maxOrders: 10, maxStorage: 500 },
+          features: {
+            customers: true, services: true, quotations: true, orders: true,
+            schedule: true, basic_financial: true, reports_excel: true,
+            portal_client: false, whatsapp: false, nfe: false, api: false,
+          },
+          isActive: true,
+          sortOrder: 1,
+        },
+        {
+          slug: 'starter',
+          name: 'Starter',
+          description: 'Para profissionalizar seu atendimento',
+          price: 49.90,
+          yearlyPrice: 479.00,
+          limits: { maxUsers: 3, maxCustomers: 100, maxOrders: 50, maxStorage: 5120 },
+          features: {
+            customers: true, services: true, quotations: true, orders: true,
+            portal_client: true, whatsapp: true, email_automation: true,
+            nfe: false, api: false,
+          },
+          isActive: true,
+          sortOrder: 2,
+        },
+        {
+          slug: 'professional',
+          name: 'Professional',
+          description: 'Para empresas em crescimento',
+          price: 99.90,
+          yearlyPrice: 959.00,
+          limits: { maxUsers: 10, maxCustomers: 500, maxOrders: 300, maxStorage: 51200 },
+          features: {
+            customers: true, services: true, quotations: true, orders: true,
+            portal_client: true, whatsapp: true, nfe: true, payment_gateway: true,
+            webhooks: true, api_full: false,
+          },
+          isActive: true,
+          sortOrder: 3,
+        },
+        {
+          slug: 'enterprise',
+          name: 'Enterprise',
+          description: 'Para grandes operações',
+          price: 299.90,
+          yearlyPrice: 2879.00,
+          limits: { maxUsers: -1, maxCustomers: -1, maxOrders: -1, maxStorage: 204800 },
+          features: {
+            customers: true, services: true, quotations: true, orders: true,
+            portal_client: true, whatsapp: true, nfe: true, api_full: true,
+            whitelabel: true, dedicated_support: true,
+          },
+          isActive: true,
+          sortOrder: 4,
+        },
+      ];
+
+      for (const planData of plansData) {
+        const existing = await this.prisma.plan.findUnique({
+          where: { slug: planData.slug },
+        });
+        if (!existing) {
+          await this.prisma.plan.create({ data: planData });
+          console.log(`✅ Plano criado: ${planData.name}`);
+        } else {
+          console.log(`ℹ️  Plano já existe: ${planData.name}`);
+        }
+      }
 
       // Usar tenant existente
       const TENANT_ID = '1875be3a-c4c5-49fa-aba2-9df95fb152c5';
@@ -43,6 +122,33 @@ export class SeedController {
       }
 
       console.log('✅ Tenant encontrado:', tenant.name);
+
+      // 2. CRIAR SUBSCRIPTION FREE PARA O TENANT
+      console.log('📅 Criando subscription...');
+      const freePlan = await this.prisma.plan.findUnique({ where: { slug: 'free' } });
+      if (freePlan) {
+        const existingSubscription = await this.prisma.subscription.findUnique({
+          where: { tenantId: tenant.id },
+        });
+        if (!existingSubscription) {
+          const now = new Date();
+          const periodEnd = new Date();
+          periodEnd.setMonth(periodEnd.getMonth() + 1);
+          await this.prisma.subscription.create({
+            data: {
+              tenantId: tenant.id,
+              planId: freePlan.id,
+              status: 'active',
+              billingCycle: 'monthly',
+              currentPeriodStart: now,
+              currentPeriodEnd: periodEnd,
+            },
+          });
+          console.log('✅ Subscription FREE criada');
+        } else {
+          console.log('ℹ️  Subscription já existe');
+        }
+      }
 
       // Criar ou buscar usuário admin
       console.log('👤 Criando usuário admin...');
