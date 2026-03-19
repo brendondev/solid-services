@@ -22,7 +22,7 @@ import {
 
 @ApiTags('Subscriptions')
 @ApiBearerAuth()
-@Controller('api/v1/subscriptions')
+@Controller('subscriptions')
 @UseGuards(JwtAuthGuard)
 export class SubscriptionsController {
   constructor(private subscriptionsService: SubscriptionsService) {}
