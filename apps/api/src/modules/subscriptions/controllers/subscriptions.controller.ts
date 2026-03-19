@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@core/auth';
+import { Public } from '@core/auth/decorators/public.decorator';
 import { SubscriptionsService } from '../services/subscriptions.service';
 import {
   PlanDto,
@@ -28,15 +29,17 @@ export class SubscriptionsController {
   constructor(private subscriptionsService: SubscriptionsService) {}
 
   // ============================================================================
-  // PLANS
+  // PLANS (Público - não requer autenticação)
   // ============================================================================
 
+  @Public()
   @Get('plans')
   @ApiOperation({ summary: 'Listar todos os planos disponíveis' })
   async getAllPlans(): Promise<PlanDto[]> {
     return this.subscriptionsService.getAllPlans();
   }
 
+  @Public()
   @Get('plans/:slug')
   @ApiOperation({ summary: 'Obter detalhes de um plano específico' })
   async getPlanBySlug(@Param('slug') slug: string): Promise<PlanDto> {
