@@ -47,7 +47,8 @@
       "Bash(git ls-tree:*)",
       "Bash(git mv:*)",
       "Bash(tree:*)",
-      "Bash(npx prisma validate:*)"
+      "Bash(npx prisma validate:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:avTEzEzunSvjtBKamzJnANgulTBvyfjM@postgres-z5bn.railway.internal:5432/railway\" npx prisma migrate resolve:*)"
     ]
   }
 }
