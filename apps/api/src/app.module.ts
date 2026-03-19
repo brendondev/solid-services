@@ -9,6 +9,7 @@ import { RolesGuard, JwtAuthGuard } from '@core/auth';
 // SECURITY: TEMPORÁRIO - Permitir seed em produção para setup inicial
 // TODO: Remover após primeiro seed
 import { SeedController } from './seed.controller';
+import { DebugSubsController } from './debug-subs.controller';
 
 // Core modules
 import { TenantModule } from './core/tenant';
@@ -35,7 +36,7 @@ import { TenantMiddleware } from './common/middleware';
 import { TenantContextInterceptor } from './common/interceptors';
 
 @Module({
-  controllers: [AppController, SeedController],
+  controllers: [AppController, SeedController, DebugSubsController],
   imports: [
     // Configuration
     ConfigModule.forRoot({
