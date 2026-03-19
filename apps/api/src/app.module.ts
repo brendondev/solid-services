@@ -6,19 +6,20 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { RolesGuard, JwtAuthGuard } from '@core/auth';
 
-// SECURITY: Controllers de desenvolvimento apenas em ambiente não-produção
+// SECURITY: Controllers de desenvolvimento
+// TEMPORÁRIO: Permitir em produção para popular banco inicial
 const devControllers: any[] = [];
-if (process.env.NODE_ENV !== 'production') {
-  // Lazy imports para evitar carregar em produção
+// TODO: Voltar a bloquear após primeiro seed em produção
+// if (process.env.NODE_ENV !== 'production') {
   try {
     const { SeedController } = require('./seed.controller');
-    const { DebugController } = require('./debug.controller');
-    devControllers.push(SeedController, DebugController);
-    console.log('[SECURITY] Dev controllers loaded (non-production environment)');
+    // const { DebugController } = require('./debug.controller');
+    devControllers.push(SeedController);
+    console.log('[DEV] Seed controller loaded');
   } catch (e) {
-    // Silently ignore if files don't exist
+    console.error('[ERROR] Failed to load dev controllers:', e);
   }
-}
+// }
 
 // Core modules
 import { TenantModule } from './core/tenant';
