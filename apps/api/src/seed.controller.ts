@@ -106,22 +106,27 @@ export class SeedController {
         }
       }
 
-      // Usar tenant existente
-      const TENANT_ID = '1875be3a-c4c5-49fa-aba2-9df95fb152c5';
+      // Criar ou usar tenant demo
+      const TENANT_SLUG = 'demo';
 
-      console.log('📦 Verificando tenant existente...');
-      const tenant = await this.prisma.tenant.findUnique({
-        where: { id: TENANT_ID },
+      console.log('📦 Verificando/criando tenant demo...');
+      let tenant = await this.prisma.tenant.findUnique({
+        where: { slug: TENANT_SLUG },
       });
 
       if (!tenant) {
-        return {
-          success: false,
-          message: 'Tenant não encontrado: ' + TENANT_ID,
-        };
+        console.log('🏢 Criando tenant demo...');
+        tenant = await this.prisma.tenant.create({
+          data: {
+            slug: TENANT_SLUG,
+            name: 'Empresa Demo',
+            status: 'active',
+          },
+        });
+        console.log('✅ Tenant criado:', tenant.name);
+      } else {
+        console.log('✅ Tenant já existe:', tenant.name);
       }
-
-      console.log('✅ Tenant encontrado:', tenant.name);
 
       // 2. CRIAR SUBSCRIPTION FREE PARA O TENANT
       console.log('📅 Criando subscription...');
