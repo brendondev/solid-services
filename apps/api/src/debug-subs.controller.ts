@@ -33,8 +33,8 @@ export class DebugSubsController {
     } catch (error) {
       return {
         success: false,
-        error: error.message,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       };
     }
   }
