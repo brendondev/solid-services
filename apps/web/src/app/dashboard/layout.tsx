@@ -124,23 +124,22 @@ export default function DashboardLayout({
                 </a>
               );
             })}
+          </nav>
 
-            {/* Separator */}
-            <div className="my-3 border-t border-border"></div>
-
-            {/* Planos link */}
+          {/* Planos - logo acima do user info */}
+          <div className="px-3 pb-3">
             <a
               href="/dashboard/planos"
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
                 pathname === '/dashboard/planos'
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50'
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 border border-amber-200'
               }`}
             >
               <Crown className="w-5 h-5 flex-shrink-0" />
               <span>Planos</span>
             </a>
-          </nav>
+          </div>
 
           {/* User info */}
           <div className="border-t border-border px-3 py-4">
