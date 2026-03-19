@@ -6,10 +6,18 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { RolesGuard, JwtAuthGuard } from '@core/auth';
 
-// SECURITY: TEMPORÁRIO - Permitir seed em produção para setup inicial
-// TODO: Remover após primeiro seed
-import { SeedController } from './seed.controller';
-import { DebugSubsController } from './debug-subs.controller';
+// SECURITY: Controllers de desenvolvimento apenas em ambiente não-produção
+const devControllers: any[] = [];
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    const { SeedController } = require('./seed.controller');
+    const { DebugController } = require('./debug.controller');
+    devControllers.push(SeedController, DebugController);
+    console.log('[SECURITY] Dev controllers loaded (non-production environment)');
+  } catch (e) {
+    console.error('[ERROR] Failed to load dev controllers:', e);
+  }
+}
 
 // Core modules
 import { TenantModule } from './core/tenant';
@@ -36,7 +44,7 @@ import { TenantMiddleware } from './common/middleware';
 import { TenantContextInterceptor } from './common/interceptors';
 
 @Module({
-  controllers: [AppController, SeedController, DebugSubsController],
+  controllers: [AppController, ...devControllers],
   imports: [
     // Configuration
     ConfigModule.forRoot({
