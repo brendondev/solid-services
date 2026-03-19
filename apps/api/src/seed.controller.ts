@@ -1,4 +1,4 @@
-import { Controller, Post, HttpCode, HttpStatus, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { PrismaService } from './core/database/prisma.service';
 import { Public } from './core/auth/decorators/public.decorator';
 import * as bcrypt from 'bcrypt';
