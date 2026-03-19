@@ -46,7 +46,8 @@
       "Bash(test:*)",
       "Bash(git ls-tree:*)",
       "Bash(git mv:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npx prisma validate:*)"
     ]
   }
 }
