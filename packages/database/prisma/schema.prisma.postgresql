@@ -1,0 +1,538 @@
+// Schema para PostgreSQL (Produção e Desenvolvimento)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// MULTI-TENANT CORE
+// ============================================================================
+
+model Tenant {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  status    String   @default("active")
+  settings  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  customers     Customer[]
+  services      Service[]
+  quotations    Quotation[]
+  serviceOrders ServiceOrder[]
+  receivables   Receivable[]
+  suppliers     Supplier[]
+  payables      Payable[]
+  subscription  Subscription?
+
+  @@map("tenants")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  email        String
+  passwordHash String   @map("password_hash")
+  name         String
+  roles        String[] @default(["user"])
+  status       String   @default("active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant                    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedOrders            ServiceOrder[]    @relation("AssignedOrders")
+  registeredPayments        Payment[]         @relation("RegisteredPayments")
+  registeredPayablePayments PayablePayment[]  @relation("RegisteredPayablePayments")
+  auditLogs                 AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, email])
+  @@map("users")
+}
+
+// ============================================================================
+// SUBSCRIPTIONS & BILLING
+// ============================================================================
+
+model Plan {
+  id          String   @id @default(uuid())
+  slug        String   @unique // "free", "basic", "pro", "enterprise"
+  name        String   // "Gratuito", "Básico", "Profissional", "Enterprise"
+  description String?
+  price       Decimal  @db.Decimal(10, 2) // Preço mensal em R$
+  yearlyPrice Decimal? @map("yearly_price") @db.Decimal(10, 2) // Preço anual (desconto)
+
+  // Limites
+  limits   Json // { maxUsers: 1, maxCustomers: 50, maxOrders: 20, maxStorage: 1024 }
+
+  // Features (funcionalidades habilitadas)
+  features Json // { nfe: false, whatsapp: false, api: false, reports: true }
+
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id         String @id @default(uuid())
+  tenantId   String @unique @map("tenant_id") // 1 subscription por tenant
+  planId     String @map("plan_id")
+
+  status       String @default("active") // active, canceled, past_due, trialing
+  billingCycle String @map("billing_cycle") // monthly, yearly
+
+  // Datas
+  currentPeriodStart DateTime  @map("current_period_start")
+  currentPeriodEnd   DateTime  @map("current_period_end")
+  trialEndsAt        DateTime? @map("trial_ends_at")
+  canceledAt         DateTime? @map("canceled_at")
+
+  // Stripe/Paddle
+  stripeCustomerId     String? @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan         Plan          @relation(fields: [planId], references: [id], onDelete: Restrict)
+  usageRecords UsageRecord[]
+
+  @@index([tenantId])
+  @@index([planId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+model UsageRecord {
+  id             String   @id @default(uuid())
+  subscriptionId String   @map("subscription_id")
+  tenantId       String   @map("tenant_id")
+
+  metric     String   // "customers", "orders", "storage_mb", "api_calls"
+  value      Int      // Quantidade usada
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([tenantId, metric, recordedAt])
+  @@map("usage_records")
+}
+
+// ============================================================================
+// CUSTOMERS
+// ============================================================================
+
+model Customer {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  type      String   @default("individual")
+  document  String?
+  status    String   @default("active")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant        Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contacts      CustomerContact[]
+  addresses     CustomerAddress[]
+  quotations    Quotation[]
+  serviceOrders ServiceOrder[]
+  receivables   Receivable[]
+  portalTokens  CustomerPortalToken[]
+
+  @@unique([tenantId, document])
+  @@index([tenantId])
+  @@index([tenantId, name])
+  @@index([tenantId, status])
+  @@map("customers")
+}
+
+model CustomerContact {
+  id         String   @id @default(uuid())
+  customerId String   @map("customer_id")
+  name       String
+  phone      String?
+  email      String?
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("customer_contacts")
+}
+
+model CustomerAddress {
+  id         String   @id @default(uuid())
+  customerId String   @map("customer_id")
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String
+  zipCode    String   @map("zip_code")
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@map("customer_addresses")
+}
+
+model CustomerPortalToken {
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  customerId  String    @map("customer_id")
+  token       String    @unique
+  generatedAt DateTime  @default(now()) @map("generated_at")
+  isValidated Boolean   @default(false) @map("is_validated")
+  validatedAt DateTime? @map("validated_at")
+  revokedAt   DateTime? @map("revoked_at")
+  lastUsedAt  DateTime? @map("last_used_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([token])
+  @@index([customerId])
+  @@index([isValidated])
+  @@map("customer_portal_tokens")
+}
+
+// ============================================================================
+// SERVICES CATALOG
+// ============================================================================
+
+model Service {
+  id                String   @id @default(uuid())
+  tenantId          String   @map("tenant_id")
+  name              String
+  description       String?
+  defaultPrice      Decimal  @map("default_price") @db.Decimal(10, 2)
+  estimatedDuration Int?     @map("estimated_duration")
+  status            String   @default("active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quotationItems QuotationItem[]
+  orderItems     OrderItem[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("services")
+}
+
+// ============================================================================
+// QUOTATIONS
+// ============================================================================
+
+model Quotation {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  customerId  String   @map("customer_id")
+  number      String
+  status      String   @default("draft")
+  totalAmount Decimal  @map("total_amount") @db.Decimal(10, 2)
+  validUntil  DateTime @map("valid_until")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer     Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items        QuotationItem[]
+  serviceOrder ServiceOrder?
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@index([tenantId, createdAt])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id          String  @id @default(uuid())
+  quotationId String  @map("quotation_id")
+  serviceId   String  @map("service_id")
+  description String
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal @map("total_price") @db.Decimal(10, 2)
+  order       Int
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  service   Service   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@index([quotationId])
+  @@map("quotation_items")
+}
+
+// ============================================================================
+// SERVICE ORDERS
+// ============================================================================
+
+model ServiceOrder {
+  id           String    @id @default(uuid())
+  tenantId     String    @map("tenant_id")
+  customerId   String    @map("customer_id")
+  quotationId  String?   @unique @map("quotation_id")
+  number       String
+  status       String    @default("open")
+  assignedTo   String?   @map("assigned_to")
+  scheduledFor DateTime? @map("scheduled_for")
+  startedAt    DateTime? @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  totalAmount  Decimal   @map("total_amount") @db.Decimal(10, 2)
+  notes        String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer     Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  quotation    Quotation?        @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+  assignedUser User?             @relation("AssignedOrders", fields: [assignedTo], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  timeline     OrderTimeline[]
+  checklists   OrderChecklist[]
+  attachments  Attachment[]
+  receivables  Receivable[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@index([tenantId, assignedTo])
+  @@index([tenantId, scheduledFor])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, completedAt])
+  @@map("service_orders")
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  serviceOrderId String  @map("service_order_id")
+  serviceId      String  @map("service_id")
+  description    String
+  quantity       Decimal @db.Decimal(10, 2)
+  unitPrice      Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice     Decimal @map("total_price") @db.Decimal(10, 2)
+  order          Int
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@index([serviceOrderId])
+  @@map("order_items")
+}
+
+model OrderTimeline {
+  id             String   @id @default(uuid())
+  serviceOrderId String   @map("service_order_id")
+  event          String
+  description    String?
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@index([serviceOrderId])
+  @@index([serviceOrderId, createdAt])
+  @@map("order_timeline")
+}
+
+model OrderChecklist {
+  id             String    @id @default(uuid())
+  serviceOrderId String    @map("service_order_id")
+  title          String
+  isCompleted    Boolean   @default(false) @map("is_completed")
+  completedAt    DateTime? @map("completed_at")
+  order          Int
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@index([serviceOrderId])
+  @@map("order_checklists")
+}
+
+model Attachment {
+  id             String   @id @default(uuid())
+  serviceOrderId String   @map("service_order_id")
+  fileName       String   @map("file_name")
+  fileSize       Int      @map("file_size")
+  mimeType       String   @map("mime_type")
+  storageKey     String   @map("storage_key")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@index([serviceOrderId])
+  @@map("attachments")
+}
+
+// ============================================================================
+// FINANCIAL
+// ============================================================================
+
+model Receivable {
+  id             String    @id @default(uuid())
+  tenantId       String    @map("tenant_id")
+  serviceOrderId String?   @map("service_order_id")
+  customerId     String    @map("customer_id")
+  amount         Decimal   @db.Decimal(10, 2)
+  paidAmount     Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  status         String    @default("pending")
+  dueDate        DateTime  @map("due_date")
+  paidAt         DateTime? @map("paid_at")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  serviceOrder ServiceOrder? @relation(fields: [serviceOrderId], references: [id], onDelete: SetNull)
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  payments     Payment[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@index([tenantId, customerId])
+  @@map("receivables")
+}
+
+model Payment {
+  id           String   @id @default(uuid())
+  receivableId String   @map("receivable_id")
+  amount       Decimal  @db.Decimal(10, 2)
+  method       String
+  paidAt       DateTime @map("paid_at")
+  registeredBy String   @map("registered_by")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  receivable     Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+  registeredUser User       @relation("RegisteredPayments", fields: [registeredBy], references: [id], onDelete: Restrict)
+
+  @@index([receivableId])
+  @@map("payments")
+}
+
+// ============================================================================
+// SUPPLIERS & PAYABLES
+// ============================================================================
+
+model Supplier {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  document  String?
+  email     String?
+  phone     String?
+  status    String   @default("active")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payables Payable[]
+
+  @@unique([tenantId, document])
+  @@index([tenantId])
+  @@index([tenantId, name])
+  @@index([tenantId, status])
+  @@map("suppliers")
+}
+
+model Payable {
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  supplierId  String?   @map("supplier_id")
+  description String
+  amount      Decimal   @db.Decimal(10, 2)
+  paidAmount  Decimal   @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  status      String    @default("pending")
+  dueDate     DateTime  @map("due_date")
+  paidAt      DateTime? @map("paid_at")
+  category    String?
+  notes       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  tenant   Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier Supplier?         @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  payments PayablePayment[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@index([tenantId, supplierId])
+  @@map("payables")
+}
+
+model PayablePayment {
+  id           String   @id @default(uuid())
+  payableId    String   @map("payable_id")
+  amount       Decimal  @db.Decimal(10, 2)
+  method       String
+  paidAt       DateTime @map("paid_at")
+  registeredBy String   @map("registered_by")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  payable        Payable @relation(fields: [payableId], references: [id], onDelete: Cascade)
+  registeredUser User    @relation("RegisteredPayablePayments", fields: [registeredBy], references: [id], onDelete: Restrict)
+
+  @@index([payableId])
+  @@map("payable_payments")
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  userId    String?  @map("user_id")
+  action    String
+  entity    String
+  entityId  String   @map("entity_id")
+  changes   Json?
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, entity, entityId])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, userId])
+  @@index([tenantId, action])
+  @@map("audit_logs")
+}

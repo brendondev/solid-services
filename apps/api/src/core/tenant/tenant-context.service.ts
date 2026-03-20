@@ -43,6 +43,9 @@ export class TenantContextService {
   getTenantId(): string {
     const context = this.asyncLocalStorage.getStore();
 
+    // DEBUG: Log temporário para investigação
+    console.log('[TenantContextService] getStore():', context ? `tenant: ${context.tenantId}, user: ${context.userId}` : 'NO CONTEXT');
+
     if (!context?.tenantId) {
       throw new Error('Tenant context not found. This should not happen.');
     }

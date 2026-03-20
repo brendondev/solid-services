@@ -29,6 +29,9 @@ export class TenantContextInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
+    // DEBUG: Log temporário para investigação
+    console.log('[TenantContextInterceptor] User:', user ? `${user.id} (tenant: ${user.tenantId})` : 'none');
+
     // Se há usuário autenticado, executar dentro do contexto do tenant
     if (user?.tenantId) {
       // CRÍTICO: .run() garante que TODA a execução subsequente
@@ -37,9 +40,13 @@ export class TenantContextInterceptor implements NestInterceptor {
         this.tenantContext.run(
           { tenantId: user.tenantId, userId: user.id },
           () => {
+            console.log('[TenantContextInterceptor] Context created for tenant:', user.tenantId);
             next.handle().subscribe({
               next: (value) => subscriber.next(value),
-              error: (err) => subscriber.error(err),
+              error: (err) => {
+                console.error('[TenantContextInterceptor] Error during execution:', err.message);
+                subscriber.error(err);
+              },
               complete: () => subscriber.complete(),
             });
           }
@@ -48,6 +55,7 @@ export class TenantContextInterceptor implements NestInterceptor {
     }
 
     // Se não há usuário, executar normalmente (rotas públicas)
+    console.log('[TenantContextInterceptor] No user, executing without context');
     return next.handle();
   }
 }

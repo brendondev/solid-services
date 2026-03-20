@@ -49,7 +49,18 @@
       "Bash(tree:*)",
       "Bash(npx prisma validate:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:avTEzEzunSvjtBKamzJnANgulTBvyfjM@postgres-z5bn.railway.internal:5432/railway\" npx prisma migrate resolve:*)",
-      "Bash([ -f \"IMPLEMENTED.md\" ])"
+      "Bash([ -f \"IMPLEMENTED.md\" ])",
+      "Bash(for i in 1 2 3)",
+      "Bash(do echo \"=== Tentativa $i ===\")",
+      "Bash(done)",
+      "Bash(npm run:*)",
+      "Bash(tasklist:*)",
+      "Bash(copy:*)",
+      "Bash(docker:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMzJlY2U5My1mMzIyLTQzNzEtYmEwOS01Y2IyMzRjYzk5NjEiLCJlbWFpbCI6InRlc3RlQGxvY2FsLmNvbSIsInRlbmFudElkIjoiYWNjNjQ0NTEtNTk2My00ZWViLWIxNmItYjgwMjc3ZDFhZWM1Iiwicm9sZXMiOlsiYWRtaW4iXSwiaWF0IjoxNzc0MDMxMjUyLCJleHAiOjE3NzQwNjAwNTJ9.tyN50yEt8499UiuICfyNXILMaD8tkPJd073NuXsaTyI\")",
+      "Bash(git reset:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjMjdkOWQyMC02YjYxLTQ1MDYtODVjMi0zMDlhYjQwZmJhOWUiLCJlbWFpbCI6InRlc3RlLTE3NzQwMzE3NTRAbG9jYWwuY29tIiwidGVuYW50SWQiOiI5MTRmY2EyYS05NmNmLTQzNjItYTQxZC03YWQ5N2VhZTNhNTYiLCJyb2xlcyI6WyJhZG1pbiJdLCJpYXQiOjE3NzQwMzE3NTgsImV4cCI6MTc3NDA2MDU1OH0.k06SDWKnICeQXmMjF2gjYA8-d-8oJl9a9Bsgg-5ep_Y\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzOGRkOTU1Zi04NmE0LTQ5MzAtYjM1NS1hYjZkN2RhODUyZmMiLCJlbWFpbCI6ImRlcGxveTJAdGVzdC5jb20iLCJ0ZW5hbnRJZCI6Ijk5YWFjMTkxLTJlMTAtNGU4ZS05MWJiLTg3YjlkMDgzN2NkOSIsInJvbGVzIjpbImFkbWluIl0sImlhdCI6MTc3NDAzMjQwMywiZXhwIjoxNzc0MDYxMjAzfQ.sPpHeMl-fT_j8S8XEXnYnvaM7nlcM32Xo4lkDfrPgC4\")"
     ]
   }
 }
