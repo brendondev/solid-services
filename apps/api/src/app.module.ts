@@ -38,6 +38,7 @@ import { CustomerPortalModule } from './modules/customer-portal';
 import { NotificationsModule } from './modules/notifications';
 import { AuditModule } from './modules/audit';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { UsersModule } from './modules/users/users.module';
 
 // Middleware & Interceptors
 import { TenantMiddleware } from './common/middleware';
@@ -80,6 +81,7 @@ import { TenantContextInterceptor } from './common/interceptors';
     NotificationsModule,
     AuditModule,
     SubscriptionsModule,
+    UsersModule,
   ],
   providers: [
     // ORDEM CRÍTICA:

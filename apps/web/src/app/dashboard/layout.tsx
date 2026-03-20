@@ -19,7 +19,8 @@ import {
   X,
   LogOut,
   Loader2,
-  Crown
+  Crown,
+  Shield
 } from 'lucide-react';
 
 interface NavItem {
@@ -38,6 +39,7 @@ const navigation: NavItem[] = [
   { name: 'Financeiro', href: '/dashboard/financial', icon: DollarSign },
   { name: 'Fornecedores', href: '/dashboard/suppliers', icon: Building2 },
   { name: 'Contas a Pagar', href: '/dashboard/payables', icon: Receipt },
+  { name: 'Usuários', href: '/dashboard/users', icon: Shield },
 ];
 
 export default function DashboardLayout({
