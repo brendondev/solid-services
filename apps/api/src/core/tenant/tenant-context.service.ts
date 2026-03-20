@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { AsyncLocalStorage } from 'async_hooks';
+import { Injectable, Inject, Scope } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
 
 /**
  * Interface para o contexto do tenant
@@ -10,30 +11,35 @@ export interface TenantContext {
 }
 
 /**
- * Service responsável por gerenciar o contexto do tenant usando AsyncLocalStorage
+ * Estende Request do Express para incluir tenant context
+ */
+declare global {
+  namespace Express {
+    interface Request {
+      tenantContext?: TenantContext;
+    }
+  }
+}
+
+/**
+ * Service responsável por gerenciar o contexto do tenant via Request
  *
- * Este serviço mantém o isolamento de dados entre requisições de diferentes tenants,
- * garantindo que cada request tenha acesso apenas aos dados do seu tenant.
+ * IMPORTANTE: Este serviço é REQUEST-SCOPED para ter acesso ao request atual.
+ * O contexto é armazenado diretamente no objeto request, não em AsyncLocalStorage.
  *
  * Princípio SOLID aplicado:
  * - Single Responsibility: Apenas gerencia o contexto do tenant
  * - Dependency Inversion: Interface abstrata para contexto
  */
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class TenantContextService {
-  private readonly asyncLocalStorage: AsyncLocalStorage<TenantContext>;
-
-  constructor() {
-    this.asyncLocalStorage = new AsyncLocalStorage<TenantContext>();
-  }
+  constructor(@Inject(REQUEST) private readonly request: Request) {}
 
   /**
-   * Executa uma função dentro de um contexto de tenant
-   * @param context Contexto do tenant
-   * @param fn Função a ser executada
+   * Define o contexto do tenant no request
    */
-  run<T>(context: TenantContext, fn: () => T): T {
-    return this.asyncLocalStorage.run(context, fn);
+  setContext(context: TenantContext): void {
+    this.request.tenantContext = context;
   }
 
   /**
@@ -41,10 +47,7 @@ export class TenantContextService {
    * @throws Error se não houver contexto de tenant
    */
   getTenantId(): string {
-    const context = this.asyncLocalStorage.getStore();
-
-    // DEBUG: Log temporário para investigação
-    console.log('[TenantContextService] getStore():', context ? `tenant: ${context.tenantId}, user: ${context.userId}` : 'NO CONTEXT');
+    const context = this.request.tenantContext;
 
     if (!context?.tenantId) {
       throw new Error('Tenant context not found. This should not happen.');
@@ -58,54 +61,27 @@ export class TenantContextService {
    * Útil para casos onde o tenant é opcional (ex: rotas públicas)
    */
   getTenantIdOrNull(): string | null {
-    const context = this.asyncLocalStorage.getStore();
-    return context?.tenantId || null;
+    return this.request.tenantContext?.tenantId || null;
   }
 
   /**
    * Retorna o user ID do contexto atual
    */
   getUserId(): string | undefined {
-    const context = this.asyncLocalStorage.getStore();
-    return context?.userId;
+    return this.request.tenantContext?.userId;
   }
 
   /**
    * Retorna todo o contexto atual
    */
   getContext(): TenantContext | undefined {
-    return this.asyncLocalStorage.getStore();
+    return this.request.tenantContext;
   }
 
   /**
    * Verifica se existe um contexto de tenant ativo
    */
   hasContext(): boolean {
-    const context = this.asyncLocalStorage.getStore();
-    return !!context?.tenantId;
-  }
-
-  /**
-   * Define o tenant ID no contexto atual
-   * ATENÇÃO: Use com cuidado! Normalmente o contexto é definido pelo middleware
-   */
-  setTenantId(tenantId: string): void {
-    const currentContext = this.asyncLocalStorage.getStore();
-
-    if (currentContext) {
-      currentContext.tenantId = tenantId;
-    }
-  }
-
-  /**
-   * Define o user ID no contexto atual
-   * ATENÇÃO: Use com cuidado! Normalmente o contexto é definido pelo middleware
-   */
-  setUserId(userId: string): void {
-    const currentContext = this.asyncLocalStorage.getStore();
-
-    if (currentContext) {
-      currentContext.userId = userId;
-    }
+    return !!this.request.tenantContext?.tenantId;
   }
 }

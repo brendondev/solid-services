@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -40,8 +40,7 @@ import { AuditModule } from './modules/audit';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { UsersModule } from './modules/users/users.module';
 
-// Middleware & Interceptors
-import { TenantMiddleware } from './common/middleware';
+// Interceptors
 import { TenantContextInterceptor } from './common/interceptors';
 
 @Module({
@@ -100,18 +99,13 @@ import { TenantContextInterceptor } from './common/interceptors';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    // TenantContextInterceptor garante que toda execução aconteça
-    // dentro do contexto AsyncLocal do tenant
+    // TenantContextInterceptor define o contexto no request object
     {
       provide: APP_INTERCEPTOR,
       useClass: TenantContextInterceptor,
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // Aplicar TenantMiddleware em todas as rotas
-    // Exceto rotas públicas (health check, etc)
-    consumer.apply(TenantMiddleware).forRoutes('*');
-  }
+export class AppModule {
+  // Middleware removido - contexto agora é gerenciado via Request-scoped service
 }

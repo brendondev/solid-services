@@ -4,62 +4,37 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Observable, from } from 'rxjs';
-import { firstValueFrom } from 'rxjs';
-import { TenantContextService } from '@core/tenant';
+import { Observable } from 'rxjs';
 
 /**
- * Interceptor que garante que toda a execução da requisição
- * aconteça dentro do contexto AsyncLocal do tenant
+ * Interceptor que define o tenant context no request object
  *
  * ORDEM DE EXECUÇÃO:
- * 1. Guards (JwtAuthGuard autentica)
- * 2. Interceptors (ESTE - cria contexto AsyncLocal) ← CRÍTICO
+ * 1. Guards (JwtAuthGuard autentica e popula request.user)
+ * 2. Interceptors (ESTE - extrai tenant do user e armazena no request)
  * 3. Route handler
- * 4. Services
- * 5. Response
+ * 4. Services (acessam via TenantContextService que lê do request)
  *
- * Este interceptor ENVOLVE toda a execução em um .run()
- * garantindo que o contexto não seja perdido
+ * Solução: Armazenar contexto no request ao invés de AsyncLocalStorage
+ * para garantir compatibilidade com RxJS Observables.
  */
 @Injectable()
 export class TenantContextInterceptor implements NestInterceptor {
-  constructor(private readonly tenantContext: TenantContextService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // DEBUG: Log temporário para investigação
-    console.log('[TenantContextInterceptor] User:', user ? `${user.id} (tenant: ${user.tenantId})` : 'none');
-
-    // Se há usuário autenticado, executar dentro do contexto do tenant
+    // Se há usuário autenticado, definir contexto no request
     if (user?.tenantId) {
-      console.log('[TenantContextInterceptor] Context created for tenant:', user.tenantId);
-
-      // CRITICAL: Converter Observable para Promise dentro do .run()
-      // para garantir que o contexto AsyncLocal seja mantido
-      return from(
-        this.tenantContext.run(
-          { tenantId: user.tenantId, userId: user.id },
-          async () => {
-            try {
-              // Executar handler como Promise dentro do contexto
-              const result = await firstValueFrom(next.handle());
-              console.log('[TenantContextInterceptor] Execution completed successfully');
-              return result;
-            } catch (err) {
-              const errorMessage = err instanceof Error ? err.message : String(err);
-              console.error('[TenantContextInterceptor] Error during execution:', errorMessage);
-              throw err;
-            }
-          }
-        )
-      );
+      // Armazenar contexto diretamente no request object
+      request.tenantContext = {
+        tenantId: user.tenantId,
+        userId: user.id,
+      };
     }
 
-    // Se não há usuário, executar normalmente (rotas públicas)
-    console.log('[TenantContextInterceptor] No user, executing without context');
+    // Continuar execução normal (contexto agora está no request)
     return next.handle();
   }
 }
