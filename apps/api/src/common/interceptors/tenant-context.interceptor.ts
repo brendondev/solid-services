@@ -4,7 +4,8 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { TenantContextService } from '@core/tenant';
 
 /**
@@ -34,24 +35,27 @@ export class TenantContextInterceptor implements NestInterceptor {
 
     // Se há usuário autenticado, executar dentro do contexto do tenant
     if (user?.tenantId) {
-      // CRÍTICO: .run() garante que TODA a execução subsequente
-      // (incluindo queries do Prisma) aconteça com o contexto correto
-      return new Observable((subscriber) => {
+      console.log('[TenantContextInterceptor] Context created for tenant:', user.tenantId);
+
+      // CRITICAL: Converter Observable para Promise dentro do .run()
+      // para garantir que o contexto AsyncLocal seja mantido
+      return from(
         this.tenantContext.run(
           { tenantId: user.tenantId, userId: user.id },
-          () => {
-            console.log('[TenantContextInterceptor] Context created for tenant:', user.tenantId);
-            next.handle().subscribe({
-              next: (value) => subscriber.next(value),
-              error: (err) => {
-                console.error('[TenantContextInterceptor] Error during execution:', err.message);
-                subscriber.error(err);
-              },
-              complete: () => subscriber.complete(),
-            });
+          async () => {
+            try {
+              // Executar handler como Promise dentro do contexto
+              const result = await firstValueFrom(next.handle());
+              console.log('[TenantContextInterceptor] Execution completed successfully');
+              return result;
+            } catch (err) {
+              const errorMessage = err instanceof Error ? err.message : String(err);
+              console.error('[TenantContextInterceptor] Error during execution:', errorMessage);
+              throw err;
+            }
           }
-        );
-      });
+        )
+      );
     }
 
     // Se não há usuário, executar normalmente (rotas públicas)
