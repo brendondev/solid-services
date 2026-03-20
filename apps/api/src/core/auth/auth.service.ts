@@ -133,6 +133,31 @@ export class AuthService {
         },
       });
 
+      // Buscar plano FREE
+      const freePlan = await tx.plan.findUnique({
+        where: { slug: 'free' },
+      });
+
+      if (!freePlan) {
+        throw new Error('Plano FREE não encontrado. Execute o seed do banco de dados.');
+      }
+
+      // Criar assinatura FREE padrão para o novo tenant
+      const now = new Date();
+      const currentPeriodEnd = new Date(now);
+      currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1); // 1 mês
+
+      await tx.subscription.create({
+        data: {
+          tenantId: tenant.id,
+          planId: freePlan.id,
+          status: 'active',
+          billingCycle: 'monthly',
+          currentPeriodStart: now,
+          currentPeriodEnd,
+        },
+      });
+
       return { tenant, user };
     });
 
