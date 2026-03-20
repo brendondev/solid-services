@@ -118,8 +118,33 @@ export const customersApi = {
     await api.delete(`/customers/${id}`);
   },
 
-  generatePortalToken: async (id: string): Promise<{ token: string; portalUrl: string; expiresIn: string }> => {
-    const response = await api.post(`/portal/generate-token/${id}`);
+  // Portal do Cliente - Gerenciamento de Tokens
+  generatePortalToken: async (id: string): Promise<{
+    token: string;
+    portalUrl: string;
+    message: string;
+  }> => {
+    const response = await api.post(`/portal/management/generate-token/${id}`);
+    return response.data;
+  },
+
+  getTokenStatus: async (id: string): Promise<{
+    hasToken: boolean;
+    token?: string;
+    portalUrl?: string;
+    isValidated?: boolean;
+    validatedAt?: string;
+    generatedAt?: string;
+    lastUsedAt?: string;
+    status?: string;
+    message?: string;
+  }> => {
+    const response = await api.get(`/portal/management/token-status/${id}`);
+    return response.data;
+  },
+
+  revokePortalToken: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/portal/management/revoke-token/${id}`);
     return response.data;
   },
 };

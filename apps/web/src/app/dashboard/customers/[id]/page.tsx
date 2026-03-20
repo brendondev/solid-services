@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { customersApi, Customer, getPrimaryContact } from '@/lib/api/customers';
-import { ExternalLink, Loader2, Mail, Phone } from 'lucide-react';
-import PortalLinkModal from '@/components/customers/PortalLinkModal';
+import { Mail, Phone } from 'lucide-react';
+import PortalAccessCard from '@/components/customers/PortalAccessCard';
 
 export default function CustomerDetailPage() {
   const router = useRouter();
@@ -14,12 +14,6 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [generatingToken, setGeneratingToken] = useState(false);
-  const [portalLink, setPortalLink] = useState<{
-    token: string;
-    portalUrl: string;
-    expiresIn: string;
-  } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -36,18 +30,6 @@ export default function CustomerDetailPage() {
       setError(err.response?.data?.message || 'Erro ao carregar cliente');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGeneratePortalLink = async () => {
-    try {
-      setGeneratingToken(true);
-      const data = await customersApi.generatePortalToken(id);
-      setPortalLink(data);
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao gerar link do portal');
-    } finally {
-      setGeneratingToken(false);
     }
   };
 
@@ -92,31 +74,12 @@ export default function CustomerDetailPage() {
             <p className="text-gray-600">Detalhes do cliente</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleGeneratePortalLink}
-            disabled={generatingToken}
-            className="px-4 py-2 bg-success text-success-foreground rounded-lg hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium shadow-sm transition-colors"
-          >
-            {generatingToken ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Gerando...
-              </>
-            ) : (
-              <>
-                <ExternalLink className="w-4 h-4" />
-                Gerar Link do Portal
-              </>
-            )}
-          </button>
-          <button
-            onClick={() => router.push(`/dashboard/customers/${id}/edit`)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium shadow-sm transition-colors"
-          >
-            Editar
-          </button>
-        </div>
+        <button
+          onClick={() => router.push(`/dashboard/customers/${id}/edit`)}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium shadow-sm transition-colors"
+        >
+          Editar
+        </button>
       </div>
 
       {/* Informações Principais */}
@@ -261,14 +224,8 @@ export default function CustomerDetailPage() {
         </div>
       </div>
 
-      {/* Portal Link Modal */}
-      {portalLink && (
-        <PortalLinkModal
-          portalUrl={portalLink.portalUrl}
-          expiresIn={portalLink.expiresIn}
-          onClose={() => setPortalLink(null)}
-        />
-      )}
+      {/* Portal do Cliente */}
+      <PortalAccessCard customerId={id} />
     </div>
   );
 }

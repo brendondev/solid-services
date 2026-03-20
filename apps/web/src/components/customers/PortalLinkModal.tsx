@@ -5,11 +5,12 @@ import { X, Copy, Check, ExternalLink, Calendar, FileText, Package } from 'lucid
 
 interface PortalLinkModalProps {
   portalUrl: string;
-  expiresIn: string;
+  isValidated?: boolean;
+  validatedAt?: string;
   onClose: () => void;
 }
 
-export default function PortalLinkModal({ portalUrl, expiresIn, onClose }: PortalLinkModalProps) {
+export default function PortalLinkModal({ portalUrl, isValidated, validatedAt, onClose }: PortalLinkModalProps) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -78,15 +79,39 @@ export default function PortalLinkModal({ portalUrl, expiresIn, onClose }: Porta
             </div>
           </div>
 
-          {/* Expiration Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          {/* Token Status */}
+          <div className={`border rounded-lg p-4 ${
+            isValidated
+              ? 'bg-green-50 border-green-200'
+              : 'bg-yellow-50 border-yellow-200'
+          }`}>
             <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
+              {isValidated ? (
+                <Check className="w-5 h-5 text-green-600 mt-0.5" />
+              ) : (
+                <Calendar className="w-5 h-5 text-yellow-600 mt-0.5" />
+              )}
               <div>
-                <h3 className="font-semibold text-blue-900">Validade do Link</h3>
-                <p className="text-sm text-blue-700 mt-1">
-                  Este link expira em <strong>{expiresIn}</strong>. Após esse período, será
-                  necessário gerar um novo link de acesso.
+                <h3 className={`font-semibold ${
+                  isValidated ? 'text-green-900' : 'text-yellow-900'
+                }`}>
+                  {isValidated ? 'Token Validado e Ativo' : 'Token Aguardando Validação'}
+                </h3>
+                <p className={`text-sm mt-1 ${
+                  isValidated ? 'text-green-700' : 'text-yellow-700'
+                }`}>
+                  {isValidated ? (
+                    <>
+                      Token validado em{' '}
+                      <strong>{validatedAt ? new Date(validatedAt).toLocaleString('pt-BR') : '-'}</strong>.
+                      Este link é <strong>permanente</strong> e ficará ativo até ser revogado pelo administrador.
+                    </>
+                  ) : (
+                    <>
+                      Este link está aguardando a <strong>primeira validação</strong> pelo cliente.
+                      Após validado, ficará ativo permanentemente até ser revogado.
+                    </>
+                  )}
                 </p>
               </div>
             </div>
