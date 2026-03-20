@@ -7,6 +7,7 @@ import PortalLayout from '@/components/portal/PortalLayout';
 import {
   validateToken,
   getOrder,
+  downloadOrderPdf,
   type CustomerData,
   type ServiceOrder,
 } from '@/lib/api/portal';
@@ -18,6 +19,7 @@ import {
   Circle,
   Paperclip,
   Download,
+  FileDown,
 } from 'lucide-react';
 
 export default function OrderDetailPage() {
@@ -28,6 +30,7 @@ export default function OrderDetailPage() {
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,6 +51,18 @@ export default function OrderDetailPage() {
 
     loadData();
   }, [token, id]);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      await downloadOrderPdf(id);
+    } catch (err) {
+      console.error('Error downloading PDF:', err);
+      alert('Erro ao baixar PDF. Tente novamente.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -72,14 +87,25 @@ export default function OrderDetailPage() {
   return (
     <PortalLayout customerName={customer?.name} token={token}>
       <div className="space-y-6">
-        {/* Back Button */}
-        <Link
-          href={`/portal/${token}/orders`}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para ordens
-        </Link>
+        {/* Back Button and Actions */}
+        <div className="flex items-center justify-between">
+          <Link
+            href={`/portal/${token}/orders`}
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para ordens
+          </Link>
+
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileDown className="h-4 w-4" />
+            {downloadingPdf ? 'Baixando...' : 'Baixar PDF'}
+          </button>
+        </div>
 
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">

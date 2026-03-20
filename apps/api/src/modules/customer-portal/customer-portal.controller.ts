@@ -1,5 +1,6 @@
-import { Controller, Get, Patch, Post, Param, Headers, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Headers, UnauthorizedException, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiBearerAuth } from '@nestjs/swagger';
+import { Response } from 'express';
 import { CustomerPortalService } from './customer-portal.service';
 import { Public } from '@core/auth/decorators';
 
@@ -12,7 +13,9 @@ import { Public } from '@core/auth/decorators';
 @ApiTags('Customer Portal')
 @Controller('portal')
 export class CustomerPortalController {
-  constructor(private readonly customerPortalService: CustomerPortalService) {}
+  constructor(
+    private readonly customerPortalService: CustomerPortalService,
+  ) {}
 
   /**
    * Gera token de acesso para um cliente (endpoint protegido para admins)
@@ -163,6 +166,66 @@ export class CustomerPortalController {
   async getHistory(@Headers('x-customer-token') token: string) {
     const customer = await this.validateCustomer(token);
     return this.customerPortalService.getServiceHistory(customer.id, customer.tenantId);
+  }
+
+  /**
+   * Gerar PDF do orçamento
+   */
+  @Public()
+  @Get('quotations/:id/pdf')
+  @ApiOperation({ summary: 'Gerar PDF do orçamento' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'PDF gerado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Orçamento não encontrado' })
+  async generateQuotationPdf(
+    @Param('id') id: string,
+    @Headers('x-customer-token') token: string,
+    @Res() res: Response,
+  ) {
+    const customer = await this.validateCustomer(token);
+    const pdfBuffer = await this.customerPortalService.generateQuotationPdf(
+      id,
+      customer.id,
+      customer.tenantId,
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="orcamento-${id}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.send(pdfBuffer);
+  }
+
+  /**
+   * Gerar PDF da ordem de serviço
+   */
+  @Public()
+  @Get('orders/:id/pdf')
+  @ApiOperation({ summary: 'Gerar PDF da ordem de serviço' })
+  @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiResponse({ status: 200, description: 'PDF gerado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Ordem não encontrada' })
+  async generateOrderPdf(
+    @Param('id') id: string,
+    @Headers('x-customer-token') token: string,
+    @Res() res: Response,
+  ) {
+    const customer = await this.validateCustomer(token);
+    const pdfBuffer = await this.customerPortalService.generateOrderPdf(
+      id,
+      customer.id,
+      customer.tenantId,
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="ordem-servico-${id}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.send(pdfBuffer);
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   getQuotation,
   approveQuotation,
   rejectQuotation,
+  downloadQuotationPdf,
   type CustomerData,
   type Quotation,
 } from '@/lib/api/portal';
@@ -18,6 +19,7 @@ import {
   DollarSign,
   ArrowLeft,
   FileText,
+  Download,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,6 +33,7 @@ export default function QuotationDetailPage() {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState<
     'approve' | 'reject' | null
   >(null);
@@ -87,6 +90,18 @@ export default function QuotationDetailPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      await downloadQuotationPdf(id);
+    } catch (err) {
+      console.error('Error downloading PDF:', err);
+      alert('Erro ao baixar PDF. Tente novamente.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   if (loading) {
     return (
       <PortalLayout customerName="" token={token}>
@@ -112,14 +127,25 @@ export default function QuotationDetailPage() {
   return (
     <PortalLayout customerName={customer?.name} token={token}>
       <div className="space-y-6">
-        {/* Back Button */}
-        <Link
-          href={`/portal/${token}/quotations`}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para orçamentos
-        </Link>
+        {/* Back Button and Actions */}
+        <div className="flex items-center justify-between">
+          <Link
+            href={`/portal/${token}/quotations`}
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para orçamentos
+          </Link>
+
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="h-4 w-4" />
+            {downloadingPdf ? 'Baixando...' : 'Baixar PDF'}
+          </button>
+        </div>
 
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">

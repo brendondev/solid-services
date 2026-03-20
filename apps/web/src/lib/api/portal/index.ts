@@ -62,6 +62,40 @@ export const getServiceHistory = async (): Promise<ServiceHistory[]> => {
   return data;
 };
 
+// Download PDF de orçamento
+export const downloadQuotationPdf = async (id: string): Promise<void> => {
+  const response = await portalApi.get(`/portal/quotations/${id}/pdf`, {
+    responseType: 'blob',
+  });
+
+  // Criar URL temporário para download
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `orcamento-${id}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+// Download PDF de ordem de serviço
+export const downloadOrderPdf = async (id: string): Promise<void> => {
+  const response = await portalApi.get(`/portal/orders/${id}/pdf`, {
+    responseType: 'blob',
+  });
+
+  // Criar URL temporário para download
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `ordem-servico-${id}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 // Re-export tipos
 export type {
   CustomerData,

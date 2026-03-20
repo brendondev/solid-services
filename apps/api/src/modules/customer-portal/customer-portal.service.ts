@@ -3,6 +3,8 @@ import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationsService } from '../notifications';
+import { QuotationPdfService } from '../quotations/services/quotation-pdf.service';
+import { OrderPdfService } from '../service-orders/services/order-pdf.service';
 
 /**
  * Customer Portal Service
@@ -21,6 +23,8 @@ export class CustomerPortalService {
     private readonly prisma: PrismaService,
     private readonly tenantContext: TenantContextService,
     private readonly notificationsService: NotificationsService,
+    private readonly quotationPdfService: QuotationPdfService,
+    private readonly orderPdfService: OrderPdfService,
   ) {}
 
   /**
@@ -346,5 +350,29 @@ export class CustomerPortalService {
       },
       take: 20, // Últimos 20 serviços
     });
+  }
+
+  /**
+   * Gera PDF do orçamento
+   */
+  async generateQuotationPdf(
+    quotationId: string,
+    customerId: string,
+    tenantId: string,
+  ): Promise<Buffer> {
+    const quotation = await this.getQuotation(quotationId, customerId, tenantId);
+    return this.quotationPdfService.generateQuotationPdf(quotation);
+  }
+
+  /**
+   * Gera PDF da ordem de serviço
+   */
+  async generateOrderPdf(
+    orderId: string,
+    customerId: string,
+    tenantId: string,
+  ): Promise<Buffer> {
+    const order = await this.getOrder(orderId, customerId, tenantId);
+    return this.orderPdfService.generateOrderPdf(order);
   }
 }

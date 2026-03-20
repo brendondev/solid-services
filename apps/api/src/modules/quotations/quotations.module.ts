@@ -16,6 +16,6 @@ import { AuditModule } from '../audit';
   imports: [DatabaseModule, TenantModule, NotificationsModule, AuditModule],
   controllers: [QuotationsController],
   providers: [QuotationsService, QuotationPdfService],
-  exports: [QuotationsService],
+  exports: [QuotationsService, QuotationPdfService],
 })
 export class QuotationsModule {}
