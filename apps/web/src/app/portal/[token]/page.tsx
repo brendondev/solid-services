@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PortalLayout from '@/components/portal/PortalLayout';
+import DocumentVerificationModal from '@/components/portal/DocumentVerificationModal';
 import {
   validateToken,
   getQuotations,
@@ -25,36 +26,101 @@ export default function PortalHomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Estados para verificação de documento
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    // Verificar se já tem dígitos no sessionStorage
+    const hasDocumentDigits = sessionStorage.getItem('portal-document-digits');
 
-        // Validar token e obter dados do cliente
-        const customerData = await validateToken();
-        setCustomer(customerData);
-
-        // Carregar dados em paralelo
-        const [quotationsData, ordersData] = await Promise.all([
-          getQuotations(),
-          getOrders(),
-        ]);
-
-        setQuotations(quotationsData);
-        setOrders(ordersData);
-      } catch (err: any) {
-        console.error('Error loading portal data:', err);
-        setError(
-          err.response?.data?.message || 'Token inválido ou expirado'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
+    if (!hasDocumentDigits) {
+      // Solicitar verificação de documento
+      setShowDocumentModal(true);
+      setLoading(false);
+    } else {
+      // Já validado, carregar dados normalmente
+      loadData();
+    }
   }, [token]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Validar token e obter dados do cliente
+      const customerData = await validateToken();
+      setCustomer(customerData);
+
+      // Carregar dados em paralelo
+      const [quotationsData, ordersData] = await Promise.all([
+        getQuotations(),
+        getOrders(),
+      ]);
+
+      setQuotations(quotationsData);
+      setOrders(ordersData);
+    } catch (err: any) {
+      console.error('Error loading portal data:', err);
+      setError(
+        err.response?.data?.message || 'Token inválido ou expirado'
+      );
+
+      // Se erro 401 relacionado a dígitos, limpar sessionStorage e pedir novamente
+      if (err.response?.status === 401) {
+        sessionStorage.removeItem('portal-document-digits');
+        setShowDocumentModal(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDocumentVerification = async (digits: string) => {
+    try {
+      setVerifying(true);
+      setVerificationError('');
+
+      // Armazenar dígitos no sessionStorage
+      sessionStorage.setItem('portal-document-digits', digits);
+
+      // Tentar validar token com os dígitos
+      await validateToken();
+
+      // Sucesso! Fechar modal e carregar dados
+      setShowDocumentModal(false);
+      loadData();
+    } catch (err: any) {
+      console.error('Document verification error:', err);
+
+      // Limpar dígitos inválidos
+      sessionStorage.removeItem('portal-document-digits');
+
+      // Mostrar erro específico
+      if (err.response?.status === 401) {
+        setVerificationError(
+          err.response?.data?.message || 'Dígitos do documento incorretos. Verifique e tente novamente.'
+        );
+      } else {
+        setVerificationError('Erro ao verificar documento. Tente novamente.');
+      }
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  // Modal de verificação de documento (prioridade máxima)
+  if (showDocumentModal) {
+    return (
+      <DocumentVerificationModal
+        onVerify={handleDocumentVerification}
+        loading={verifying}
+        error={verificationError}
+      />
+    );
+  }
 
   if (loading) {
     return (

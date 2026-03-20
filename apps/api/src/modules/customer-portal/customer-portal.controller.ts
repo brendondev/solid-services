@@ -47,18 +47,23 @@ export class CustomerPortalController {
 
   /**
    * Valida token e retorna dados do cliente
+   * Requer 4 primeiros dígitos do CPF/CNPJ para segurança
    */
   @Public()
   @Get('auth/validate')
-  @ApiOperation({ summary: 'Validar token de acesso do cliente' })
+  @ApiOperation({ summary: 'Validar token de acesso do cliente com 4 dígitos do documento' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiHeader({ name: 'X-Document-Digits', required: false, description: '4 primeiros dígitos do CPF/CNPJ' })
   @ApiResponse({ status: 200, description: 'Token válido' })
-  @ApiResponse({ status: 401, description: 'Token inválido' })
-  async validateToken(@Headers('x-customer-token') token: string) {
+  @ApiResponse({ status: 401, description: 'Token inválido ou dígitos incorretos' })
+  async validateToken(
+    @Headers('x-customer-token') token: string,
+    @Headers('x-document-digits') documentDigits?: string,
+  ) {
     if (!token) {
       throw new UnauthorizedException('Token não fornecido');
     }
-    return this.customerPortalService.validateToken(token);
+    return this.customerPortalService.validateToken(token, documentDigits);
   }
 
   /**
@@ -68,9 +73,13 @@ export class CustomerPortalController {
   @Get('quotations')
   @ApiOperation({ summary: 'Listar orçamentos do cliente' })
   @ApiHeader({ name: 'X-Customer-Token', required: true })
+  @ApiHeader({ name: 'X-Document-Digits', required: false })
   @ApiResponse({ status: 200, description: 'Lista de orçamentos' })
-  async getQuotations(@Headers('x-customer-token') token: string) {
-    const customer = await this.validateCustomer(token);
+  async getQuotations(
+    @Headers('x-customer-token') token: string,
+    @Headers('x-document-digits') documentDigits?: string,
+  ) {
+    const customer = await this.validateCustomer(token, documentDigits);
     return this.customerPortalService.getCustomerQuotations(customer.id, customer.tenantId);
   }
 
@@ -230,11 +239,12 @@ export class CustomerPortalController {
 
   /**
    * Helper para validar token e retornar customer
+   * Aceita dígitos opcionalmente (para compatibilidade)
    */
-  private async validateCustomer(token: string) {
+  private async validateCustomer(token: string, documentDigits?: string) {
     if (!token) {
       throw new UnauthorizedException('Token não fornecido');
     }
-    return this.customerPortalService.validateToken(token);
+    return this.customerPortalService.validateToken(token, documentDigits);
   }
 }

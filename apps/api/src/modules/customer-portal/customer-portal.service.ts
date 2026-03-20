@@ -82,8 +82,9 @@ export class CustomerPortalService {
   /**
    * Valida token e retorna dados do cliente
    * Marca como validado no primeiro uso
+   * Requer 4 primeiros dígitos do CPF/CNPJ para segurança
    */
-  async validateToken(token: string) {
+  async validateToken(token: string, documentDigits?: string) {
     // Buscar token no banco de dados
     const tokenData = await this.prisma.customerPortalToken.findUnique({
       where: { token },
@@ -94,6 +95,7 @@ export class CustomerPortalService {
             tenantId: true,
             name: true,
             status: true,
+            document: true, // Necessário para validar dígitos
           },
         },
       },
@@ -113,12 +115,30 @@ export class CustomerPortalService {
       throw new UnauthorizedException('Cliente inativo');
     }
 
-    // Se é o primeiro uso, marcar como validado
+    // SEGURANÇA: Validar 4 primeiros dígitos do CPF/CNPJ
+    if (documentDigits) {
+      const customerDocument = tokenData.customer.document;
+
+      if (!customerDocument) {
+        throw new UnauthorizedException('Cliente sem documento cadastrado');
+      }
+
+      // Extrair apenas números do documento
+      const documentNumbers = customerDocument.replace(/\D/g, '');
+      const first4Digits = documentNumbers.substring(0, 4);
+
+      if (documentDigits !== first4Digits) {
+        throw new UnauthorizedException('Dígitos do documento incorretos');
+      }
+    }
+
+    // Se é o primeiro uso, marcar como validado (só se passou pela validação de dígitos)
     const updateData: any = {
       lastUsedAt: new Date(),
     };
 
-    if (!tokenData.isValidated) {
+    if (!tokenData.isValidated && documentDigits) {
+      // Só marca como validado se forneceu os dígitos corretos
       updateData.isValidated = true;
       updateData.validatedAt = new Date();
     }
@@ -129,7 +149,9 @@ export class CustomerPortalService {
       data: updateData,
     });
 
-    return tokenData.customer;
+    // Não retornar o documento no response (segurança)
+    const { document, ...customerWithoutDocument } = tokenData.customer;
+    return customerWithoutDocument;
   }
 
   /**

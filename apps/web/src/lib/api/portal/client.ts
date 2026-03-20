@@ -12,7 +12,7 @@ const portalApi = axios.create({
   },
 });
 
-// Interceptor para adicionar token do cliente
+// Interceptor para adicionar token do cliente e dígitos do documento
 portalApi.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     // Extrair token da URL
@@ -22,10 +22,18 @@ portalApi.interceptors.request.use((config) => {
 
     if (token && token !== '[token]') {
       config.headers['X-Customer-Token'] = token;
+
+      // Adicionar dígitos do documento se disponíveis no sessionStorage
+      const documentDigits = sessionStorage.getItem('portal-document-digits');
+      if (documentDigits) {
+        config.headers['X-Document-Digits'] = documentDigits;
+      }
+
       console.log('[Portal API] Request with token:', {
         method: config.method?.toUpperCase(),
         url: config.url,
         hasToken: true,
+        hasDocumentDigits: !!documentDigits,
       });
     }
   }
