@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, ForbiddenException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { TenantContextService } from '../tenant';
+import { tenantStorage } from '../tenant';
 
 /**
  * Service wrapper para o Prisma Client com suporte a multi-tenancy
@@ -16,14 +16,14 @@ import { TenantContextService } from '../tenant';
  * Princípios SOLID:
  * - Single Responsibility: Gerencia conexão com banco e isolamento de tenant
  * - Open/Closed: Pode ser estendido sem modificar o código base
- * - Dependency Inversion: Depende da abstração TenantContextService
+ * - Dependency Inversion: Usa AsyncLocalStorage para contexto de tenant
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly isProduction = process.env.NODE_ENV === 'production';
   private allowBypassTenant = false; // Flag para operações administrativas
 
-  constructor(private readonly tenantContext: TenantContextService) {
+  constructor() {
     super({
       log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     });
@@ -66,7 +66,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       const requiresTenant = tenantModels.includes(params.model || '');
 
       if (requiresTenant) {
-        const tenantId = this.tenantContext.getTenantIdOrNull();
+        const context = tenantStorage.getStore();
+        const tenantId = context?.tenantId || null;
 
         // SECURITY: Bloquear queries sem tenant context em produção
         if (!tenantId) {

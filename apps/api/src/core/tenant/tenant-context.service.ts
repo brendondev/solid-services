@@ -1,6 +1,7 @@
 import { Injectable, Inject, Scope } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
+import { AsyncLocalStorage } from 'async_hooks';
 
 /**
  * Interface para o contexto do tenant
@@ -22,10 +23,16 @@ declare global {
 }
 
 /**
+ * AsyncLocalStorage compartilhado para contexto de tenant
+ * IMPORTANTE: Exportado como singleton para ser usado por serviços SINGLETON como PrismaService
+ */
+export const tenantStorage = new AsyncLocalStorage<TenantContext>();
+
+/**
  * Service responsável por gerenciar o contexto do tenant via Request
  *
  * IMPORTANTE: Este serviço é REQUEST-SCOPED para ter acesso ao request atual.
- * O contexto é armazenado diretamente no objeto request, não em AsyncLocalStorage.
+ * O contexto é armazenado tanto no request quanto no AsyncLocalStorage.
  *
  * Princípio SOLID aplicado:
  * - Single Responsibility: Apenas gerencia o contexto do tenant
