@@ -36,7 +36,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * Hook chamado quando a autenticação falha
    * CRÍTICO: Sempre lançar exceção em vez de retornar false
    */
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest(err: any, user: any, _info: any) {
     // Se houver erro ou não houver usuário, bloquear com 401
     if (err || !user) {
       throw err || new UnauthorizedException('Token JWT inválido ou ausente');
