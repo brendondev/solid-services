@@ -202,12 +202,14 @@ model CustomerAddress {
 }
 
 model CustomerPortalToken {
-  id          String   @id @default(uuid())
-  tenantId    String   @map("tenant_id")
-  customerId  String   @map("customer_id")
-  token       String   @unique
-  generatedAt DateTime @default(now()) @map("generated_at")
-  expiresAt   DateTime @map("expires_at")
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  customerId  String    @map("customer_id")
+  token       String    @unique
+  generatedAt DateTime  @default(now()) @map("generated_at")
+  isValidated Boolean   @default(false) @map("is_validated")
+  validatedAt DateTime? @map("validated_at")
+  revokedAt   DateTime? @map("revoked_at")
   lastUsedAt  DateTime? @map("last_used_at")
 
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -215,7 +217,7 @@ model CustomerPortalToken {
   @@index([tenantId])
   @@index([token])
   @@index([customerId])
-  @@index([expiresAt])
+  @@index([isValidated])
   @@map("customer_portal_tokens")
 }
 

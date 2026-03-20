@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CustomerPortalService } from './customer-portal.service';
 import { CustomerPortalController } from './customer-portal.controller';
+import { PortalManagementController } from './portal-management.controller';
 import { DatabaseModule } from '@core/database';
 import { TenantModule } from '@core/tenant';
 import { NotificationsModule } from '../notifications';
@@ -15,10 +16,12 @@ import { ServiceOrdersModule } from '../service-orders';
  * - Ordens em andamento
  * - Histórico de serviços
  * - Geração de PDFs
+ *
+ * + Gerenciamento de tokens (admin)
  */
 @Module({
   imports: [DatabaseModule, TenantModule, NotificationsModule, QuotationsModule, ServiceOrdersModule],
-  controllers: [CustomerPortalController],
+  controllers: [CustomerPortalController, PortalManagementController],
   providers: [CustomerPortalService],
   exports: [CustomerPortalService],
 })

@@ -29,6 +29,7 @@ export class CustomerPortalService {
 
   /**
    * Gera token de acesso para um cliente
+   * Token permanente até ser revogado pelo admin
    */
   async generateAccessToken(customerId: string): Promise<string> {
     const tenantId = this.tenantContext.getTenantId();
@@ -45,20 +46,33 @@ export class CustomerPortalService {
       throw new NotFoundException('Cliente não encontrado');
     }
 
-    // Gerar token único
+    // Verificar se já existe um token ativo (não revogado)
+    const existingToken = await this.prisma.customerPortalToken.findFirst({
+      where: {
+        customerId: customer.id,
+        tenantId,
+        revokedAt: null,
+      },
+      orderBy: {
+        generatedAt: 'desc',
+      },
+    });
+
+    // Se já existe token ativo, retornar ele
+    if (existingToken) {
+      return existingToken.token;
+    }
+
+    // Gerar novo token único
     const token = uuidv4();
 
-    // Calcular data de expiração (7 dias)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-
-    // Salvar token no banco de dados
+    // Salvar token no banco de dados (sem expiração)
     await this.prisma.customerPortalToken.create({
       data: {
         token,
         customerId: customer.id,
         tenantId,
-        expiresAt,
+        isValidated: false, // Cliente precisa validar no primeiro acesso
       },
     });
 
@@ -67,6 +81,7 @@ export class CustomerPortalService {
 
   /**
    * Valida token e retorna dados do cliente
+   * Marca como validado no primeiro uso
    */
   async validateToken(token: string) {
     // Buscar token no banco de dados
@@ -88,13 +103,9 @@ export class CustomerPortalService {
       throw new UnauthorizedException('Token inválido');
     }
 
-    // Verificar expiração
-    if (tokenData.expiresAt < new Date()) {
-      // Deletar token expirado
-      await this.prisma.customerPortalToken.delete({
-        where: { id: tokenData.id },
-      });
-      throw new UnauthorizedException('Token expirado');
+    // Verificar se foi revogado
+    if (tokenData.revokedAt) {
+      throw new UnauthorizedException('Token revogado pelo administrador');
     }
 
     // Verificar se cliente está ativo
@@ -102,10 +113,20 @@ export class CustomerPortalService {
       throw new UnauthorizedException('Cliente inativo');
     }
 
-    // Atualizar lastUsedAt
+    // Se é o primeiro uso, marcar como validado
+    const updateData: any = {
+      lastUsedAt: new Date(),
+    };
+
+    if (!tokenData.isValidated) {
+      updateData.isValidated = true;
+      updateData.validatedAt = new Date();
+    }
+
+    // Atualizar token
     await this.prisma.customerPortalToken.update({
       where: { id: tokenData.id },
-      data: { lastUsedAt: new Date() },
+      data: updateData,
     });
 
     return tokenData.customer;
@@ -374,5 +395,54 @@ export class CustomerPortalService {
   ): Promise<Buffer> {
     const order = await this.getOrder(orderId, customerId, tenantId);
     return this.orderPdfService.generateOrderPdf(order);
+  }
+
+  /**
+   * Revoga (cancela) token de acesso ao portal
+   */
+  async revokeToken(customerId: string): Promise<void> {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Revogar todos os tokens ativos do cliente
+    await this.prisma.customerPortalToken.updateMany({
+      where: {
+        customerId,
+        tenantId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Obtém informações do token de um cliente
+   */
+  async getCustomerToken(customerId: string) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    const token = await this.prisma.customerPortalToken.findFirst({
+      where: {
+        customerId,
+        tenantId,
+        revokedAt: null,
+      },
+      orderBy: {
+        generatedAt: 'desc',
+      },
+    });
+
+    if (!token) {
+      return null;
+    }
+
+    return {
+      token: token.token,
+      generatedAt: token.generatedAt,
+      isValidated: token.isValidated,
+      validatedAt: token.validatedAt,
+      lastUsedAt: token.lastUsedAt,
+    };
   }
 }
