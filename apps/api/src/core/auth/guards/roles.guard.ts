@@ -21,19 +21,23 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
+    // Buscar usuário da request (colocado pelo JwtAuthGuard)
+    const { user } = context.switchToHttp().getRequest();
+
+    // CRÍTICO: Se não há usuário autenticado e a rota não é pública, bloquear
+    // Mesmo que não haja roles requeridas, a autenticação é obrigatória
+    if (!user) {
+      throw new UnauthorizedException('Autenticação necessária para acessar este recurso');
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<string[]>('roles', [
       context.getHandler(),
       context.getClass(),
     ]);
 
+    // Se não há roles requeridas mas tem usuário autenticado, permite
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
-    }
-
-    const { user } = context.switchToHttp().getRequest();
-
-    if (!user) {
-      throw new UnauthorizedException('Usuário não autenticado');
     }
 
     const hasRole = requiredRoles.some((role) => user.roles?.includes(role));
