@@ -163,7 +163,7 @@ export class CustomerPortalService {
         customerId,
         tenantId,
         status: {
-          in: ['sent', 'approved', 'rejected'], // Não mostrar drafts
+          in: ['pending', 'sent', 'approved', 'rejected'], // Não mostrar drafts
         },
       },
       include: {
