@@ -76,7 +76,7 @@ export default function DashboardMainPage() {
     );
   }
 
-  if (!stats || !quickStats) {
+  if (!stats || !quickStats || !monthlyPerf) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -102,6 +102,15 @@ export default function DashboardMainPage() {
     overdueReceivables: quickStats.overdueReceivables || 0
   };
 
+  const safeMonthlyPerf = {
+    month: monthlyPerf.month || new Date().getMonth() + 1,
+    year: monthlyPerf.year || new Date().getFullYear(),
+    revenue: monthlyPerf.revenue || { total: 0, received: 0, pending: 0 },
+    orders: monthlyPerf.orders || { total: 0, completed: 0, completionRate: 0 },
+    customers: monthlyPerf.customers || { new: 0, active: 0, returning: 0 },
+    topServices: monthlyPerf.topServices || []
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -118,11 +127,11 @@ export default function DashboardMainPage() {
   ].filter(item => item.value > 0); // Remove itens com valor 0
 
   // Dados para gráfico de barras (Top Serviços)
-  const topServicesData = monthlyPerf?.topServices?.slice(0, 5).map(service => ({
+  const topServicesData = safeMonthlyPerf.topServices.slice(0, 5).map(service => ({
     name: service.serviceName.length > 20 ? service.serviceName.substring(0, 20) + '...' : service.serviceName,
     ordens: service.ordersCount,
     receita: Number(service.revenue),
-  })) || [];
+  }));
 
   // Custom label para o Donut chart
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
@@ -365,51 +374,49 @@ export default function DashboardMainPage() {
         </div>
       </div>
 
-      {/* Performance Mensal (se disponível) */}
-      {monthlyPerf && (
-        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-6 rounded-lg border-2 border-primary/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-primary/20 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-primary" />
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-              Performance de {monthlyPerf.month}/{monthlyPerf.year}
-            </h3>
+      {/* Performance Mensal */}
+      <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-6 rounded-lg border-2 border-primary/20">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-primary/20 rounded-lg">
+            <TrendingUp className="w-5 h-5 text-primary" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground">Ordens Concluídas</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                {monthlyPerf.orders.completed}/{monthlyPerf.orders.total}
-              </p>
-              <p className="text-xs text-success mt-1">
-                {monthlyPerf.orders.completionRate.toFixed(1)}% de taxa de conclusão
-              </p>
-            </div>
-            <div className="bg-white/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground">Receita Total</p>
-              <p className="text-xl sm:text-2xl font-bold text-success mt-1">
-                {formatCurrency(monthlyPerf.revenue.total)}
-              </p>
-            </div>
-            <div className="bg-white/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground">Recebido</p>
-              <p className="text-xl sm:text-2xl font-bold text-primary mt-1">
-                {formatCurrency(monthlyPerf.revenue.received)}
-              </p>
-            </div>
-            <div className="bg-white/50 p-4 rounded-lg">
-              <p className="text-xs text-muted-foreground">Novos Clientes</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                {monthlyPerf.customers.new}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {monthlyPerf.customers.active} ativos
-              </p>
-            </div>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            Performance de {safeMonthlyPerf.month}/{safeMonthlyPerf.year}
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground">Ordens Concluídas</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+              {safeMonthlyPerf.orders.completed}/{safeMonthlyPerf.orders.total}
+            </p>
+            <p className="text-xs text-success mt-1">
+              {safeMonthlyPerf.orders.completionRate.toFixed(1)}% de taxa de conclusão
+            </p>
+          </div>
+          <div className="bg-white/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground">Receita Total</p>
+            <p className="text-xl sm:text-2xl font-bold text-success mt-1">
+              {formatCurrency(safeMonthlyPerf.revenue.total)}
+            </p>
+          </div>
+          <div className="bg-white/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground">Recebido</p>
+            <p className="text-xl sm:text-2xl font-bold text-primary mt-1">
+              {formatCurrency(safeMonthlyPerf.revenue.received)}
+            </p>
+          </div>
+          <div className="bg-white/50 p-4 rounded-lg">
+            <p className="text-xs text-muted-foreground">Novos Clientes</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+              {safeMonthlyPerf.customers.new}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {safeMonthlyPerf.customers.active} ativos
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Status de Orçamentos e Ordens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
