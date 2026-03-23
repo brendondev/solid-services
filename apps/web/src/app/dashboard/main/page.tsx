@@ -344,7 +344,7 @@ export default function DashboardMainPage() {
                   <Tooltip
                     formatter={(value, name) => {
                       if (name === 'ordens') return [`${value} ordens`, 'Quantidade'];
-                      return [formatCurrency(value), 'Receita'];
+                      return [formatCurrency(Number(value ?? 0)), 'Receita'];
                     }}
                     contentStyle={{
                       backgroundColor: 'white',
