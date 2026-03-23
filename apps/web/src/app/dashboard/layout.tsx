@@ -50,7 +50,29 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile-first: iniciar fechada
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Mobile-first: Detectar tamanho da tela e ajustar sidebar
+  useEffect(() => {
+    setIsMounted(true);
+
+    // Abrir sidebar automaticamente em desktop (>= 1024px)
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    // Configurar estado inicial
+    handleResize();
+
+    // Listener para mudanças de tamanho
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const storedUser = authApi.getStoredUser();
@@ -63,6 +85,13 @@ export default function DashboardLayout({
 
     setUser(storedUser);
   }, [router]);
+
+  // Auto-fechar sidebar em mobile ao navegar
+  useEffect(() => {
+    if (isMounted && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [pathname, isMounted]);
 
   const handleLogout = () => {
     authApi.logout();
@@ -83,8 +112,8 @@ export default function DashboardLayout({
       <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-border shadow-sm transform transition-transform duration-300 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-border shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         <div className="flex flex-col h-full">
@@ -100,7 +129,8 @@ export default function DashboardLayout({
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="lg:hidden min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Fechar menu"
             >
               <X className="w-5 h-5" />
             </button>
@@ -115,10 +145,16 @@ export default function DashboardLayout({
                 <a
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+                  onClick={() => {
+                    // Auto-fechar em mobile ao clicar
+                    if (window.innerWidth < 1024) {
+                      setSidebarOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium rounded-lg transition-all ${
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
                   }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -132,10 +168,16 @@ export default function DashboardLayout({
           <div className="px-3 pb-3">
             <a
               href="/dashboard/planos"
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+              onClick={() => {
+                // Auto-fechar em mobile ao clicar
+                if (window.innerWidth < 1024) {
+                  setSidebarOpen(false);
+                }
+              }}
+              className={`flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium rounded-lg transition-all ${
                 pathname === '/dashboard/planos'
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 border border-amber-200'
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 border border-amber-200 active:from-amber-100 active:to-orange-100'
               }`}
             >
               <Crown className="w-5 h-5 flex-shrink-0" />
@@ -159,8 +201,9 @@ export default function DashboardLayout({
               </div>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-400 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors active:bg-destructive/20"
                 title="Sair"
+                aria-label="Sair da conta"
               >
                 <LogOut className="w-5 h-5" />
               </button>
@@ -177,19 +220,20 @@ export default function DashboardLayout({
       >
         {/* Top bar */}
         <header className="bg-white border-b border-border shadow-sm sticky top-0 z-40">
-          <div className="flex items-center gap-4 px-6 py-4">
+          <div className="flex items-center gap-4 px-4 sm:px-6 py-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200"
+              aria-label={sidebarOpen ? 'Fechar menu' : 'Abrir menu'}
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex-1 max-w-2xl">
+            <div className="flex-1 max-w-2xl hidden sm:block">
               <CommandPaletteTrigger />
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
               <span className="text-sm text-muted-foreground">
                 Tenant: <span className="font-medium text-gray-900">{user.tenantSlug}</span>
@@ -199,14 +243,15 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="p-6">{children}</main>
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ease-in-out"
           onClick={() => setSidebarOpen(false)}
+          aria-label="Fechar menu"
         />
       )}
       </div>
