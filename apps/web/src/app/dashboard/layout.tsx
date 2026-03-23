@@ -5,6 +5,10 @@ import { useEffect, useState } from 'react';
 import { authApi } from '@/lib/api/auth';
 import { Toaster } from 'react-hot-toast';
 import { CommandPaletteProvider, CommandPaletteTrigger } from '@/components/command-palette';
+import { NotificationsProvider } from '@/contexts/notifications/NotificationsContext';
+import NotificationsBadge from '@/components/notifications/NotificationsBadge';
+import NotificationsPanel from '@/components/notifications/NotificationsPanel';
+import ToastContainer from '@/components/notifications/ToastContainer';
 import {
   LayoutDashboard,
   Users,
@@ -52,6 +56,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile-first: iniciar fechada
   const [isMounted, setIsMounted] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   // Mobile-first: Detectar tamanho da tela e ajustar sidebar
   useEffect(() => {
@@ -108,8 +113,10 @@ export default function DashboardLayout({
 
   return (
     <CommandPaletteProvider>
-      <Toaster />
-      <div className="min-h-screen bg-gray-50">
+      <NotificationsProvider>
+        <Toaster />
+        <ToastContainer />
+        <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-border shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
@@ -233,11 +240,22 @@ export default function DashboardLayout({
               <CommandPaletteTrigger />
             </div>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <span className="text-sm text-muted-foreground">
-                Tenant: <span className="font-medium text-gray-900">{user.tenantSlug}</span>
-              </span>
+            <div className="flex items-center gap-3">
+              {/* Notifications Badge */}
+              <div className="relative">
+                <NotificationsBadge onClick={() => setNotificationsOpen(!notificationsOpen)} />
+                <NotificationsPanel
+                  isOpen={notificationsOpen}
+                  onClose={() => setNotificationsOpen(false)}
+                />
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                <span className="text-sm text-muted-foreground">
+                  Tenant: <span className="font-medium text-gray-900">{user.tenantSlug}</span>
+                </span>
+              </div>
             </div>
           </div>
         </header>
@@ -254,7 +272,8 @@ export default function DashboardLayout({
           aria-label="Fechar menu"
         />
       )}
-      </div>
+        </div>
+      </NotificationsProvider>
     </CommandPaletteProvider>
   );
 }
