@@ -22,7 +22,7 @@ const quotationSchema = z.object({
   customerId: z.string().min(1, 'Selecione um cliente'),
   validUntil: z.string().optional(),
   notes: z.string().optional(),
-  discount: z.coerce.number().min(0, 'Desconto deve ser maior ou igual a 0').max(100, 'Desconto não pode exceder 100%').optional(),
+  // discount: feature não implementada no backend ainda
   items: z.array(quotationItemSchema).min(1, 'Adicione pelo menos um item'),
 });
 
@@ -46,7 +46,7 @@ export default function NewQuotationPage() {
   } = useForm<QuotationFormData>({
     resolver: zodResolver(quotationSchema),
     defaultValues: {
-      discount: 0,
+      // discount removido - não implementado
       items: [
         {
           serviceId: '',
@@ -64,7 +64,7 @@ export default function NewQuotationPage() {
   });
 
   const watchItems = watch('items');
-  const watchDiscount = watch('discount');
+  // const watchDiscount = watch('discount'); // removido
 
   useEffect(() => {
     loadInitialData();
@@ -109,16 +109,17 @@ export default function NewQuotationPage() {
     }, 0);
   };
 
-  const calculateDiscountAmount = () => {
-    const subtotal = calculateSubtotal();
-    const discount = watchDiscount || 0;
-    return (subtotal * discount) / 100;
-  };
+  // calculateDiscountAmount removido - feature não implementada
+  // const calculateDiscountAmount = () => {
+  //   const subtotal = calculateSubtotal();
+  //   const discount = watchDiscount || 0;
+  //   return (subtotal * discount) / 100;
+  // };
 
   const calculateGrandTotal = () => {
     const subtotal = calculateSubtotal();
-    const discountAmount = calculateDiscountAmount();
-    return subtotal - discountAmount;
+    // const discountAmount = calculateDiscountAmount(); // removido
+    return subtotal; // sem desconto por enquanto
   };
 
   const formatCurrency = (value: number) => {
@@ -137,7 +138,7 @@ export default function NewQuotationPage() {
         customerId: data.customerId,
         validUntil: data.validUntil || undefined,
         notes: data.notes || undefined,
-        discount: data.discount ? Number(data.discount) : 0,
+        // discount removido - não implementado no backend ainda
         items: data.items.map((item, index) => ({
           serviceId: item.serviceId,
           description: item.description,
@@ -250,8 +251,8 @@ export default function NewQuotationPage() {
               />
             </div>
 
-            {/* Desconto */}
-            <div>
+            {/* Desconto - Removido: feature não implementada no backend ainda */}
+            {/* <div>
               <label
                 htmlFor="discount"
                 className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
@@ -259,26 +260,16 @@ export default function NewQuotationPage() {
                 Desconto (%)
               </label>
               <input
-                {...register('discount')}
                 type="number"
                 id="discount"
                 min="0"
                 max="100"
                 step="0.01"
-                className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
-                  focus:outline-none focus:ring-2 focus:ring-primary
-                  disabled:bg-gray-50
-                  ${errors.discount ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                className="w-full px-4 py-3 text-base sm:text-sm border rounded-lg"
                 placeholder="0"
-                disabled={isLoading}
+                disabled
               />
-              {errors.discount && (
-                <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
-                  <span>⚠</span>
-                  {errors.discount.message}
-                </p>
-              )}
-            </div>
+            </div> */}
 
             {/* Observações */}
             <div className="sm:col-span-2">
@@ -483,15 +474,7 @@ export default function NewQuotationPage() {
               </span>
             </div>
 
-            {/* Desconto (se houver) */}
-            {(watchDiscount ?? 0) > 0 && (
-              <div className="flex justify-between items-center text-base text-red-600">
-                <span>Desconto ({watchDiscount}%):</span>
-                <span className="font-semibold">
-                  - {formatCurrency(calculateDiscountAmount())}
-                </span>
-              </div>
-            )}
+            {/* Desconto removido - feature não implementada */}
 
             {/* Total */}
             <div className="flex justify-between items-center pt-3 border-t border-primary/20">
