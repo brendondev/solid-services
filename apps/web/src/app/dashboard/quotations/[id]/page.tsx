@@ -190,84 +190,84 @@ export default function QuotationDetailPage() {
   }
 
   return (
-    <div className="space-y-6 pb-24 animate-fadeInUp">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 pb-24 animate-fadeInUp">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3 sm:space-x-4">
           <button
             onClick={() => router.push('/dashboard/quotations')}
-            className="text-gray-600 hover:text-gray-900 transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               Orçamento {quotation.number}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Detalhes e ações do orçamento
             </p>
           </div>
         </div>
         <div>
-          <span className={`px-4 py-2 rounded-full text-sm font-medium ${statusColors[quotation.status]}`}>
+          <span className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium ${statusColors[quotation.status]}`}>
             {statusLabels[quotation.status]}
           </span>
         </div>
       </div>
 
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <User className="w-6 h-6 text-primary" />
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Cliente</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-xs sm:text-sm text-muted-foreground">Cliente</p>
+              <p className="text-base sm:text-lg font-semibold text-gray-900">
                 {quotation.customer?.name || 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-success/10 rounded-lg">
-              <DollarSign className="w-6 h-6 text-success" />
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Valor Total</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-xs sm:text-sm text-muted-foreground">Valor Total</p>
+              <p className="text-base sm:text-lg font-semibold text-gray-900">
                 {formatCurrency(Number(quotation.totalAmount))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-warning/10 rounded-lg">
-              <Calendar className="w-6 h-6 text-warning" />
+            <div className="p-2 sm:p-3 bg-warning/10 rounded-lg">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Válido até</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-xs sm:text-sm text-muted-foreground">Válido até</p>
+              <p className="text-base sm:text-lg font-semibold text-gray-900">
                 {quotation.validUntil ? formatDate(quotation.validUntil) : 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-accent rounded-lg">
-              <Package className="w-6 h-6 text-accent-foreground" />
+            <div className="p-2 sm:p-3 bg-accent rounded-lg">
+              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Itens</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-xs sm:text-sm text-muted-foreground">Itens</p>
+              <p className="text-base sm:text-lg font-semibold text-gray-900">
                 {quotation.items?.length || 0}
               </p>
             </div>
@@ -277,31 +277,35 @@ export default function QuotationDetailPage() {
 
       {/* Observações */}
       {quotation.notes && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-          <h3 className="font-semibold text-gray-900 mb-2">Observações</h3>
-          <p className="text-gray-700 whitespace-pre-wrap">{quotation.notes}</p>
+        <div className="bg-blue-50 border border-blue-200 p-3 sm:p-4 rounded-lg">
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">Observações</h3>
+          <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{quotation.notes}</p>
         </div>
       )}
 
       {/* Items Table */}
       <div className="bg-white rounded-lg shadow border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h2 className="text-xl font-semibold text-gray-900">Itens do Orçamento</h2>
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Itens do Orçamento</h2>
+        </div>
+        {/* Mobile: Indicador de scroll */}
+        <div className="px-4 py-2 text-xs text-muted-foreground sm:hidden bg-muted/30">
+          👉 Role horizontalmente para ver todos os detalhes
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                   Descrição
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Quantidade
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                  Qtd.
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                   Preço Unit.
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                   Subtotal
                 </th>
               </tr>
@@ -310,17 +314,17 @@ export default function QuotationDetailPage() {
               {quotation.items?.map((item, index) => {
                 const subtotal = Number(item.quantity) * Number(item.unitPrice);
                 return (
-                  <tr key={index} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                  <tr key={index} className="hover:bg-muted/50 active:bg-muted transition-colors">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
                       {item.description}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 text-right">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 text-right whitespace-nowrap">
                       {item.quantity}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 text-right">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 text-right whitespace-nowrap">
                       {formatCurrency(Number(item.unitPrice))}
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-900 text-right whitespace-nowrap">
                       {formatCurrency(subtotal)}
                     </td>
                   </tr>
@@ -329,10 +333,10 @@ export default function QuotationDetailPage() {
             </tbody>
             <tfoot className="bg-muted">
               <tr>
-                <td colSpan={3} className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                <td colSpan={3} className="px-3 sm:px-6 py-3 sm:py-4 text-right text-xs sm:text-sm font-semibold text-gray-900 whitespace-nowrap">
                   Total Geral
                 </td>
-                <td className="px-6 py-4 text-right text-lg font-bold text-primary">
+                <td className="px-3 sm:px-6 py-3 sm:py-4 text-right text-base sm:text-lg font-bold text-primary whitespace-nowrap">
                   {formatCurrency(Number(quotation.totalAmount))}
                 </td>
               </tr>
@@ -343,21 +347,22 @@ export default function QuotationDetailPage() {
 
       {/* Sticky Action Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             {(quotation.status === 'pending' || quotation.status === 'draft') && (
               <>
                 <button
                   onClick={handleSendEmail}
                   disabled={actionLoading !== null}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="min-h-[44px] flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
                 >
                   {actionLoading === 'email' ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
-                    <Mail className="w-5 h-5" />
+                    <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
-                  Enviar por Email
+                  <span className="hidden sm:inline">Enviar por Email</span>
+                  <span className="sm:hidden">Enviar</span>
                 </button>
               </>
             )}
@@ -367,12 +372,12 @@ export default function QuotationDetailPage() {
                 <button
                   onClick={handleReject}
                   disabled={actionLoading !== null}
-                  className="flex items-center gap-2 px-6 py-3 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="min-h-[44px] flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 active:bg-destructive/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
                 >
                   {actionLoading === 'reject' ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
-                    <XCircle className="w-5 h-5" />
+                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                   Rejeitar
                 </button>
@@ -380,12 +385,12 @@ export default function QuotationDetailPage() {
                 <button
                   onClick={handleApprove}
                   disabled={actionLoading !== null}
-                  className="flex items-center gap-2 px-6 py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="min-h-[44px] flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 active:bg-success/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
                 >
                   {actionLoading === 'approve' ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
-                    <CheckCircle className="w-5 h-5" />
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                   Aprovar
                 </button>
@@ -395,37 +400,40 @@ export default function QuotationDetailPage() {
             <button
               onClick={handleDownloadPDF}
               disabled={actionLoading !== null}
-              className="flex items-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 active:bg-secondary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
             >
               {actionLoading === 'pdf' ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
               ) : (
-                <Download className="w-5 h-5" />
+                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
-              Download PDF
+              <span className="hidden sm:inline">Download PDF</span>
+              <span className="sm:hidden">PDF</span>
             </button>
 
             {quotation.status === 'approved' && (
               <button
                 onClick={handleConvertToOrder}
                 disabled={actionLoading !== null && !quotation.serviceOrder}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium ${
+                className={`min-h-[44px] flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors font-medium text-sm sm:text-base ${
                   quotation.serviceOrder
-                    ? 'bg-success text-success-foreground hover:bg-success/90'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed'
+                    ? 'bg-success text-success-foreground hover:bg-success/90 active:bg-success/80'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed'
                 }`}
               >
                 {actionLoading === 'convert' && !quotation.serviceOrder ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : quotation.serviceOrder ? (
                   <>
-                    <CheckCircle className="w-5 h-5" />
-                    Ver OS {quotation.serviceOrder.number}
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Ver OS {quotation.serviceOrder.number}</span>
+                    <span className="sm:hidden">Ver OS</span>
                   </>
                 ) : (
                   <>
-                    <ArrowRight className="w-5 h-5" />
-                    Converter em OS
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Converter em OS</span>
+                    <span className="sm:hidden">Converter</span>
                   </>
                 )}
               </button>

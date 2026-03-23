@@ -116,23 +116,24 @@ export default function PayableDetailPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fadeInUp">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6 animate-fadeInUp">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button onClick={() => router.push('/dashboard/payables')} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+        <button onClick={() => router.push('/dashboard/payables')} className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">Conta a Pagar</h1>
-          <p className="text-muted-foreground mt-1">{payable.description}</p>
+        <div className="flex-1 w-full sm:w-auto">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Conta a Pagar</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 truncate">{payable.description}</p>
         </div>
         {remaining > 0 && (
           <button
             onClick={() => setIsPaymentModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors font-medium shadow-sm"
+            className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 active:bg-success/80 transition-colors font-medium shadow-sm"
           >
-            <Plus className="w-5 h-5" />
-            Registrar Pagamento
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Registrar Pagamento</span>
+            <span className="sm:hidden">Registrar</span>
           </button>
         )}
       </div>
@@ -144,44 +145,44 @@ export default function PayableDetailPage() {
       )}
 
       {/* Resumo */}
-      <div className="bg-white rounded-lg shadow border border-border p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="bg-white rounded-lg shadow border border-border p-4 sm:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Valor Total</p>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(Number(payable.amount))}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1">Valor Total</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{formatCurrency(Number(payable.amount))}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Valor Pago</p>
-            <p className="text-2xl font-bold text-success">{formatCurrency(Number(payable.paidAmount))}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1">Valor Pago</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-success">{formatCurrency(Number(payable.paidAmount))}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-1">A Pagar</p>
-            <p className="text-2xl font-bold text-destructive">{formatCurrency(remaining)}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1">A Pagar</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-destructive">{formatCurrency(remaining)}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Status</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-1">Status</p>
             <div className="flex items-center gap-2 mt-2">
               {payable.status === 'paid' ? (
-                <CheckCircle className="w-5 h-5 text-success" />
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
               ) : (
-                <Clock className="w-5 h-5 text-warning" />
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-warning" />
               )}
-              <span className="text-lg font-semibold">
+              <span className="text-base sm:text-lg font-semibold">
                 {payable.status === 'paid' ? 'Pago' : payable.status === 'partial' ? 'Parcial' : 'Pendente'}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
           {payable.supplier && (
             <div className="flex items-start gap-3">
-              <Building2 className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">Fornecedor</p>
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Fornecedor</p>
                 <button
                   onClick={() => router.push(`/dashboard/suppliers/${payable.supplierId}`)}
-                  className="font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
+                  className="text-sm sm:text-base font-medium text-primary hover:text-primary/80 hover:underline transition-colors truncate block w-full text-left"
                 >
                   {payable.supplier.name}
                 </button>
@@ -189,66 +190,66 @@ export default function PayableDetailPage() {
             </div>
           )}
           <div className="flex items-start gap-3">
-            <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-sm text-muted-foreground">Vencimento</p>
-              <p className="font-medium text-gray-900">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm text-muted-foreground">Vencimento</p>
+              <p className="text-sm sm:text-base font-medium text-gray-900">
                 {new Date(payable.dueDate).toLocaleDateString('pt-BR')}
               </p>
             </div>
           </div>
           {payable.category && (
             <div className="flex items-start gap-3">
-              <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">Categoria</p>
-                <p className="font-medium text-gray-900">{payable.category}</p>
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-muted-foreground">Categoria</p>
+                <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{payable.category}</p>
               </div>
             </div>
           )}
         </div>
 
         {payable.notes && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <p className="text-sm text-muted-foreground mb-2">Observações</p>
-            <p className="text-gray-900">{payable.notes}</p>
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2">Observações</p>
+            <p className="text-sm sm:text-base text-gray-900">{payable.notes}</p>
           </div>
         )}
       </div>
 
       {/* Histórico de Pagamentos */}
-      <div className="bg-white rounded-lg shadow border border-border p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Histórico de Pagamentos</h2>
+      <div className="bg-white rounded-lg shadow border border-border p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mb-4">Histórico de Pagamentos</h2>
 
         {!payable.payments || payable.payments.length === 0 ? (
-          <div className="text-center py-8">
-            <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Nenhum pagamento registrado</p>
+          <div className="text-center py-8 sm:py-12">
+            <CreditCard className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm sm:text-base text-muted-foreground">Nenhum pagamento registrado</p>
           </div>
         ) : (
           <div className="space-y-3">
             {payable.payments.map((payment) => (
               <div
                 key={payment.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-border"
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg border border-border"
               >
-                <div className="flex items-center gap-4">
-                  <div className="p-2 bg-success/10 rounded-lg">
-                    <CheckCircle className="w-5 h-5 text-success" />
+                <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                  <div className="p-2 bg-success/10 rounded-lg flex-shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{formatCurrency(Number(payment.amount))}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm sm:text-base font-medium text-gray-900">{formatCurrency(Number(payment.amount))}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {paymentMethodLabels[payment.method] || payment.method} •{' '}
                       {new Date(payment.paidAt).toLocaleDateString('pt-BR')}
                     </p>
-                    {payment.notes && <p className="text-sm text-muted-foreground mt-1">{payment.notes}</p>}
+                    {payment.notes && <p className="text-xs sm:text-sm text-muted-foreground mt-1">{payment.notes}</p>}
                   </div>
                 </div>
                 {payment.registeredUser && (
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Registrado por</p>
-                    <p className="text-sm font-medium text-gray-900">{payment.registeredUser.name}</p>
+                  <div className="text-left sm:text-right w-full sm:w-auto flex-shrink-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Registrado por</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900">{payment.registeredUser.name}</p>
                   </div>
                 )}
               </div>
@@ -259,9 +260,9 @@ export default function PayableDetailPage() {
 
       {/* Payment Modal */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 space-y-6">
-            <h3 className="text-xl font-bold text-gray-900">Registrar Pagamento</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6 space-y-4 sm:space-y-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900">Registrar Pagamento</h3>
 
             <form onSubmit={handleRegisterPayment} className="space-y-4">
               <div>
@@ -273,10 +274,10 @@ export default function PayableDetailPage() {
                   max={remaining}
                   value={paymentForm.amount}
                   onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full h-11 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm"
                   placeholder="0,00"
                 />
-                <p className="text-sm text-muted-foreground mt-1">Valor máximo: {formatCurrency(remaining)}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">Valor máximo: {formatCurrency(remaining)}</p>
               </div>
 
               <div>
@@ -284,7 +285,7 @@ export default function PayableDetailPage() {
                 <select
                   value={paymentForm.method}
                   onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                  className="w-full h-11 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-base sm:text-sm"
                 >
                   <option value="pix">PIX</option>
                   <option value="bank_transfer">Transferência</option>
@@ -302,7 +303,7 @@ export default function PayableDetailPage() {
                   required
                   value={paymentForm.paidAt}
                   onChange={(e) => setPaymentForm({ ...paymentForm, paidAt: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full h-11 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm"
                 />
               </div>
 
@@ -312,31 +313,34 @@ export default function PayableDetailPage() {
                   value={paymentForm.notes}
                   onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-base sm:text-sm resize-none"
                   placeholder="Observações sobre o pagamento..."
                 />
               </div>
 
-              <div className="flex items-center gap-4 pt-4">
+              <div className="flex flex-col-reverse sm:flex-row items-center gap-2 sm:gap-4 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(false)}
-                  className="flex-1 px-6 py-3 border border-border rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="w-full sm:flex-1 min-h-[44px] px-4 sm:px-6 py-2 sm:py-3 border border-border rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={savingPayment}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50"
+                  className="w-full sm:flex-1 min-h-[44px] flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-success text-success-foreground rounded-lg hover:bg-success/90 active:bg-success/80 transition-colors font-medium disabled:opacity-50"
                 >
                   {savingPayment ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Salvando...
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      <span>Salvando...</span>
                     </>
                   ) : (
-                    'Confirmar Pagamento'
+                    <>
+                      <span className="hidden sm:inline">Confirmar Pagamento</span>
+                      <span className="sm:hidden">Confirmar</span>
+                    </>
                   )}
                 </button>
               </div>

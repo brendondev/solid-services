@@ -346,16 +346,16 @@ export default function FinancialPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fadeInUp">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 animate-fadeInUp">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Contas a Receber</h1>
-          <p className="text-muted-foreground mt-1">Gerencie seus recebíveis</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Contas a Receber</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Gerencie seus recebíveis</p>
         </div>
         <Button
           onClick={() => router.push('/dashboard/financial/new')}
-          className="flex items-center gap-2"
+          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Novo Recebível
@@ -363,53 +363,53 @@ export default function FinancialPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total de Recebíveis</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Total de Recebíveis</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
             </div>
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <DollarSign className="w-6 h-6 text-primary" />
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Pendentes</p>
-              <p className="text-2xl font-bold text-warning mt-1">{stats.pending}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Pendentes</p>
+              <p className="text-xl sm:text-2xl font-bold text-warning mt-1">{stats.pending}</p>
             </div>
-            <div className="p-3 bg-warning/10 rounded-lg">
-              <Clock className="w-6 h-6 text-warning" />
+            <div className="p-2 sm:p-3 bg-warning/10 rounded-lg">
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Recebidos</p>
-              <p className="text-2xl font-bold text-success mt-1">{stats.paid}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Recebidos</p>
+              <p className="text-xl sm:text-2xl font-bold text-success mt-1">{stats.paid}</p>
             </div>
-            <div className="p-3 bg-success/10 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-success" />
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
+              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Valor Total Pendente</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-xs sm:text-sm text-muted-foreground">Valor Total Pendente</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                 {formatCurrency(stats.totalPending)}
               </p>
             </div>
-            <div className="p-3 bg-accent rounded-lg">
-              <TrendingUp className="w-6 h-6 text-accent-foreground" />
+            <div className="p-2 sm:p-3 bg-accent rounded-lg">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
             </div>
           </div>
         </div>
@@ -422,29 +422,26 @@ export default function FinancialPage() {
       )}
 
       {/* Filter Bar */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
-            placeholder="Buscar recebíveis por descrição ou cliente..."
+            placeholder="Buscar recebíveis..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className="pl-10"
+            className="pl-10 h-11 text-base sm:text-sm"
           />
         </div>
-        <Button variant="outline" disabled>
-          Filtros Avançados
-        </Button>
       </div>
 
       {/* Data Table or Empty State */}
       {filteredData.length === 0 && !loading ? (
-        <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
-          <DollarSign className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="bg-white rounded-lg shadow border border-border p-6 sm:p-12 text-center">
+          <DollarSign className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
             {data.length === 0 ? 'Nenhum recebível encontrado' : 'Nenhum resultado encontrado'}
           </p>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-sm sm:text-base text-muted-foreground mb-6">
             {data.length === 0
               ? 'Comece registrando seu primeiro recebível'
               : 'Tente ajustar os filtros de busca'}
@@ -452,7 +449,7 @@ export default function FinancialPage() {
           {data.length === 0 && (
             <Button
               onClick={() => router.push('/dashboard/financial/new')}
-              className="inline-flex items-center gap-2"
+              className="min-h-[44px] inline-flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
               Registrar Primeiro Recebível
@@ -460,7 +457,7 @@ export default function FinancialPage() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow border border-border p-6">
+        <div className="bg-white rounded-lg shadow border border-border p-3 sm:p-6">
           <DataTable
             columns={columns}
             data={filteredData}
