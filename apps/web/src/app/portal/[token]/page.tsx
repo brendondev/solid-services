@@ -159,81 +159,81 @@ export default function PortalHomePage() {
 
   return (
     <PortalLayout customerName={customer?.name} token={token}>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 animate-fadeInUp">
         {/* Welcome Message */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-2xl font-bold text-gray-900">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
             Bem-vindo ao Portal do Cliente
           </h2>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
             Acompanhe seus orçamentos, ordens de serviço e histórico de
             atendimentos.
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Orçamentos Pendentes */}
-          <Link href={`/portal/${token}/quotations`}>
-            <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Orçamentos Pendentes</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+          <Link href={`/portal/${token}/quotations`} className="block">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600">Orçamentos Pendentes</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
                     {pendingQuotations.length}
                   </p>
                 </div>
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <FileText className="h-6 w-6 text-blue-600" />
+                <div className="bg-blue-100 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
               </div>
               {pendingQuotations.length > 0 && (
-                <p className="text-sm text-blue-600 mt-4 font-medium">
-                  Clique para visualizar e aprovar
+                <p className="text-xs sm:text-sm text-blue-600 font-medium">
+                  Clique para visualizar e aprovar →
                 </p>
               )}
             </div>
           </Link>
 
           {/* Ordens Ativas */}
-          <Link href={`/portal/${token}/orders`}>
-            <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Ordens em Andamento</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+          <Link href={`/portal/${token}/orders`} className="block">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600">Ordens em Andamento</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
                     {activeOrders.length}
                   </p>
                 </div>
-                <div className="bg-orange-100 p-3 rounded-full">
-                  <Clock className="h-6 w-6 text-orange-600" />
+                <div className="bg-orange-100 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                 </div>
               </div>
               {activeOrders.length > 0 && (
-                <p className="text-sm text-orange-600 mt-4 font-medium">
-                  Acompanhe o status em tempo real
+                <p className="text-xs sm:text-sm text-orange-600 font-medium">
+                  Acompanhe o status em tempo real →
                 </p>
               )}
             </div>
           </Link>
 
           {/* Serviços Completados */}
-          <Link href={`/portal/${token}/history`}>
-            <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Serviços Completados</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+          <Link href={`/portal/${token}/history`} className="block">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 hover:shadow-md active:scale-[0.98] transition-all cursor-pointer min-h-[120px] sm:min-h-[140px] flex flex-col justify-between">
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm text-gray-600">Serviços Completados</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
                     {completedOrders.length}
                   </p>
                 </div>
-                <div className="bg-green-100 p-3 rounded-full">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
+                <div className="bg-green-100 p-2 sm:p-3 rounded-full flex-shrink-0">
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                 </div>
               </div>
               {completedOrders.length > 0 && (
-                <p className="text-sm text-green-600 mt-4 font-medium">
-                  Ver histórico completo
+                <p className="text-xs sm:text-sm text-green-600 font-medium">
+                  Ver histórico completo →
                 </p>
               )}
             </div>
@@ -242,27 +242,27 @@ export default function PortalHomePage() {
 
         {/* Quick Actions */}
         {pendingQuotations.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-3 sm:mb-4">
               Ações Pendentes
             </h3>
             <div className="space-y-3">
               {pendingQuotations.slice(0, 3).map((quotation) => (
                 <div
                   key={quotation.id}
-                  className="flex items-center justify-between bg-white rounded-lg p-4"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-lg p-4"
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm sm:text-base">
                       Orçamento #{quotation.number}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 mt-0.5">
                       Valor: R$ {quotation.totalAmount.toFixed(2)}
                     </p>
                   </div>
                   <Link
                     href={`/portal/${token}/quotations/${quotation.id}`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                    className="w-full sm:w-auto min-h-[44px] flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors text-sm font-medium flex-shrink-0"
                   >
                     Ver Detalhes
                   </Link>
@@ -274,32 +274,32 @@ export default function PortalHomePage() {
 
         {/* Recent Activity */}
         {activeOrders.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               Serviços em Andamento
             </h3>
             <div className="space-y-3">
               {activeOrders.slice(0, 3).map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between border-b border-gray-200 pb-3 last:border-0 last:pb-0"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 pb-3 last:border-0 last:pb-0"
                 >
-                  <div className="flex items-center gap-3">
-                    <Package className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="font-medium text-gray-900">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <Package className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">
                         OS #{order.number}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
                         Status: {getStatusLabel(order.status)}
                       </p>
                     </div>
                   </div>
                   <Link
                     href={`/portal/${token}/orders/${order.id}`}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="w-full sm:w-auto min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2 sm:py-0 text-blue-600 hover:text-blue-700 active:bg-blue-50 sm:active:bg-transparent rounded-lg sm:rounded-none transition-colors text-sm font-medium flex-shrink-0"
                   >
-                    Ver Detalhes
+                    Ver Detalhes →
                   </Link>
                 </div>
               ))}
