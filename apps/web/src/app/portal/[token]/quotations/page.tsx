@@ -168,7 +168,7 @@ export default function QuotationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                       <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                         <DollarSign className="h-4 w-4 flex-shrink-0" />
-                        <span>Valor: R$ {quotation.totalAmount.toFixed(2)}</span>
+                        <span>Valor: R$ {Number(quotation.totalAmount).toFixed(2)}</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                         <Calendar className="h-4 w-4 flex-shrink-0" />

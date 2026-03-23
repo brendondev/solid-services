@@ -211,13 +211,13 @@ export default function QuotationDetailPage() {
                     </p>
                   )}
                   <p className="text-sm text-gray-500 mt-1">
-                    Quantidade: {item.quantity} x R${' '}
-                    {item.unitPrice.toFixed(2)}
+                    Quantidade: {Number(item.quantity)} x R${' '}
+                    {Number(item.unitPrice).toFixed(2)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">
-                    R$ {item.subtotal.toFixed(2)}
+                    R$ {Number(item.subtotal).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -226,18 +226,18 @@ export default function QuotationDetailPage() {
 
           {/* Totals */}
           <div className="border-t border-gray-200 mt-6 pt-4 space-y-2">
-            {quotation.discount > 0 && (
+            {Number(quotation.discount) > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Desconto:</span>
                 <span className="text-gray-900">
-                  - R$ {quotation.discount.toFixed(2)}
+                  - R$ {Number(quotation.discount).toFixed(2)}
                 </span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold">
               <span className="text-gray-900">Valor Total:</span>
               <span className="text-blue-600">
-                R$ {quotation.totalAmount.toFixed(2)}
+                R$ {Number(quotation.totalAmount).toFixed(2)}
               </span>
             </div>
           </div>

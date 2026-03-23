@@ -257,7 +257,7 @@ export default function PortalHomePage() {
                       Orçamento #{quotation.number}
                     </p>
                     <p className="text-sm text-gray-600 mt-0.5">
-                      Valor: R$ {quotation.totalAmount.toFixed(2)}
+                      Valor: R$ {Number(quotation.totalAmount).toFixed(2)}
                     </p>
                   </div>
                   <Link
