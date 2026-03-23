@@ -112,9 +112,21 @@ Agora vamos focar em **mobile-first** e **completar funcionalidades**.
   - [x] Command Palette e Tenant badge ocultos em mobile
   - [ ] Swipe gestures (próxima iteração)
   - [ ] Bottom navigation mobile (opcional)
-  - [ ] Formulários single-column em mobile (próximo)
-  - [ ] Modais full-screen em mobile (próximo)
   - [ ] Tabelas com scroll horizontal (próximo)
+
+- [x] **1.6 Formulários Mobile-First** ✅ COMPLETO (2026-03-23)
+  - [x] Font-size >= 16px (evita zoom iOS)
+  - [x] Touch-friendly inputs (min-height 44px)
+  - [x] Labels com tamanho responsivo
+  - [x] Validação visual inline com ícones
+  - [x] Estados de erro destacados (bg-red-50)
+  - [x] Estados hover/focus/active/disabled
+  - [x] Transições suaves (200ms)
+  - [x] AutoComplete attributes (acessibilidade)
+  - [x] Padding responsivo (p-4 sm:p-6)
+  - [x] Botões com loading spinner
+  - [x] Formulário de Login melhorado
+  - [x] Formulário de Registro melhorado
 
 ---
 
