@@ -9,6 +9,7 @@ import { quotationsApi } from '@/lib/api/quotations';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { servicesApi, Service } from '@/lib/api/services';
 import { showToast } from '@/lib/toast';
+import { Loader2, Plus, Trash2, ArrowLeft } from 'lucide-react';
 
 const quotationItemSchema = z.object({
   serviceId: z.string().min(1, 'Selecione um serviço'),
@@ -21,6 +22,7 @@ const quotationSchema = z.object({
   customerId: z.string().min(1, 'Selecione um cliente'),
   validUntil: z.string().optional(),
   notes: z.string().optional(),
+  discount: z.coerce.number().min(0, 'Desconto deve ser maior ou igual a 0').max(100, 'Desconto não pode exceder 100%').optional(),
   items: z.array(quotationItemSchema).min(1, 'Adicione pelo menos um item'),
 });
 
@@ -44,6 +46,7 @@ export default function NewQuotationPage() {
   } = useForm<QuotationFormData>({
     resolver: zodResolver(quotationSchema),
     defaultValues: {
+      discount: 0,
       items: [
         {
           serviceId: '',
@@ -61,6 +64,7 @@ export default function NewQuotationPage() {
   });
 
   const watchItems = watch('items');
+  const watchDiscount = watch('discount');
 
   useEffect(() => {
     loadInitialData();
@@ -98,11 +102,23 @@ export default function NewQuotationPage() {
     return (item.quantity || 0) * (item.unitPrice || 0);
   };
 
-  const calculateGrandTotal = () => {
+  const calculateSubtotal = () => {
     if (!watchItems) return 0;
     return watchItems.reduce((total, item) => {
       return total + (item.quantity || 0) * (item.unitPrice || 0);
     }, 0);
+  };
+
+  const calculateDiscountAmount = () => {
+    const subtotal = calculateSubtotal();
+    const discount = watchDiscount || 0;
+    return (subtotal * discount) / 100;
+  };
+
+  const calculateGrandTotal = () => {
+    const subtotal = calculateSubtotal();
+    const discountAmount = calculateDiscountAmount();
+    return subtotal - discountAmount;
   };
 
   const formatCurrency = (value: number) => {
@@ -121,12 +137,13 @@ export default function NewQuotationPage() {
         customerId: data.customerId,
         validUntil: data.validUntil || undefined,
         notes: data.notes || undefined,
+        discount: data.discount ? Number(data.discount) : 0,
         items: data.items.map((item, index) => ({
           serviceId: item.serviceId,
           description: item.description,
           quantity: Number(item.quantity),
           unitPrice: Number(item.unitPrice),
-          order: index + 1, // Backend exige campo order >= 1
+          order: index + 1,
         })),
       });
 
@@ -143,52 +160,60 @@ export default function NewQuotationPage() {
 
   if (loadingData) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando dados...</div>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-gray-600">Carregando dados...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
+    <div className="space-y-4 sm:space-y-6 pb-8">
+      {/* Header Mobile-First */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <button
           onClick={() => router.push('/dashboard/quotations')}
-          className="text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 min-h-[44px]"
         >
-          ← Voltar
+          <ArrowLeft className="w-5 h-5" />
+          <span className="sm:inline">Voltar</span>
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Novo Orçamento</h1>
-          <p className="text-gray-600">Crie um orçamento para um cliente</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Novo Orçamento</h1>
+          <p className="text-sm sm:text-base text-gray-600">Crie um orçamento para um cliente</p>
         </div>
       </div>
 
+      {/* Alert de erro */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm sm:text-base">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
         {/* Informações do Orçamento */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
             Informações do Orçamento
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Cliente */}
+            <div className="sm:col-span-2">
               <label
                 htmlFor="customerId"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
               >
                 Cliente *
               </label>
               <select
                 {...register('customerId')}
                 id="customerId"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
+                  focus:outline-none focus:ring-2 focus:ring-primary
+                  disabled:bg-gray-50 disabled:cursor-not-allowed
+                  ${errors.customerId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
                 disabled={isLoading}
               >
                 <option value="">Selecione um cliente</option>
@@ -199,16 +224,18 @@ export default function NewQuotationPage() {
                 ))}
               </select>
               {errors.customerId && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
+                  <span>⚠</span>
                   {errors.customerId.message}
                 </p>
               )}
             </div>
 
+            {/* Data de Validade */}
             <div>
               <label
                 htmlFor="validUntil"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
               >
                 Válido até
               </label>
@@ -216,15 +243,48 @@ export default function NewQuotationPage() {
                 {...register('validUntil')}
                 type="date"
                 id="validUntil"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 text-base sm:text-sm border border-gray-300 rounded-lg
+                  focus:outline-none focus:ring-2 focus:ring-primary
+                  disabled:bg-gray-50"
                 disabled={isLoading}
               />
             </div>
 
-            <div className="md:col-span-2">
+            {/* Desconto */}
+            <div>
+              <label
+                htmlFor="discount"
+                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
+              >
+                Desconto (%)
+              </label>
+              <input
+                {...register('discount')}
+                type="number"
+                id="discount"
+                min="0"
+                max="100"
+                step="0.01"
+                className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
+                  focus:outline-none focus:ring-2 focus:ring-primary
+                  disabled:bg-gray-50
+                  ${errors.discount ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                placeholder="0"
+                disabled={isLoading}
+              />
+              {errors.discount && (
+                <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
+                  <span>⚠</span>
+                  {errors.discount.message}
+                </p>
+              )}
+            </div>
+
+            {/* Observações */}
+            <div className="sm:col-span-2">
               <label
                 htmlFor="notes"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
               >
                 Observações
               </label>
@@ -232,7 +292,9 @@ export default function NewQuotationPage() {
                 {...register('notes')}
                 id="notes"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 text-base sm:text-sm border border-gray-300 rounded-lg
+                  focus:outline-none focus:ring-2 focus:ring-primary
+                  disabled:bg-gray-50"
                 placeholder="Informações adicionais sobre o orçamento..."
                 disabled={isLoading}
               />
@@ -241,9 +303,9 @@ export default function NewQuotationPage() {
         </div>
 
         {/* Itens do Orçamento */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
               Itens do Orçamento
             </h2>
             <button
@@ -256,10 +318,14 @@ export default function NewQuotationPage() {
                   unitPrice: 0,
                 })
               }
-              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2
+                text-sm font-medium text-white bg-primary rounded-lg
+                hover:bg-primary/90 active:bg-primary/80
+                disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
-              + Adicionar Item
+              <Plus className="w-4 h-4" />
+              Adicionar Item
             </button>
           </div>
 
@@ -269,23 +335,28 @@ export default function NewQuotationPage() {
                 key={field.id}
                 className="p-4 border border-gray-200 rounded-lg space-y-4"
               >
+                {/* Header do item */}
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium text-gray-900">Item {index + 1}</h3>
                   {fields.length > 1 && (
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="text-red-600 hover:text-red-700 text-sm"
+                      className="inline-flex items-center gap-1 min-h-[44px] px-3 py-2
+                        text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg
+                        active:bg-red-100"
                       disabled={isLoading}
                     >
+                      <Trash2 className="w-4 h-4" />
                       Remover
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Serviço */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Serviço *
                     </label>
                     <select
@@ -293,7 +364,9 @@ export default function NewQuotationPage() {
                       onChange={(e) =>
                         handleServiceChange(index, e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
+                        focus:outline-none focus:ring-2 focus:ring-primary
+                        ${errors.items?.[index]?.serviceId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
                       disabled={isLoading}
                     >
                       <option value="">Selecione um serviço</option>
@@ -304,71 +377,84 @@ export default function NewQuotationPage() {
                       ))}
                     </select>
                     {errors.items?.[index]?.serviceId && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
+                        <span>⚠</span>
                         {errors.items[index]?.serviceId?.message}
                       </p>
                     )}
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {/* Descrição */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Descrição *
                     </label>
                     <input
                       {...register(`items.${index}.description`)}
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Descrição do serviço"
+                      className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
+                        focus:outline-none focus:ring-2 focus:ring-primary
+                        ${errors.items?.[index]?.description ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                      placeholder="Detalhes do serviço"
                       disabled={isLoading}
                     />
                     {errors.items?.[index]?.description && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
+                        <span>⚠</span>
                         {errors.items[index]?.description?.message}
                       </p>
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Quantidade *
-                    </label>
-                    <input
-                      {...register(`items.${index}.quantity`)}
-                      type="number"
-                      min="1"
-                      step="1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    {errors.items?.[index]?.quantity && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.items[index]?.quantity?.message}
-                      </p>
-                    )}
-                  </div>
+                  {/* Quantidade e Preço */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Qtd *
+                      </label>
+                      <input
+                        {...register(`items.${index}.quantity`)}
+                        type="number"
+                        min="1"
+                        step="1"
+                        className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
+                          focus:outline-none focus:ring-2 focus:ring-primary
+                          ${errors.items?.[index]?.quantity ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                        disabled={isLoading}
+                      />
+                      {errors.items?.[index]?.quantity && (
+                        <p className="mt-2 text-sm text-red-600">
+                          {errors.items[index]?.quantity?.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Preço Unitário (R$) *
-                    </label>
-                    <input
-                      {...register(`items.${index}.unitPrice`)}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    {errors.items?.[index]?.unitPrice && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.items[index]?.unitPrice?.message}
-                      </p>
-                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Preço (R$) *
+                      </label>
+                      <input
+                        {...register(`items.${index}.unitPrice`)}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
+                          focus:outline-none focus:ring-2 focus:ring-primary
+                          ${errors.items?.[index]?.unitPrice ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                        disabled={isLoading}
+                      />
+                      {errors.items?.[index]?.unitPrice && (
+                        <p className="mt-2 text-sm text-red-600">
+                          {errors.items[index]?.unitPrice?.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-sm text-gray-600">Total do item: </span>
+                {/* Total do item */}
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-sm text-gray-600">Total do item:</span>
                   <span className="text-lg font-bold text-gray-900">
                     {formatCurrency(calculateItemTotal(index))}
                   </span>
@@ -378,7 +464,7 @@ export default function NewQuotationPage() {
           </div>
 
           {errors.items && (
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-4 text-sm text-red-600">
               {typeof errors.items.message === 'string'
                 ? errors.items.message
                 : 'Verifique os itens do orçamento'}
@@ -386,33 +472,60 @@ export default function NewQuotationPage() {
           )}
         </div>
 
-        {/* Total Geral */}
-        <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold text-gray-900">
-              Valor Total do Orçamento
-            </span>
-            <span className="text-3xl font-bold text-blue-600">
-              {formatCurrency(calculateGrandTotal())}
-            </span>
+        {/* Resumo de Valores */}
+        <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-4 sm:p-6 rounded-lg border-2 border-primary/20">
+          <div className="space-y-3">
+            {/* Subtotal */}
+            <div className="flex justify-between items-center text-base">
+              <span className="text-gray-700">Subtotal:</span>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(calculateSubtotal())}
+              </span>
+            </div>
+
+            {/* Desconto (se houver) */}
+            {(watchDiscount ?? 0) > 0 && (
+              <div className="flex justify-between items-center text-base text-red-600">
+                <span>Desconto ({watchDiscount}%):</span>
+                <span className="font-semibold">
+                  - {formatCurrency(calculateDiscountAmount())}
+                </span>
+              </div>
+            )}
+
+            {/* Total */}
+            <div className="flex justify-between items-center pt-3 border-t border-primary/20">
+              <span className="text-lg sm:text-xl font-semibold text-gray-900">
+                Total:
+              </span>
+              <span className="text-2xl sm:text-3xl font-bold text-primary">
+                {formatCurrency(calculateGrandTotal())}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Ações */}
-        <div className="flex items-center justify-end space-x-4">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => router.push('/dashboard/quotations')}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="min-h-[44px] px-6 py-3 border border-gray-300 text-gray-700 rounded-lg
+              hover:bg-gray-50 active:bg-gray-100 text-base font-medium
+              disabled:opacity-50"
             disabled={isLoading}
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="min-h-[44px] px-6 py-3 bg-primary text-white rounded-lg
+              hover:bg-primary/90 active:bg-primary/80 text-base font-medium
+              disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2"
             disabled={isLoading}
           >
+            {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
             {isLoading ? 'Criando...' : 'Criar Orçamento'}
           </button>
         </div>

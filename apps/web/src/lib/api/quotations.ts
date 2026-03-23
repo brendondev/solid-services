@@ -6,6 +6,7 @@ export interface Quotation {
   customerId: string;
   status: string;
   totalAmount: number;
+  discount?: number;
   validUntil: string | null;
   notes: string | null;
   createdAt: string;
@@ -40,11 +41,13 @@ export interface CreateQuotationDto {
   customerId: string;
   validUntil?: string;
   notes?: string;
+  discount?: number;
   items: Array<{
     serviceId: string;
     description: string;
     quantity: number;
     unitPrice: number;
+    order: number;
   }>;
 }
 

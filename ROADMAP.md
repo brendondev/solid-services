@@ -113,6 +113,47 @@ Agora vamos focar em **mobile-first** e **completar funcionalidades**.
   - [ ] Swipe gestures (próxima iteração)
   - [ ] Bottom navigation mobile (opcional)
 
+---
+
+## 📋 Sprint 2: Completar Funcionalidades Core ✅ INICIADA
+
+### Tarefa 2.1: Módulo Orçamentos Completo (90%)
+**Data**: 2026-03-23
+**Objetivo**: Funcionalidades completas para criar e gerenciar orçamentos
+
+- [x] **Formulário de criação mobile-first** ✅
+  - [x] Single-column layout em mobile
+  - [x] Padding e font-size responsivos
+  - [x] Touch-friendly inputs/buttons (min-height 44px)
+  - [x] Validação visual inline com ícones
+  - [x] Loading spinner no submit
+  - [x] Header com botão voltar touch-friendly
+
+- [x] **Campo de desconto** ✅
+  - [x] Input de desconto em porcentagem (0-100%)
+  - [x] Cálculo automático de desconto
+  - [x] Resumo de valores (subtotal + desconto + total)
+  - [x] Validação de range (0-100%)
+  - [x] Exibição condicional no resumo
+
+- [x] **Gerenciamento de itens** ✅ (já existia, melhorado)
+  - [x] Adicionar/remover itens dinamicamente
+  - [x] Seleção de serviço (preenche automaticamente descrição/preço)
+  - [x] Campos: quantidade, preço unitário, descrição
+  - [x] Cálculo automático de total por item
+  - [x] Cálculo de grand total com desconto
+  - [x] Formatação de moeda (BRL)
+  - [x] Validações com React Hook Form + Zod
+
+- [ ] **Converter em OS** (próximo)
+  - [ ] Botão na página de detalhes do orçamento
+  - [ ] Criar ordem de serviço a partir do orçamento
+  - [ ] Copiar itens e valores automaticamente
+
+- [ ] **Enviar para aprovação** (próximo)
+  - [ ] Mudar status para 'sent'
+  - [ ] Notificar cliente (email/link)
+
 - [x] **1.7 Tabelas Responsivas** ✅ COMPLETO (2026-03-23)
   - [x] Scroll horizontal em mobile com overflow-x-auto
   - [x] Indicador visual "👉 Role horizontalmente"
