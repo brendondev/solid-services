@@ -31,6 +31,7 @@ model Tenant {
   suppliers     Supplier[]
   payables      Payable[]
   subscription  Subscription?
+  notifications Notification[]
 
   @@map("tenants")
 }
@@ -46,11 +47,12 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  tenant                    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  assignedOrders            ServiceOrder[]    @relation("AssignedOrders")
-  registeredPayments        Payment[]         @relation("RegisteredPayments")
-  registeredPayablePayments PayablePayment[]  @relation("RegisteredPayablePayments")
+  tenant                    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedOrders            ServiceOrder[]   @relation("AssignedOrders")
+  registeredPayments        Payment[]        @relation("RegisteredPayments")
+  registeredPayablePayments PayablePayment[] @relation("RegisteredPayablePayments")
   auditLogs                 AuditLog[]
+  notifications             Notification[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -535,4 +537,30 @@ model AuditLog {
   @@index([tenantId, userId])
   @@index([tenantId, action])
   @@map("audit_logs")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String    @id @default(uuid())
+  tenantId  String    @map("tenant_id")
+  userId    String    @map("user_id")
+  type      String    // quotation_approved, quotation_rejected, order_updated, etc
+  title     String
+  message   String
+  data      Json?     // dados adicionais (quotationId, orderId, etc)
+  read      Boolean   @default(false)
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, userId])
+  @@index([tenantId, userId, read])
+  @@index([tenantId, createdAt])
+  @@map("notifications")
 }

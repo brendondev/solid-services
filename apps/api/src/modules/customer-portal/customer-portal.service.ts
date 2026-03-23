@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
 import { v4 as uuidv4 } from 'uuid';
-import { NotificationsService } from '../notifications';
+import { NotificationsService, NotificationsDataService, RealTimeService } from '../notifications';
 import { QuotationPdfService } from '../quotations/services/quotation-pdf.service';
 import { OrderPdfService } from '../service-orders/services/order-pdf.service';
 
@@ -23,6 +23,8 @@ export class CustomerPortalService {
     private readonly prisma: PrismaService,
     private readonly tenantContext: TenantContextService,
     private readonly notificationsService: NotificationsService,
+    private readonly notificationsDataService: NotificationsDataService,
+    private readonly realTimeService: RealTimeService,
     private readonly quotationPdfService: QuotationPdfService,
     private readonly orderPdfService: OrderPdfService,
   ) {}
@@ -250,9 +252,10 @@ export class CustomerPortalService {
           roles: { has: 'admin' },
           status: 'active',
         },
-        select: { email: true },
+        select: { id: true, email: true },
       });
 
+      // Enviar e-mails
       for (const admin of admins) {
         await this.notificationsService.sendQuotationApproved({
           to: admin.email,
@@ -261,6 +264,30 @@ export class CustomerPortalService {
           totalAmount: Number(quotation.totalAmount),
         });
       }
+
+      // Criar notificações no banco e enviar em tempo real
+      const adminIds = admins.map(a => a.id);
+      const notificationData = {
+        type: 'quotation_approved',
+        title: 'Orçamento Aprovado',
+        message: `O cliente ${quotation.customer.name} aprovou o orçamento ${quotation.number}`,
+        data: {
+          quotationId: quotation.id,
+          quotationNumber: quotation.number,
+          customerId: quotation.customerId,
+          customerName: quotation.customer.name,
+        },
+      };
+
+      // Salvar no banco
+      const notifications = adminIds.map(userId => ({
+        userId,
+        ...notificationData,
+      }));
+      await this.notificationsDataService.createMany(notifications);
+
+      // Enviar em tempo real
+      this.realTimeService.sendToUsers(tenantId, adminIds, notificationData);
     } catch (error) {
       console.error('Failed to send approval notification:', error);
     }
@@ -305,9 +332,10 @@ export class CustomerPortalService {
           roles: { has: 'admin' },
           status: 'active',
         },
-        select: { email: true },
+        select: { id: true, email: true },
       });
 
+      // Enviar e-mails
       for (const admin of admins) {
         await this.notificationsService.sendQuotationRejected({
           to: admin.email,
@@ -315,6 +343,30 @@ export class CustomerPortalService {
           quotationNumber: quotation.number,
         });
       }
+
+      // Criar notificações no banco e enviar em tempo real
+      const adminIds = admins.map(a => a.id);
+      const notificationData = {
+        type: 'quotation_rejected',
+        title: 'Orçamento Rejeitado',
+        message: `O cliente ${quotation.customer.name} rejeitou o orçamento ${quotation.number}`,
+        data: {
+          quotationId: quotation.id,
+          quotationNumber: quotation.number,
+          customerId: quotation.customerId,
+          customerName: quotation.customer.name,
+        },
+      };
+
+      // Salvar no banco
+      const notifications = adminIds.map(userId => ({
+        userId,
+        ...notificationData,
+      }));
+      await this.notificationsDataService.createMany(notifications);
+
+      // Enviar em tempo real
+      this.realTimeService.sendToUsers(tenantId, adminIds, notificationData);
     } catch (error) {
       console.error('Failed to send rejection notification:', error);
     }
