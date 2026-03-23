@@ -151,7 +151,7 @@ export default function PortalHomePage() {
     );
   }
 
-  const pendingQuotations = quotations.filter((q) => q.status === 'sent');
+  const pendingQuotations = quotations.filter((q) => ['pending', 'sent'].includes(q.status));
   const activeOrders = orders.filter(
     (o) => o.status === 'scheduled' || o.status === 'in_progress'
   );
