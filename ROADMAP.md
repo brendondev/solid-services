@@ -112,7 +112,16 @@ Agora vamos focar em **mobile-first** e **completar funcionalidades**.
   - [x] Command Palette e Tenant badge ocultos em mobile
   - [ ] Swipe gestures (próxima iteração)
   - [ ] Bottom navigation mobile (opcional)
-  - [ ] Tabelas com scroll horizontal (próximo)
+
+- [x] **1.7 Tabelas Responsivas** ✅ COMPLETO (2026-03-23)
+  - [x] Scroll horizontal em mobile com overflow-x-auto
+  - [x] Indicador visual "👉 Role horizontalmente"
+  - [x] WhiteSpace nowrap para evitar quebra de texto
+  - [x] Padding responsivo (p-3 sm:p-4)
+  - [x] Font-size responsivo (text-xs sm:text-sm)
+  - [x] Active states em linhas clicáveis
+  - [x] Wrapper com scroll suave
+  - [x] Todas tabelas do sistema atualizadas (DataTable base)
 
 - [x] **1.6 Formulários Mobile-First** ✅ COMPLETO (2026-03-23)
   - [x] Font-size >= 16px (evita zoom iOS)
