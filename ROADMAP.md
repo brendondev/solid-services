@@ -10,9 +10,13 @@
 | Componente | Status | Progresso |
 |------------|--------|-----------|
 | Backend API | ✅ Completo | 100% |
-| Frontend Web | 🔄 Em Progresso | 0% |
+| Frontend Web | 🔄 Em Progresso | **70%** ⚡ |
+| Mobile-First | ⚠️ Precisa Melhorias | 30% |
 | Documentação | ✅ Completo | 100% |
 | Deploy | ✅ Produção | Railway |
+
+**🎉 DESCOBERTA**: Frontend muito mais avançado que esperado!
+**📱 FOCO**: Melhorias mobile-first + completar funcionalidades
 
 ---
 
@@ -44,52 +48,66 @@
 
 ## 🚀 Em Andamento
 
-### Sprint 1: Setup & Autenticação (1-2 semanas)
+### Sprint 1: Mobile-First Fixes & Polish (1 semana) ⚡ REDEFINIDA
 **Início**: 2026-03-23
-**Objetivo**: Base do frontend + autenticação funcional
+**Objetivo**: Corrigir responsividade mobile + melhorar UX
+
+**IMPORTANTE**: Setup base JÁ EXISTE (70% implementado)!
+Agora vamos focar em **mobile-first** e **completar funcionalidades**.
 
 #### Tarefas
-- [ ] **1.1 Setup Next.js 14**
-  - [ ] Criar projeto em `apps/web`
-  - [ ] Configurar TypeScript
-  - [ ] Setup TailwindCSS
-  - [ ] Instalar shadcn/ui
-  - [ ] Estrutura de pastas (app router)
-  - [ ] Configurar variáveis de ambiente
+- [x] **1.1 Setup Next.js 15** ✅ JÁ FEITO
+  - [x] Projeto criado em `apps/web`
+  - [x] TypeScript configurado
+  - [x] TailwindCSS instalado
+  - [x] shadcn/ui (Radix) instalado
+  - [x] Estrutura de pastas criada
+  - [x] Variáveis de ambiente
 
-- [ ] **1.2 Biblioteca de Componentes**
-  - [ ] Instalar componentes shadcn/ui base:
-    - [ ] Button, Input, Label
-    - [ ] Card, Alert
-    - [ ] Dialog, Sheet
-    - [ ] Table, Pagination
-    - [ ] Select, Checkbox, Radio
-    - [ ] Toast/Sonner
-    - [ ] Dropdown Menu
-    - [ ] Avatar
-  - [ ] Tema customizado (cores da marca)
-  - [ ] Configurar fonte (Geist/Inter)
+- [x] **1.2 Biblioteca de Componentes** ✅ ~60% FEITO
+  - [x] Button, Input, Label
+  - [x] Dialog, Sheet
+  - [x] Select, Checkbox
+  - [x] Dropdown Menu
+  - [ ] Card (customizado)
+  - [ ] Alert/AlertDialog
+  - [ ] Table (data-table)
+  - [ ] Pagination
+  - [ ] Toast/Sonner (melhorar)
+  - [ ] Avatar
+  - [ ] Badge
+  - [ ] Tabs, Accordion
 
-- [ ] **1.3 Sistema de Autenticação**
-  - [ ] Criar API client (axios/fetch)
-  - [ ] Context de autenticação
-  - [ ] Hook useAuth
-  - [ ] Página de Login (`/login`)
-  - [ ] Página de Registro (`/register`)
-  - [ ] Logout funcional
-  - [ ] Protected routes (middleware)
-  - [ ] Persistência de token (localStorage/cookies)
-  - [ ] Refresh token automático
+- [x] **1.3 Sistema de Autenticação** ✅ ~90% FEITO
+  - [x] API client (axios)
+  - [x] Página de Login
+  - [x] Página de Registro
+  - [x] Logout funcional
+  - [x] Protected routes (redirect)
+  - [x] Persistência de token (localStorage)
+  - [ ] **FALTA**: Refresh token automático
+  - [ ] **FALTA**: Recuperação de senha
 
-- [ ] **1.4 Layout Base**
-  - [ ] Shell principal (`/dashboard/*`)
-  - [ ] Sidebar responsiva
-  - [ ] Header com user menu
-  - [ ] Breadcrumbs
-  - [ ] Mobile menu (hamburguer)
-  - [ ] Footer (opcional)
-  - [ ] Loading states
-  - [ ] Error boundaries
+- [x] **1.4 Layout Base** ✅ ~95% FEITO
+  - [x] Shell dashboard (`/dashboard/*`)
+  - [x] Sidebar responsiva
+  - [x] Header com user menu
+  - [x] Mobile menu (hamburguer + overlay)
+  - [x] Command Palette (Cmd+K)
+  - [x] Keyboard shortcuts
+  - [ ] **FALTA**: Breadcrumbs
+  - [ ] **FALTA**: Error boundaries
+
+- [ ] **1.5 Melhorias Mobile-First** ⚡ PRIORIDADE
+  - [ ] Fix sidebar mobile (iniciar fechada em <lg)
+  - [ ] Adicionar swipe to open/close sidebar
+  - [ ] Bottom navigation mobile (opcional)
+  - [ ] Formulários single-column em mobile
+  - [ ] Modais full-screen em mobile
+  - [ ] Tabelas com scroll horizontal + indicador
+  - [ ] Touch targets >= 44px
+  - [ ] Cards responsivos (stack em mobile)
+  - [ ] Fix font-size (min 16px para evitar zoom iOS)
 
 ---
 
