@@ -77,8 +77,15 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             const notification: NotificationItem = data.data || data;
             console.log('[Notifications] Notification:', notification);
 
-            // Adicionar nova notificação ao início da lista
+            // Adicionar nova notificação ao início da lista (evitar duplicatas)
             setNotifications((prev) => {
+              // Verificar se já existe
+              const exists = prev.some(n => n.id === notification.id);
+              if (exists) {
+                console.log('[Notifications] ⚠️ Duplicate notification ignored:', notification.id);
+                return prev;
+              }
+
               console.log('[Notifications] Adding to list. Current count:', prev.length);
               return [notification, ...prev];
             });
@@ -118,7 +125,16 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             const notification: NotificationItem = data.data || data;
             console.log('[Notifications] Named notification:', notification);
 
-            setNotifications((prev) => [notification, ...prev]);
+            // Adicionar notificação (evitar duplicatas)
+            setNotifications((prev) => {
+              const exists = prev.some(n => n.id === notification.id);
+              if (exists) {
+                console.log('[Notifications] ⚠️ Duplicate notification ignored (named event):', notification.id);
+                return prev;
+              }
+              return [notification, ...prev];
+            });
+
             setUnreadCount((prev) => prev + 1);
 
             // Mostrar toast também para evento nomeado
@@ -133,11 +149,18 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           }
         });
 
-        es.onerror = (error) => {
+        es.onerror = (error: any) => {
           console.error('[Notifications] ❌ SSE connection error:', error);
 
           if (es) {
             es.close();
+          }
+
+          // Não reconectar se for erro de autenticação (401)
+          // Isso evita loop infinito quando token expira
+          if (error?.target?.readyState === EventSource.CLOSED) {
+            console.log('[Notifications] Connection closed by server (possibly 401). Not reconnecting.');
+            return;
           }
 
           // Reconectar após 5 segundos se não estiver desmontado
