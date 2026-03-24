@@ -70,7 +70,9 @@ export class DigitalSignatureService {
 
       // Determinar userId real (buscar admin do tenant se userId for 'portal-user')
       let actualUserId = userId;
-      if (userId === 'portal-user' || !userId) {
+      const isPortalSignature = userId === 'portal-user' || !userId;
+
+      if (isPortalSignature) {
         // Buscar primeiro admin do tenant
         const adminUser = await this.prisma.user.findFirst({
           where: {
@@ -82,7 +84,7 @@ export class DigitalSignatureService {
 
         if (adminUser) {
           actualUserId = adminUser.id;
-          console.log('[DigitalSignature] Using admin user for portal signature:', actualUserId);
+          console.log('[DigitalSignature] Portal signature - using admin user for record:', actualUserId);
         } else {
           throw new BadRequestException('Nenhum usuário admin encontrado no tenant');
         }
@@ -137,7 +139,7 @@ export class DigitalSignatureService {
       });
 
       // Enviar notificações
-      await this.notifyDocumentSigned(tenantId, documentType, documentId, document, actualUserId);
+      await this.notifyDocumentSigned(tenantId, documentType, documentId, document, actualUserId, isPortalSignature);
 
       console.log('[DigitalSignature] Document signed successfully');
 
@@ -396,6 +398,7 @@ export class DigitalSignatureService {
     documentId: string,
     document: any,
     signedByUserId: string,
+    isPortalSignature: boolean = false,
   ): Promise<void> {
     try {
       console.log('[DigitalSignature] Sending notification...', {
@@ -403,6 +406,7 @@ export class DigitalSignatureService {
         documentType,
         documentId,
         signedByUserId,
+        isPortalSignature,
       });
 
       // Buscar usuário que assinou
@@ -428,12 +432,16 @@ export class DigitalSignatureService {
 
       console.log('[DigitalSignature] Active users found:', users.length);
 
-      // Notificar todos exceto quem assinou
-      const usersToNotify = users
-        .filter((user) => user.id !== signedByUserId)
-        .map((user) => user.id);
+      // Se é assinatura do portal (cliente), notificar TODOS os funcionários
+      // Se é assinatura interna, notificar todos EXCETO quem assinou
+      const usersToNotify = isPortalSignature
+        ? users.map((user) => user.id)
+        : users
+            .filter((user) => user.id !== signedByUserId)
+            .map((user) => user.id);
 
-      console.log('[DigitalSignature] Users to notify:', usersToNotify.length);
+      console.log('[DigitalSignature] Users to notify:', usersToNotify.length,
+                  isPortalSignature ? '(portal signature - notify all)' : '(internal signature - exclude signer)');
 
       if (usersToNotify.length === 0) {
         console.log('[DigitalSignature] No users to notify, skipping...');
@@ -441,16 +449,21 @@ export class DigitalSignatureService {
       }
 
       // Preparar dados da notificação
+      const signerName = isPortalSignature
+        ? `${document.customer?.name || 'Cliente'}`
+        : signedByUser?.name || 'um usuário';
+
       const notificationData = {
         type: 'DOCUMENT_SIGNED',
-        title: `${docTypeLabel} Assinado`,
-        message: `${docTypeLabel} #${docNumber} foi assinado digitalmente por ${signedByUser?.name || 'um usuário'}`,
+        title: isPortalSignature ? `${docTypeLabel} Aprovado pelo Cliente` : `${docTypeLabel} Assinado`,
+        message: `${docTypeLabel} #${docNumber} foi assinado digitalmente por ${signerName}`,
         data: {
           documentType,
           documentId,
           documentNumber: docNumber,
-          signedBy: signedByUser?.name,
+          signedBy: signerName,
           signedAt: new Date(),
+          isPortalSignature,
         },
       };
 
