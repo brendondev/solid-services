@@ -43,8 +43,8 @@ export class NotificationsDataService {
   /**
    * Cria notificações para múltiplos usuários
    */
-  async createMany(dtos: CreateNotificationDto[]) {
-    const tenantId = this.tenantContext.getTenantId();
+  async createMany(dtos: CreateNotificationDto[], explicitTenantId?: string) {
+    const tenantId = explicitTenantId || this.tenantContext.getTenantId();
 
     const notifications = dtos.map((dto) => ({
       tenantId,

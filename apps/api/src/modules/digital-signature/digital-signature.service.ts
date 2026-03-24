@@ -460,7 +460,7 @@ export class DigitalSignatureService {
         ...notificationData,
       }));
 
-      await this.notificationsData.createMany(notificationsToCreate);
+      await this.notificationsData.createMany(notificationsToCreate, tenantId);
       console.log('[DigitalSignature] Notifications created in database:', notificationsToCreate.length);
 
       // Enviar notificações em tempo real
