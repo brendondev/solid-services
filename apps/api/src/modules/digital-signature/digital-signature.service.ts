@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database';
 import { StorageService } from '../../core/storage';
-import { TenantContextService } from '../../core/tenant';
+import { TenantContextService, tenantStorage } from '../../core/tenant';
 import { RealTimeService } from '../notifications/real-time.service';
 import { NotificationsDataService } from '../notifications/notifications-data.service';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -45,8 +45,8 @@ export class DigitalSignatureService {
   ): Promise<SignatureResult> {
     const { documentType, documentId, signatureType, govbrAccessToken, signatureImage } = dto;
 
-    // Buscar documento
-    const document = await this.getDocument(documentType, documentId);
+    // Buscar documento SEM contexto de tenant (endpoint público)
+    const document = await this.getDocumentWithoutContext(documentType, documentId);
 
     if (!document) {
       throw new NotFoundException(`${documentType} não encontrado`);
@@ -57,105 +57,142 @@ export class DigitalSignatureService {
       throw new BadRequestException('Documento já foi assinado');
     }
 
-    // Gerar PDF do documento (implementar depois)
-    // Por enquanto, vamos simular com um PDF fake
-    const pdfBuffer = await this.generatePDF(documentType, document);
+    // Extrair tenantId do documento para estabelecer contexto
+    const tenantId = document.tenantId;
 
-    // Calcular hash SHA-256
-    const hash = this.calculateSHA256(pdfBuffer);
-    const hashBase64 = hash.toString('base64');
+    // Executar toda a lógica dentro do contexto do tenant usando tenantStorage
+    return tenantStorage.run({ tenantId }, async () => {
+      console.log('[DigitalSignature] Signing document with context:', {
+        tenantId,
+        documentType,
+        documentId,
+        userId,
+      });
 
-    // Escolher método de assinatura
-    const type = signatureType || SignatureType.LOCAL;
-    let signedData: Buffer;
+      // Determinar userId real (buscar admin do tenant se userId for 'portal-user')
+      let actualUserId = userId;
+      if (userId === 'portal-user' || !userId) {
+        // Buscar primeiro admin do tenant
+        const adminUser = await this.prisma.user.findFirst({
+          where: {
+            tenantId,
+            roles: { has: 'admin' },
+          },
+          select: { id: true },
+        });
 
-    if (type === SignatureType.GOVBR) {
-      if (!govbrAccessToken) {
-        throw new BadRequestException(
-          'govbrAccessToken é obrigatório para assinatura Gov.br',
-        );
+        if (adminUser) {
+          actualUserId = adminUser.id;
+          console.log('[DigitalSignature] Using admin user for portal signature:', actualUserId);
+        } else {
+          throw new BadRequestException('Nenhum usuário admin encontrado no tenant');
+        }
       }
-      signedData = await this.govbrService.signHash(hashBase64, govbrAccessToken);
-    } else {
-      signedData = await this.localService.signPDF(pdfBuffer, signatureImage);
-    }
 
-    // Salvar documento assinado no storage
-    const tenantId = this.tenantContext.getTenantId();
-    const filename = `${documentType}-${documentId}-signed.pdf`;
-    const folder = documentType === 'quotation' ? 'quotations' : 'orders';
+      // Gerar PDF do documento
+      const pdfBuffer = await this.generatePDF(documentType, document);
 
-    const storageKey = await this.storage.uploadFile(
-      signedData,
-      tenantId,
-      folder,
-      filename,
-    );
+      // Calcular hash SHA-256
+      const hash = this.calculateSHA256(pdfBuffer);
+      const hashBase64 = hash.toString('base64');
 
-    // Gerar URL pública para o arquivo (absoluta com domínio da API)
-    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
-    const signedDocumentUrl = `${apiBaseUrl}/api/v1/storage/download/${encodeURIComponent(storageKey)}`;
+      // Escolher método de assinatura
+      const type = signatureType || SignatureType.LOCAL;
+      let signedData: Buffer;
 
-    // Calcular hash da assinatura
-    const signatureHash = this.calculateSHA256(signedData).toString('hex');
+      if (type === SignatureType.GOVBR) {
+        if (!govbrAccessToken) {
+          throw new BadRequestException(
+            'govbrAccessToken é obrigatório para assinatura Gov.br',
+          );
+        }
+        signedData = await this.govbrService.signHash(hashBase64, govbrAccessToken);
+      } else {
+        signedData = await this.localService.signPDF(pdfBuffer, signatureImage);
+      }
 
-    // Atualizar banco de dados
-    await this.updateDocument(documentType, documentId, {
-      signedAt: new Date(),
-      signedBy: userId,
-      signedDocumentUrl,
-      signatureHash,
+      // Salvar documento assinado no storage
+      const filename = `${documentType}-${documentId}-signed.pdf`;
+      const folder = documentType === 'quotation' ? 'quotations' : 'orders';
+
+      const storageKey = await this.storage.uploadFile(
+        signedData,
+        tenantId,
+        folder,
+        filename,
+      );
+
+      // Gerar URL pública para o arquivo (absoluta com domínio da API)
+      const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+      const signedDocumentUrl = `${apiBaseUrl}/api/v1/storage/download/${encodeURIComponent(storageKey)}`;
+
+      // Calcular hash da assinatura
+      const signatureHash = this.calculateSHA256(signedData).toString('hex');
+
+      // Atualizar banco de dados
+      await this.updateDocument(documentType, documentId, {
+        signedAt: new Date(),
+        signedBy: actualUserId,
+        signedDocumentUrl,
+        signatureHash,
+      });
+
+      // Enviar notificações
+      await this.notifyDocumentSigned(documentType, documentId, document, actualUserId);
+
+      console.log('[DigitalSignature] Document signed successfully');
+
+      return {
+        signedDocumentUrl,
+        signatureHash,
+        signedAt: new Date(),
+        signedBy: actualUserId,
+        signatureType: type,
+      };
     });
-
-    // Enviar notificações
-    await this.notifyDocumentSigned(documentType, documentId, document, userId);
-
-    return {
-      signedDocumentUrl,
-      signatureHash,
-      signedAt: new Date(),
-      signedBy: userId,
-      signatureType: type,
-    };
   }
 
   /**
-   * Busca documento no banco de dados
+   * Busca documento SEM contexto de tenant (para endpoint público)
    */
-  private async getDocument(type: string, id: string) {
-    if (type === 'quotation') {
-      return this.prisma.quotation.findUnique({
-        where: { id },
-        include: {
-          items: {
-            include: { service: true },
-            orderBy: { order: 'asc' },
-          },
-          customer: {
-            include: {
-              contacts: { where: { isPrimary: true } },
-              addresses: { where: { isPrimary: true } },
+  private async getDocumentWithoutContext(type: string, id: string) {
+    // Usar withoutTenant para buscar documento sem contexto
+    // É seguro porque vamos estabelecer o contexto depois com o tenantId do documento
+    return this.prisma.withoutTenant(async () => {
+      if (type === 'quotation') {
+        return this.prisma.quotation.findUnique({
+          where: { id },
+          include: {
+            items: {
+              include: { service: true },
+              orderBy: { order: 'asc' },
+            },
+            customer: {
+              include: {
+                contacts: { where: { isPrimary: true } },
+                addresses: { where: { isPrimary: true } },
+              },
             },
           },
-        },
-      });
-    } else {
-      return this.prisma.serviceOrder.findUnique({
-        where: { id },
-        include: {
-          items: {
-            include: { service: true },
-            orderBy: { order: 'asc' },
-          },
-          customer: {
-            include: {
-              contacts: { where: { isPrimary: true } },
-              addresses: { where: { isPrimary: true } },
+        });
+      } else {
+        return this.prisma.serviceOrder.findUnique({
+          where: { id },
+          include: {
+            items: {
+              include: { service: true },
+              orderBy: { order: 'asc' },
+            },
+            customer: {
+              include: {
+                contacts: { where: { isPrimary: true } },
+                addresses: { where: { isPrimary: true } },
+              },
             },
           },
-        },
-      });
-    }
+        });
+      }
+    }, true); // safe = true, pois é um caso legítimo
   }
 
   /**
