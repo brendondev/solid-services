@@ -49,6 +49,8 @@ model User {
 
   tenant                    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   assignedOrders            ServiceOrder[]   @relation("AssignedOrders")
+  signedQuotations          Quotation[]      @relation("SignedQuotations")
+  signedServiceOrders       ServiceOrder[]   @relation("SignedServiceOrders")
   registeredPayments        Payment[]        @relation("RegisteredPayments")
   registeredPayablePayments PayablePayment[] @relation("RegisteredPayablePayments")
   auditLogs                 AuditLog[]
@@ -260,11 +262,19 @@ model Quotation {
   totalAmount Decimal  @map("total_amount") @db.Decimal(10, 2)
   validUntil  DateTime @map("valid_until")
   notes       String?
+
+  // Assinatura Digital
+  signedAt          DateTime? @map("signed_at")
+  signedBy          String?   @map("signed_by")
+  signedDocumentUrl String?   @map("signed_document_url")
+  signatureHash     String?   @map("signature_hash")
+
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   customer     Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  signedByUser User?           @relation("SignedQuotations", fields: [signedBy], references: [id], onDelete: SetNull)
   items        QuotationItem[]
   serviceOrder ServiceOrder?
 
@@ -273,6 +283,7 @@ model Quotation {
   @@index([tenantId, status])
   @@index([tenantId, customerId])
   @@index([tenantId, createdAt])
+  @@index([signedBy])
   @@map("quotations")
 }
 
@@ -310,18 +321,26 @@ model ServiceOrder {
   completedAt  DateTime? @map("completed_at")
   totalAmount  Decimal   @map("total_amount") @db.Decimal(10, 2)
   notes        String?
+
+  // Assinatura Digital
+  signedAt          DateTime? @map("signed_at")
+  signedBy          String?   @map("signed_by")
+  signedDocumentUrl String?   @map("signed_document_url")
+  signatureHash     String?   @map("signature_hash")
+
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer     Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  quotation    Quotation?        @relation(fields: [quotationId], references: [id], onDelete: SetNull)
-  assignedUser User?             @relation("AssignedOrders", fields: [assignedTo], references: [id], onDelete: SetNull)
-  items        OrderItem[]
-  timeline     OrderTimeline[]
-  checklists   OrderChecklist[]
-  attachments  Attachment[]
-  receivables  Receivable[]
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer         Customer          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  quotation        Quotation?        @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+  assignedUser     User?             @relation("AssignedOrders", fields: [assignedTo], references: [id], onDelete: SetNull)
+  signedByUser     User?             @relation("SignedServiceOrders", fields: [signedBy], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  timeline         OrderTimeline[]
+  checklists       OrderChecklist[]
+  attachments      Attachment[]
+  receivables      Receivable[]
 
   @@unique([tenantId, number])
   @@index([tenantId])
@@ -331,6 +350,7 @@ model ServiceOrder {
   @@index([tenantId, scheduledFor])
   @@index([tenantId, createdAt])
   @@index([tenantId, completedAt])
+  @@index([signedBy])
   @@map("service_orders")
 }
 

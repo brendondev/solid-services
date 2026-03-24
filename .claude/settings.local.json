@@ -63,7 +63,8 @@
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzOGRkOTU1Zi04NmE0LTQ5MzAtYjM1NS1hYjZkN2RhODUyZmMiLCJlbWFpbCI6ImRlcGxveTJAdGVzdC5jb20iLCJ0ZW5hbnRJZCI6Ijk5YWFjMTkxLTJlMTAtNGU4ZS05MWJiLTg3YjlkMDgzN2NkOSIsInJvbGVzIjpbImFkbWluIl0sImlhdCI6MTc3NDAzMjQwMywiZXhwIjoxNzc0MDYxMjAzfQ.sPpHeMl-fT_j8S8XEXnYnvaM7nlcM32Xo4lkDfrPgC4\")",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZGQ4Y2U2ZS0yODZlLTQxODctOWJjZS0yMTAxZjg3NDQxZWEiLCJlbWFpbCI6ImZpbmFsZml4QHRlc3QuY29tIiwidGVuYW50SWQiOiIxMThhMDBmMi1hMTY5LTQwNTYtOWI3NC1iZGE5N2Y2Y2M3NTIiLCJyb2xlcyI6WyJhZG1pbiJdLCJpYXQiOjE3NzQwMzMzMTEsImV4cCI6MTc3NDA2MjExMX0.5TWKnb63ggeSeAqGY9NLO_zvL_dq2D_ptipSsD0EEdc\")",
       "Bash(git fetch:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "WebFetch(domain:manual-integracao-assinatura-eletronica.servicos.gov.br)"
     ]
   }
 }

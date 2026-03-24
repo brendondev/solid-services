@@ -39,6 +39,7 @@ import { NotificationsModule } from './modules/notifications';
 import { AuditModule } from './modules/audit';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { UsersModule } from './modules/users/users.module';
+import { DigitalSignatureModule } from './modules/digital-signature/digital-signature.module';
 
 // Interceptors
 import { TenantContextInterceptor } from './common/interceptors';
@@ -81,6 +82,7 @@ import { TenantContextInterceptor } from './common/interceptors';
     AuditModule,
     SubscriptionsModule,
     UsersModule,
+    DigitalSignatureModule,
   ],
   providers: [
     // ORDEM CRÍTICA:
