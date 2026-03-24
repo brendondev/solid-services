@@ -20,7 +20,7 @@ export interface NotificationItem {
  */
 class NotificationsAPI {
   private getAuthHeaders() {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     return {
       Authorization: `Bearer ${token}`,
     };
@@ -86,7 +86,7 @@ class NotificationsAPI {
    * Cria conexão SSE para notificações em tempo real
    */
   createEventSource(): EventSource {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
 
     if (!token) {
       throw new Error('Token de autenticação não encontrado');

@@ -40,10 +40,10 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   // Conectar ao SSE com reconexão automática
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
 
     if (!token) {
-      console.log('[Notifications] No access_token found, skipping SSE');
+      console.log('[Notifications] No token found, skipping SSE');
       setLoading(false);
       return;
     }
