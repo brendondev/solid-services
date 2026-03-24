@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database';
 import { StorageService } from '../../core/storage';
-import { TenantContextService, tenantStorage } from '../../core/tenant';
+import { tenantStorage } from '../../core/tenant';
 import { RealTimeService } from '../notifications/real-time.service';
 import { NotificationsDataService } from '../notifications/notifications-data.service';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -29,7 +29,6 @@ export class DigitalSignatureService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
-    private readonly tenantContext: TenantContextService,
     private readonly govbrService: GovBrSignatureService,
     private readonly localService: LocalSignatureService,
     private readonly realTimeService: RealTimeService,
@@ -138,7 +137,7 @@ export class DigitalSignatureService {
       });
 
       // Enviar notificações
-      await this.notifyDocumentSigned(documentType, documentId, document, actualUserId);
+      await this.notifyDocumentSigned(tenantId, documentType, documentId, document, actualUserId);
 
       console.log('[DigitalSignature] Document signed successfully');
 
@@ -392,14 +391,13 @@ export class DigitalSignatureService {
    * Envia notificações de documento assinado
    */
   private async notifyDocumentSigned(
+    tenantId: string,
     documentType: string,
     documentId: string,
     document: any,
     signedByUserId: string,
   ): Promise<void> {
     try {
-      const tenantId = this.tenantContext.getTenantId();
-
       console.log('[DigitalSignature] Sending notification...', {
         tenantId,
         documentType,
