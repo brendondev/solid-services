@@ -87,10 +87,14 @@ class NotificationsAPI {
    */
   createEventSource(): EventSource {
     const token = localStorage.getItem('access_token');
-    const url = `${API_URL}/notifications/stream`;
+
+    if (!token) {
+      throw new Error('Token de autenticação não encontrado');
+    }
 
     // EventSource não suporta headers customizados, então passamos o token via query param
-    // Nota: Em produção, considere usar WebSocket com autenticação adequada
+    const url = `${API_URL}/notifications/stream?token=${encodeURIComponent(token)}`;
+
     const eventSource = new EventSource(url, {
       withCredentials: true,
     });

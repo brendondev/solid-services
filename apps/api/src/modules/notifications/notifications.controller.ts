@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard, SseAuthGuard } from '@core/auth/guards';
 import { NotificationsDataService } from './notifications-data.service';
 import { RealTimeService } from './real-time.service';
 import { Observable } from 'rxjs';
@@ -33,9 +33,14 @@ export class NotificationsController {
 
   /**
    * Stream SSE de notificações em tempo real
+   * Usa SseAuthGuard para aceitar token via query param (?token=xxx)
    */
+  @UseGuards(SseAuthGuard)
   @Sse('stream')
-  @ApiOperation({ summary: 'Conectar ao stream de notificações em tempo real' })
+  @ApiOperation({
+    summary: 'Conectar ao stream de notificações em tempo real',
+    description: 'Passa o token JWT via query param: ?token=xxx'
+  })
   stream(@Req() req: any): Observable<any> {
     const tenantId = req.user.tenantId;
     const userId = req.user.sub;
