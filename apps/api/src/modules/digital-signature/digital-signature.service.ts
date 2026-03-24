@@ -88,8 +88,9 @@ export class DigitalSignatureService {
       filename,
     );
 
-    // Gerar URL pública para o arquivo
-    const signedDocumentUrl = `/api/v1/storage/download/${encodeURIComponent(storageKey)}`;
+    // Gerar URL pública para o arquivo (absoluta com domínio da API)
+    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3000';
+    const signedDocumentUrl = `${apiBaseUrl}/api/v1/storage/download/${encodeURIComponent(storageKey)}`;
 
     // Calcular hash da assinatura
     const signatureHash = this.calculateSHA256(signedData).toString('hex');

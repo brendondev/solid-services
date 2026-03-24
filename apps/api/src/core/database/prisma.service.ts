@@ -161,10 +161,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * Use com extrema cautela e apenas quando absolutamente necessário.
    *
    * @param fn Função a executar sem filtro de tenant
+   * @param safe Se true, indica que é um uso seguro e autorizado (ex: JWT validation)
    */
-  async withoutTenant<T>(fn: () => Promise<T>): Promise<T> {
-    // SECURITY: Em produção, apenas permitir com flag explícita
-    if (this.isProduction) {
+  async withoutTenant<T>(fn: () => Promise<T>, safe: boolean = false): Promise<T> {
+    // SECURITY: Avisar apenas se não for um uso seguro explícito
+    if (this.isProduction && !safe) {
       console.warn('[SECURITY] withoutTenant called in production - ensure this is intentional');
     }
 

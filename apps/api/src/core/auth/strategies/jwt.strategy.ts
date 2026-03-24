@@ -35,6 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // CRITICAL: JwtStrategy executa ANTES do TenantContextInterceptor
     // Portanto, ainda não há contexto de tenant disponível.
     // Precisamos usar withoutTenant() para bypass do middleware.
+    // Passamos safe=true porque este é um uso legítimo (validação JWT)
     const user = await this.prisma.withoutTenant(async () => {
       return await this.prisma.user.findFirst({
         where: {
@@ -42,7 +43,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           tenantId: payload.tenantId, // Validação manual aqui
         },
       });
-    });
+    }, true);
 
     if (!user || user.status !== 'active') {
       // SECURITY: Não vazar detalhes em produção
