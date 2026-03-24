@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database';
 import { StorageService } from '../../core/storage';
+import { TenantContextService } from '../../core/tenant';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { SignDocumentDto } from './dto';
 import {
@@ -26,6 +27,7 @@ export class DigitalSignatureService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly tenantContext: TenantContextService,
     private readonly govbrService: GovBrSignatureService,
     private readonly localService: LocalSignatureService,
   ) {}
@@ -75,13 +77,19 @@ export class DigitalSignatureService {
     }
 
     // Salvar documento assinado no storage
+    const tenantId = this.tenantContext.getTenantId();
     const filename = `${documentType}-${documentId}-signed.pdf`;
-    const signedDocumentUrl = await this.storage.uploadFile(
+    const folder = documentType === 'quotation' ? 'quotations' : 'orders';
+
+    const storageKey = await this.storage.uploadFile(
       signedData,
-      filename,
-      'application/pdf',
+      tenantId,
+      folder,
       filename,
     );
+
+    // Gerar URL pública para o arquivo
+    const signedDocumentUrl = `/api/v1/storage/download/${encodeURIComponent(storageKey)}`;
 
     // Calcular hash da assinatura
     const signatureHash = this.calculateSHA256(signedData).toString('hex');
