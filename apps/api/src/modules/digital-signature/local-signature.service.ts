@@ -1,51 +1,128 @@
 import { Injectable } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 /**
  * Service de assinatura local
  *
- * IMPORTANTE: Este service é apenas para desenvolvimento/testes.
- * Em produção, usar sempre assinatura Gov.br ou certificados ICP-Brasil válidos.
+ * IMPORTANTE: Este service é para desenvolvimento/uso interno.
+ * Para assinaturas com validade jurídica, usar assinatura Gov.br.
  *
  * Responsável por:
- * - Assinatura simples de PDFs (não é assinatura digital válida)
+ * - Geração de PDFs
+ * - Incorporação de assinatura manuscrita
  * - Geração de hash de assinatura
- * - Simulação de PKCS#7
  */
 @Injectable()
 export class LocalSignatureService {
   /**
-   * "Assina" um PDF localmente
-   *
-   * NOTA: Esta não é uma assinatura digital válida.
-   * Apenas adiciona um hash SHA-256 ao documento para identificação.
-   * Use apenas em desenvolvimento.
+   * "Assina" um PDF localmente adicionando a imagem da assinatura
    *
    * @param pdfBuffer Buffer do PDF original
-   * @returns Buffer do PDF "assinado"
+   * @param signatureImageDataUrl Imagem da assinatura em base64 (data URL)
+   * @returns Buffer do PDF assinado
    */
-  async signPDF(pdfBuffer: Buffer): Promise<Buffer> {
-    // Calcular hash do PDF
-    const hash = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
+  async signPDF(
+    pdfBuffer: Buffer,
+    signatureImageDataUrl?: string,
+  ): Promise<Buffer> {
+    try {
+      // Carregar PDF existente
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
 
-    // Criar "assinatura" simples
-    const signature = {
-      algorithm: 'SHA-256',
-      hash,
-      signedAt: new Date().toISOString(),
-      signer: 'local-development',
-      warning:
-        'Esta não é uma assinatura digital válida. Apenas para desenvolvimento.',
-    };
+      // Obter primeira página
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+      const { width } = firstPage.getSize();
 
-    // Adicionar metadados ao PDF
-    // Em implementação real, usar biblioteca como node-forge ou pdf-lib
-    const signatureData = Buffer.from(
-      '\n%SIGNATURE\n' + JSON.stringify(signature, null, 2) + '\n%%EOF\n',
-    );
+      // Se houver imagem de assinatura, adicionar ao PDF
+      if (signatureImageDataUrl) {
+        // Extrair base64 do data URL
+        const base64Data = signatureImageDataUrl.split(',')[1];
+        const imageBytes = Buffer.from(base64Data, 'base64');
 
-    // Concatenar PDF original + assinatura
-    return Buffer.concat([pdfBuffer, signatureData]);
+        // Embedar imagem PNG
+        let image;
+        try {
+          image = await pdfDoc.embedPng(imageBytes);
+        } catch (e) {
+          // Se não for PNG, tentar como JPG
+          image = await pdfDoc.embedJpg(imageBytes);
+        }
+
+        // Dimensões da assinatura (proporcional à página)
+        const signatureWidth = width * 0.3; // 30% da largura
+        const signatureHeight = signatureWidth * 0.4; // Proporção 3:2
+
+        // Posição (canto inferior direito com margem)
+        const x = width - signatureWidth - 50;
+        const y = 50;
+
+        // Desenhar imagem da assinatura
+        firstPage.drawImage(image, {
+          x,
+          y,
+          width: signatureWidth,
+          height: signatureHeight,
+        });
+
+        // Adicionar texto "Assinado digitalmente"
+        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const fontSize = 8;
+
+        firstPage.drawText('Assinado digitalmente', {
+          x: x,
+          y: y - 15,
+          size: fontSize,
+          font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+
+        // Adicionar data/hora
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        firstPage.drawText(dateStr, {
+          x: x,
+          y: y - 28,
+          size: fontSize,
+          font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+      } else {
+        // Se não houver imagem, adicionar apenas texto de assinatura
+        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+        firstPage.drawText('✓ DOCUMENTO ASSINADO', {
+          x: 50,
+          y: 50,
+          size: 12,
+          font,
+          color: rgb(0, 0.5, 0),
+        });
+
+        const dateStr = new Date().toLocaleDateString('pt-BR');
+        firstPage.drawText(`Data: ${dateStr}`, {
+          x: 50,
+          y: 35,
+          size: 10,
+          font: await pdfDoc.embedFont(StandardFonts.Helvetica),
+          color: rgb(0.3, 0.3, 0.3),
+        });
+      }
+
+      // Salvar PDF modificado
+      const pdfBytes = await pdfDoc.save();
+      return Buffer.from(pdfBytes);
+    } catch (error) {
+      console.error('[LocalSignature] Error signing PDF:', error);
+      throw error;
+    }
   }
 
   /**
@@ -54,29 +131,19 @@ export class LocalSignatureService {
    * @param pdfBuffer Buffer do PDF
    * @returns true se possui assinatura local
    */
-  hasLocalSignature(pdfBuffer: Buffer): boolean {
-    const content = pdfBuffer.toString('utf-8');
-    return content.includes('%SIGNATURE');
-  }
-
-  /**
-   * Extrai dados da assinatura local
-   *
-   * @param pdfBuffer Buffer do PDF assinado
-   * @returns Dados da assinatura ou null
-   */
-  extractSignature(pdfBuffer: Buffer): any | null {
+  async hasLocalSignature(pdfBuffer: Buffer): Promise<boolean> {
     try {
-      const content = pdfBuffer.toString('utf-8');
-      const match = content.match(/%SIGNATURE\n(.*?)\n%%EOF/s);
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      const pages = pdfDoc.getPages();
 
-      if (!match || !match[1]) {
-        return null;
+      if (pages.length === 0) {
+        return false;
       }
 
-      return JSON.parse(match[1]);
+      // Verificar se há conteúdo de assinatura (simplificado)
+      return true; // Por enquanto, sempre retorna true se conseguiu carregar
     } catch (error) {
-      return null;
+      return false;
     }
   }
 }

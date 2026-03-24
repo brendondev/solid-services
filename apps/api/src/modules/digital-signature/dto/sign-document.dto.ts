@@ -42,4 +42,13 @@ export class SignDocumentDto {
   @IsString()
   @IsOptional()
   govbrAccessToken?: string;
+
+  @ApiProperty({
+    description: 'Imagem da assinatura manuscrita em Base64 (data URL)',
+    example: 'data:image/png;base64,iVBORw0KG...',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  signatureImage?: string;
 }

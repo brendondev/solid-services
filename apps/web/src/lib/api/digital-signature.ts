@@ -5,6 +5,7 @@ export interface SignDocumentRequest {
   documentId: string;
   signatureType?: 'local' | 'govbr';
   govbrAccessToken?: string;
+  signatureImage?: string;
 }
 
 export interface SignDocumentResponse {

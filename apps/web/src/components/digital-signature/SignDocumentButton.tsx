@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FileSignature, Check, AlertCircle, Download, Loader2 } from 'lucide-react';
 import { digitalSignatureAPI } from '@/lib/api/digital-signature';
+import SignaturePad, { SignaturePadRef } from './SignaturePad';
 import toast from 'react-hot-toast';
 
 interface SignDocumentButtonProps {
@@ -28,15 +29,26 @@ export default function SignDocumentButton({
 }: SignDocumentButtonProps) {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const signaturePadRef = useRef<SignaturePadRef>(null);
 
   const handleSign = async () => {
+    // Validar se a assinatura foi desenhada
+    if (signaturePadRef.current?.isEmpty()) {
+      toast.error('Por favor, desenhe sua assinatura antes de continuar');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Obter imagem da assinatura em base64
+      const signatureImage = signaturePadRef.current?.toDataURL();
+
       const result = await digitalSignatureAPI.signDocument({
         documentType,
         documentId,
-        signatureType: 'local', // Por enquanto apenas local
+        signatureType: 'local',
+        signatureImage,
       });
 
       toast.success('Documento assinado com sucesso!');
@@ -81,6 +93,7 @@ export default function SignDocumentButton({
         {/* Botão de download */}
         <a
           href={signedDocumentUrl}
+          download
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors min-h-[44px]"
@@ -103,12 +116,12 @@ export default function SignDocumentButton({
         <span className="text-sm font-medium">Assinar Documento</span>
       </button>
 
-      {/* Modal de confirmação */}
+      {/* Modal de assinatura */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="flex items-start gap-3 mb-4">
+            <div className="flex items-start gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                 <FileSignature className="w-5 h-5 text-blue-600" />
               </div>
@@ -120,6 +133,14 @@ export default function SignDocumentButton({
                   {documentType === 'quotation' ? 'Orçamento' : 'Ordem de Serviço'} #{documentNumber}
                 </p>
               </div>
+            </div>
+
+            {/* Pad de Assinatura */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Desenhe sua assinatura
+              </label>
+              <SignaturePad ref={signaturePadRef} />
             </div>
 
             {/* Método de assinatura */}

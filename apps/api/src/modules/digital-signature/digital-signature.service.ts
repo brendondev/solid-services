@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../core/database';
 import { StorageService } from '../../core/storage';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { SignDocumentDto } from './dto';
 import {
   SignatureResult,
@@ -36,7 +37,7 @@ export class DigitalSignatureService {
     userId: string,
     dto: SignDocumentDto,
   ): Promise<SignatureResult> {
-    const { documentType, documentId, signatureType, govbrAccessToken } = dto;
+    const { documentType, documentId, signatureType, govbrAccessToken, signatureImage } = dto;
 
     // Buscar documento
     const document = await this.getDocument(documentType, documentId);
@@ -70,7 +71,7 @@ export class DigitalSignatureService {
       }
       signedData = await this.govbrService.signHash(hashBase64, govbrAccessToken);
     } else {
-      signedData = await this.localService.signPDF(pdfBuffer);
+      signedData = await this.localService.signPDF(pdfBuffer, signatureImage);
     }
 
     // Salvar documento assinado no storage
@@ -176,22 +177,162 @@ export class DigitalSignatureService {
 
   /**
    * Gera PDF do documento
-   * TODO: Implementar geração de PDF real
    */
   private async generatePDF(type: string, document: any): Promise<Buffer> {
-    // Por enquanto, retorna um PDF fake para testes
-    // Na implementação real, usar biblioteca como pdfmake ou puppeteer
-    const content = `
-      PDF FAKE - ${type.toUpperCase()}
-      ID: ${document.id}
-      Number: ${document.number}
-      Total: ${document.totalAmount}
+    try {
+      // Criar novo documento PDF
+      const pdfDoc = await PDFDocument.create();
+      const page = pdfDoc.addPage([595, 842]); // A4 size
+      const { width, height } = page.getSize();
 
-      Este é um PDF temporário para testes.
-      Implementar geração real de PDF depois.
-    `;
+      // Fontes
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    return Buffer.from(content, 'utf-8');
+      let yPosition = height - 50;
+
+      // Título
+      page.drawText(
+        type === 'quotation' ? 'ORÇAMENTO' : 'ORDEM DE SERVIÇO',
+        {
+          x: 50,
+          y: yPosition,
+          size: 20,
+          font: fontBold,
+          color: rgb(0, 0, 0),
+        },
+      );
+
+      yPosition -= 10;
+      page.drawLine({
+        start: { x: 50, y: yPosition },
+        end: { x: width - 50, y: yPosition },
+        thickness: 2,
+        color: rgb(0, 0, 0),
+      });
+
+      yPosition -= 30;
+
+      // Número
+      page.drawText(`Número: ${document.number}`, {
+        x: 50,
+        y: yPosition,
+        size: 12,
+        font: fontBold,
+      });
+
+      yPosition -= 20;
+
+      // Cliente
+      if (document.customer) {
+        page.drawText(`Cliente: ${document.customer.name}`, {
+          x: 50,
+          y: yPosition,
+          size: 11,
+          font: fontRegular,
+        });
+        yPosition -= 20;
+      }
+
+      // Data
+      page.drawText(
+        `Data: ${new Date(document.createdAt).toLocaleDateString('pt-BR')}`,
+        {
+          x: 50,
+          y: yPosition,
+          size: 11,
+          font: fontRegular,
+        },
+      );
+
+      yPosition -= 30;
+
+      // Itens
+      if (document.items && document.items.length > 0) {
+        page.drawText('ITENS:', {
+          x: 50,
+          y: yPosition,
+          size: 12,
+          font: fontBold,
+        });
+
+        yPosition -= 20;
+
+        document.items.forEach((item: any, index: number) => {
+          const itemText = `${index + 1}. ${item.description || item.service?.name || 'Item'} - Qtd: ${item.quantity} - R$ ${Number(item.totalPrice).toFixed(2)}`;
+
+          page.drawText(itemText, {
+            x: 60,
+            y: yPosition,
+            size: 10,
+            font: fontRegular,
+          });
+
+          yPosition -= 18;
+
+          // Se passar de metade da página, avisar que há mais itens
+          if (yPosition < 200 && index < document.items.length - 1) {
+            page.drawText('...', {
+              x: 60,
+              y: yPosition,
+              size: 10,
+              font: fontRegular,
+            });
+            return;
+          }
+        });
+
+        yPosition -= 10;
+      }
+
+      // Total
+      page.drawLine({
+        start: { x: 50, y: yPosition },
+        end: { x: width - 50, y: yPosition },
+        thickness: 1,
+        color: rgb(0.7, 0.7, 0.7),
+      });
+
+      yPosition -= 20;
+
+      page.drawText(
+        `TOTAL: R$ ${Number(document.totalAmount).toFixed(2)}`,
+        {
+          x: 50,
+          y: yPosition,
+          size: 14,
+          font: fontBold,
+        },
+      );
+
+      // Observações
+      if (document.notes) {
+        yPosition -= 30;
+        page.drawText('Observações:', {
+          x: 50,
+          y: yPosition,
+          size: 11,
+          font: fontBold,
+        });
+
+        yPosition -= 18;
+        const notes = document.notes.substring(0, 200); // Limitar tamanho
+        page.drawText(notes, {
+          x: 50,
+          y: yPosition,
+          size: 9,
+          font: fontRegular,
+          maxWidth: width - 100,
+        });
+      }
+
+      // Salvar e retornar
+      const pdfBytes = await pdfDoc.save();
+      return Buffer.from(pdfBytes);
+    } catch (error) {
+      console.error('[DigitalSignature] Error generating PDF:', error);
+      throw new BadRequestException('Erro ao gerar PDF do documento');
+    }
   }
 
   /**
