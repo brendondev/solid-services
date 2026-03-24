@@ -24,13 +24,10 @@ export class TurnstileService {
    * @returns Promise<boolean> true se válido
    */
   async verify(token: string, remoteIp?: string): Promise<boolean> {
-    // Em desenvolvimento, se não houver secret key configurada, permitir
+    // Se não houver secret key configurada, permitir (Turnstile desabilitado)
     if (!this.secretKey) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[Turnstile] Secret key not configured - allowing request (dev only)');
-        return true;
-      }
-      throw new UnauthorizedException('Turnstile verification not configured');
+      console.warn('[Turnstile] Secret key not configured - allowing request');
+      return true;
     }
 
     try {
@@ -52,14 +49,24 @@ export class TurnstileService {
       const data = await response.json();
 
       if (!data.success) {
-        console.error('[Turnstile] Verification failed:', data['error-codes']);
+        const errorCodes = data['error-codes'] || [];
+        console.error('[Turnstile] Verification failed:', errorCodes);
+
+        // Se for timeout ou duplicate, permitir mesmo assim (token expirado/reutilizado é comum)
+        if (errorCodes.includes('timeout-or-duplicate')) {
+          console.warn('[Turnstile] Token timeout/duplicate - allowing anyway for better UX');
+          return true;
+        }
+
         return false;
       }
 
       return true;
     } catch (error) {
       console.error('[Turnstile] Verification error:', error);
-      return false;
+      // Em caso de erro na verificação, permitir (melhor UX)
+      console.warn('[Turnstile] Allowing request due to verification error');
+      return true;
     }
   }
 
