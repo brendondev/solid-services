@@ -37,6 +37,14 @@ export class RealTimeService {
       createdAt: new Date(),
     };
 
+    console.log('[RealTimeService] Sending notification:', {
+      tenantId,
+      userId,
+      type: notification.type,
+      title: notification.title,
+      activeObservers: this.events$.observers.length,
+    });
+
     this.events$.next(event);
     this.logger.debug(`Notification sent to user ${userId}: ${notification.type}`);
   }
@@ -70,21 +78,40 @@ export class RealTimeService {
    * Cria stream SSE para um usuário específico
    */
   createStream(tenantId: string, userId: string): Observable<SSEMessage> {
+    console.log('[RealTimeService] Creating SSE stream:', {
+      tenantId,
+      userId,
+      currentObservers: this.events$.observers.length,
+    });
+
     this.logger.debug(`SSE stream created for user ${userId} in tenant ${tenantId}`);
 
     return this.events$.pipe(
       filter((event) => {
         // Filtra eventos do mesmo tenant
-        if (event.tenantId !== tenantId) {
-          return false;
-        }
+        const matchesTenant = event.tenantId === tenantId;
+        const matchesUser = event.userId === '*' || event.userId === userId;
 
-        // Aceita se for broadcast ou destinado ao usuário específico
-        return event.userId === '*' || event.userId === userId;
+        const shouldSend = matchesTenant && matchesUser;
+
+        console.log('[RealTimeService] Filter event:', {
+          eventTenant: event.tenantId,
+          targetTenant: tenantId,
+          eventUser: event.userId,
+          targetUser: userId,
+          matchesTenant,
+          matchesUser,
+          shouldSend,
+        });
+
+        return shouldSend;
       }),
-      map((event) => ({
-        data: event,
-      })),
+      map((event) => {
+        console.log('[RealTimeService] Sending event to SSE:', event);
+        return {
+          data: event,
+        };
+      }),
     );
   }
 

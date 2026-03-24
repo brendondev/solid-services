@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { notificationsAPI, NotificationItem } from '@/lib/api/notifications';
+import { showToast } from '@/components/notifications/ToastContainer';
 
 interface NotificationsContextType {
   notifications: NotificationItem[];
@@ -37,56 +38,145 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     }
   }, []);
 
-  // Conectar ao SSE
+  // Conectar ao SSE com reconexão automática
   useEffect(() => {
     const token = localStorage.getItem('access_token');
 
     if (!token) {
+      console.log('[Notifications] No access_token found, skipping SSE');
       setLoading(false);
       return;
     }
 
+    console.log('[Notifications] Initializing SSE connection...');
     loadNotifications();
 
-    // Criar conexão SSE
-    try {
-      const es = notificationsAPI.createEventSource();
+    let es: EventSource | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let isUnmounted = false;
 
-      es.onmessage = (event) => {
-        try {
-          const notification: NotificationItem = JSON.parse(event.data);
+    const connect = () => {
+      if (isUnmounted) return;
 
-          // Adicionar nova notificação ao início da lista
-          setNotifications((prev) => [notification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
+      try {
+        console.log('[Notifications] Creating EventSource...');
+        es = notificationsAPI.createEventSource();
 
-          // Mostrar toast (será implementado)
-          if (typeof window !== 'undefined' && 'Notification' in window) {
-            if (Notification.permission === 'granted') {
-              new Notification(notification.title, {
-                body: notification.message,
-                icon: '/logo.png',
-              });
+        es.onopen = () => {
+          console.log('[Notifications] ✅ SSE connection established');
+        };
+
+        es.onmessage = (event) => {
+          console.log('[Notifications] Raw SSE message received:', event);
+          try {
+            // NestJS SSE envia data como string JSON
+            const data = JSON.parse(event.data);
+            console.log('[Notifications] Parsed data:', data);
+
+            // O NestJS pode enviar { data: notification } ou notification diretamente
+            const notification: NotificationItem = data.data || data;
+            console.log('[Notifications] Notification:', notification);
+
+            // Adicionar nova notificação ao início da lista
+            setNotifications((prev) => {
+              console.log('[Notifications] Adding to list. Current count:', prev.length);
+              return [notification, ...prev];
+            });
+
+            setUnreadCount((prev) => {
+              console.log('[Notifications] Incrementing unread count from:', prev);
+              return prev + 1;
+            });
+
+            // Mostrar toast na interface
+            showToast({
+              type: 'info',
+              title: notification.title,
+              message: notification.message,
+              duration: 6000,
+            });
+
+            // Mostrar notificação do browser
+            if (typeof window !== 'undefined' && 'Notification' in window) {
+              if (Notification.permission === 'granted') {
+                new Notification(notification.title, {
+                  body: notification.message,
+                  icon: '/logo.png',
+                });
+              }
             }
+          } catch (error) {
+            console.error('[Notifications] Failed to parse SSE message:', error, 'Raw:', event.data);
           }
-        } catch (error) {
-          console.error('Failed to parse SSE message:', error);
+        };
+
+        es.addEventListener('notification', (event: any) => {
+          console.log('[Notifications] Named event "notification" received:', event);
+          // Mesmo tratamento que onmessage
+          try {
+            const data = JSON.parse(event.data);
+            const notification: NotificationItem = data.data || data;
+            console.log('[Notifications] Named notification:', notification);
+
+            setNotifications((prev) => [notification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+
+            // Mostrar toast também para evento nomeado
+            showToast({
+              type: 'info',
+              title: notification.title,
+              message: notification.message,
+              duration: 6000,
+            });
+          } catch (error) {
+            console.error('[Notifications] Failed to parse named notification:', error);
+          }
+        });
+
+        es.onerror = (error) => {
+          console.error('[Notifications] ❌ SSE connection error:', error);
+
+          if (es) {
+            es.close();
+          }
+
+          // Reconectar após 5 segundos se não estiver desmontado
+          if (!isUnmounted) {
+            console.log('[Notifications] Scheduling reconnection in 5s...');
+            reconnectTimeout = setTimeout(() => {
+              console.log('[Notifications] Attempting to reconnect...');
+              connect();
+            }, 5000);
+          }
+        };
+
+        setEventSource(es);
+      } catch (error) {
+        console.error('[Notifications] Failed to create SSE connection:', error);
+
+        // Tentar reconectar
+        if (!isUnmounted) {
+          reconnectTimeout = setTimeout(connect, 5000);
         }
-      };
+      }
+    };
 
-      es.onerror = (error) => {
-        console.error('SSE connection error:', error);
+    // Iniciar conexão
+    connect();
+
+    // Cleanup
+    return () => {
+      console.log('[Notifications] Cleaning up SSE connection...');
+      isUnmounted = true;
+
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+
+      if (es) {
         es.close();
-      };
-
-      setEventSource(es);
-
-      return () => {
-        es.close();
-      };
-    } catch (error) {
-      console.error('Failed to create SSE connection:', error);
-    }
+      }
+    };
   }, [loadNotifications]);
 
   // Marcar como lida

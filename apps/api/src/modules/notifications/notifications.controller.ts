@@ -45,6 +45,13 @@ export class NotificationsController {
     const tenantId = req.user.tenantId;
     const userId = req.user.sub;
 
+    console.log('[NotificationsController] SSE stream requested:', {
+      tenantId,
+      userId,
+      userName: req.user.name,
+      userEmail: req.user.email,
+    });
+
     return this.realTimeService.createStream(tenantId, userId);
   }
 
