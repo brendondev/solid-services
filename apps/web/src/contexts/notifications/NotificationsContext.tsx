@@ -117,37 +117,6 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           }
         };
 
-        es.addEventListener('notification', (event: any) => {
-          console.log('[Notifications] Named event "notification" received:', event);
-          // Mesmo tratamento que onmessage
-          try {
-            const data = JSON.parse(event.data);
-            const notification: NotificationItem = data.data || data;
-            console.log('[Notifications] Named notification:', notification);
-
-            // Adicionar notificação (evitar duplicatas)
-            setNotifications((prev) => {
-              const exists = prev.some(n => n.id === notification.id);
-              if (exists) {
-                console.log('[Notifications] ⚠️ Duplicate notification ignored (named event):', notification.id);
-                return prev;
-              }
-              return [notification, ...prev];
-            });
-
-            setUnreadCount((prev) => prev + 1);
-
-            // Mostrar toast também para evento nomeado
-            showToast({
-              type: 'info',
-              title: notification.title,
-              message: notification.message,
-              duration: 6000,
-            });
-          } catch (error) {
-            console.error('[Notifications] Failed to parse named notification:', error);
-          }
-        });
 
         es.onerror = (error: any) => {
           console.error('[Notifications] ❌ SSE connection error:', error);

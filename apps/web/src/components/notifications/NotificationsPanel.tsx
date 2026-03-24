@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Check, Trash2, Bell } from 'lucide-react';
 import { useNotifications } from '@/contexts/notifications/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,9 +13,37 @@ interface NotificationsPanelProps {
 }
 
 export default function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
+  const router = useRouter();
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } =
     useNotifications();
   const panelRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Navega para o documento relacionado à notificação
+   */
+  const handleNotificationClick = (notification: any) => {
+    // Marcar como lida
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+
+    // Extrair dados do documento
+    const data = notification.data;
+    if (!data) return;
+
+    const { documentType, documentId } = data;
+    if (!documentType || !documentId) return;
+
+    // Navegar para o documento
+    if (documentType === 'quotation') {
+      router.push(`/dashboard/quotations/${documentId}`);
+    } else if (documentType === 'order' || documentType === 'service_order') {
+      router.push(`/dashboard/orders/${documentId}`);
+    }
+
+    // Fechar painel
+    onClose();
+  };
 
   // Fechar ao clicar fora
   useEffect(() => {
@@ -82,12 +111,16 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 hover:bg-gray-50 transition-colors ${
+                className={`p-4 transition-colors ${
                   !notification.read ? 'bg-blue-50' : ''
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
+                  {/* Área clicável - navega para o documento */}
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer hover:opacity-80"
+                    onClick={() => handleNotificationClick(notification)}
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-sm font-semibold text-gray-900">
                         {notification.title}
@@ -104,10 +137,15 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                       })}
                     </p>
                   </div>
+
+                  {/* Botões de ação */}
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {!notification.read && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(notification.id);
+                        }}
                         className="p-1.5 hover:bg-gray-100 rounded transition-colors"
                         title="Marcar como lida"
                       >
@@ -115,7 +153,10 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                       </button>
                     )}
                     <button
-                      onClick={() => deleteNotification(notification.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteNotification(notification.id);
+                      }}
                       className="p-1.5 hover:bg-gray-100 rounded transition-colors"
                       title="Deletar"
                     >
