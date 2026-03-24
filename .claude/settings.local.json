@@ -64,7 +64,8 @@
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZGQ4Y2U2ZS0yODZlLTQxODctOWJjZS0yMTAxZjg3NDQxZWEiLCJlbWFpbCI6ImZpbmFsZml4QHRlc3QuY29tIiwidGVuYW50SWQiOiIxMThhMDBmMi1hMTY5LTQwNTYtOWI3NC1iZGE5N2Y2Y2M3NTIiLCJyb2xlcyI6WyJhZG1pbiJdLCJpYXQiOjE3NzQwMzMzMTEsImV4cCI6MTc3NDA2MjExMX0.5TWKnb63ggeSeAqGY9NLO_zvL_dq2D_ptipSsD0EEdc\")",
       "Bash(git fetch:*)",
       "Bash(wc:*)",
-      "WebFetch(domain:manual-integracao-assinatura-eletronica.servicos.gov.br)"
+      "WebFetch(domain:manual-integracao-assinatura-eletronica.servicos.gov.br)",
+      "Bash(apps/api/.env <<'EOF'\n# Database \\(local para testes\\)\nDATABASE_URL=\"file:./dev.db\"\n\n# JWT\nJWT_SECRET=\"test-secret-key-change-in-production\"\nJWT_EXPIRES_IN=\"15m\"\nREFRESH_TOKEN_EXPIRES_IN=\"7d\"\n\n# App\nNODE_ENV=\"development\"\nPORT=3000\nAPI_BASE_URL=\"https://solid-services-production.up.railway.app\"\nWEB_URL=\"http://localhost:3001\"\nEOF)"
     ]
   }
 }

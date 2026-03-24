@@ -363,36 +363,46 @@ export class DigitalSignatureService {
     try {
       const tenantId = this.tenantContext.getTenantId();
 
+      console.log('[DigitalSignature] Sending notification...', {
+        tenantId,
+        documentType,
+        documentId,
+        signedByUserId,
+      });
+
       // Buscar usuário que assinou
       const signedByUser = await this.prisma.user.findUnique({
         where: { id: signedByUserId },
         select: { name: true, email: true },
       });
 
+      console.log('[DigitalSignature] Signed by user:', signedByUser);
+
       // Determinar tipo e número do documento
       const docTypeLabel = documentType === 'quotation' ? 'Orçamento' : 'Ordem de Serviço';
       const docNumber = document.number || documentId.substring(0, 8);
 
-      // Buscar admins do tenant para notificar
-      const admins = await this.prisma.user.findMany({
+      // Buscar TODOS os usuários ativos do tenant para notificar
+      const users = await this.prisma.user.findMany({
         where: {
           tenantId,
           status: 'active',
-          roles: {
-            has: 'admin',
-          },
         },
-        select: { id: true },
+        select: { id: true, name: true, roles: true },
       });
 
-      const adminIds = admins.map((admin) => admin.id);
+      console.log('[DigitalSignature] Active users found:', users.length);
 
-      // Se o documento tem um criador (createdBy), adicionar à lista
-      const createdBy = document.createdBy || document.customerId;
-      const usersToNotify = new Set<string>(adminIds);
+      // Notificar todos exceto quem assinou
+      const usersToNotify = users
+        .filter((user) => user.id !== signedByUserId)
+        .map((user) => user.id);
 
-      if (createdBy && createdBy !== signedByUserId) {
-        usersToNotify.add(createdBy);
+      console.log('[DigitalSignature] Users to notify:', usersToNotify.length);
+
+      if (usersToNotify.length === 0) {
+        console.log('[DigitalSignature] No users to notify, skipping...');
+        return;
       }
 
       // Preparar dados da notificação
@@ -410,19 +420,20 @@ export class DigitalSignatureService {
       };
 
       // Criar notificações no banco para cada usuário
-      const notificationsToCreate = Array.from(usersToNotify).map((userId) => ({
+      const notificationsToCreate = usersToNotify.map((userId) => ({
         userId,
         ...notificationData,
       }));
 
-      if (notificationsToCreate.length > 0) {
-        await this.notificationsData.createMany(notificationsToCreate);
+      await this.notificationsData.createMany(notificationsToCreate);
+      console.log('[DigitalSignature] Notifications created in database:', notificationsToCreate.length);
 
-        // Enviar notificações em tempo real
-        Array.from(usersToNotify).forEach((userId) => {
-          this.realTimeService.sendToUser(tenantId, userId, notificationData);
-        });
-      }
+      // Enviar notificações em tempo real
+      usersToNotify.forEach((userId) => {
+        this.realTimeService.sendToUser(tenantId, userId, notificationData);
+      });
+
+      console.log('[DigitalSignature] Real-time notifications sent successfully');
     } catch (error) {
       // Não falhar a assinatura se a notificação falhar
       console.error('[DigitalSignature] Error sending notification:', error);

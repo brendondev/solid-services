@@ -254,14 +254,16 @@ model Service {
 // ============================================================================
 
 model Quotation {
-  id          String   @id @default(uuid())
-  tenantId    String   @map("tenant_id")
-  customerId  String   @map("customer_id")
-  number      String
-  status      String   @default("draft")
-  totalAmount Decimal  @map("total_amount") @db.Decimal(10, 2)
-  validUntil  DateTime @map("valid_until")
-  notes       String?
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  customerId   String   @map("customer_id")
+  number       String
+  status       String   @default("draft")
+  totalAmount  Decimal  @map("total_amount") @db.Decimal(10, 2)
+  discount     Decimal  @default(0) @db.Decimal(10, 2)
+  validUntil   DateTime @map("valid_until")
+  notes        String?
+  observations String?
 
   // Assinatura Digital
   signedAt          DateTime? @map("signed_at")
