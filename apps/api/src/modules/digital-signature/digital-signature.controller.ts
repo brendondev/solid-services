@@ -14,7 +14,7 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@core/auth';
+import { JwtAuthGuard, Public } from '@core/auth';
 import { DigitalSignatureService } from './digital-signature.service';
 import { SignDocumentDto } from './dto';
 
@@ -36,6 +36,7 @@ export class DigitalSignatureController {
   /**
    * Assina um documento
    */
+  @Public()
   @Post('sign')
   @ApiOperation({
     summary: 'Assina um documento',
@@ -46,7 +47,8 @@ export class DigitalSignatureController {
   @ApiResponse({ status: 400, description: 'Documento já assinado ou inválido' })
   @ApiResponse({ status: 404, description: 'Documento não encontrado' })
   async signDocument(@Req() req: any, @Body() dto: SignDocumentDto) {
-    const userId = req.user.sub;
+    // Suporta tanto JWT (dashboard) quanto portal token
+    const userId = req.user?.id || req.user?.sub || 'portal-user';
     return this.digitalSignatureService.signDocument(userId, dto);
   }
 
