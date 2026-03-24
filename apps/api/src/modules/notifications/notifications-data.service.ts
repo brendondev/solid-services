@@ -61,6 +61,33 @@ export class NotificationsDataService {
   }
 
   /**
+   * Cria notificações para múltiplos usuários e retorna os registros criados
+   */
+  async createManyAndReturn(dtos: CreateNotificationDto[], explicitTenantId?: string) {
+    const tenantId = explicitTenantId || this.tenantContext.getTenantId();
+
+    const notifications = dtos.map((dto) => ({
+      tenantId,
+      userId: dto.userId,
+      type: dto.type,
+      title: dto.title,
+      message: dto.message,
+      data: dto.data || null,
+    }));
+
+    // Criar uma por uma para retornar os IDs
+    const created = await Promise.all(
+      notifications.map((notification) =>
+        this.prisma.notification.create({
+          data: notification,
+        }),
+      ),
+    );
+
+    return created;
+  }
+
+  /**
    * Lista notificações de um usuário
    */
   async findByUser(userId: string, unreadOnly: boolean = false) {

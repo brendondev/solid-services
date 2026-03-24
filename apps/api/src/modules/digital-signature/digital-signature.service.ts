@@ -473,12 +473,16 @@ export class DigitalSignatureService {
         ...notificationData,
       }));
 
-      await this.notificationsData.createMany(notificationsToCreate, tenantId);
-      console.log('[DigitalSignature] Notifications created in database:', notificationsToCreate.length);
+      const createdNotifications = await this.notificationsData.createManyAndReturn(notificationsToCreate, tenantId);
+      console.log('[DigitalSignature] Notifications created in database:', createdNotifications.length);
 
-      // Enviar notificações em tempo real
-      usersToNotify.forEach((userId) => {
-        this.realTimeService.sendToUser(tenantId, userId, notificationData);
+      // Enviar notificações em tempo real COM o ID do banco
+      createdNotifications.forEach((notification) => {
+        this.realTimeService.sendToUser(tenantId, notification.userId, {
+          ...notificationData,
+          id: notification.id, // ← Incluir o ID do banco!
+          createdAt: notification.createdAt,
+        });
       });
 
       console.log('[DigitalSignature] Real-time notifications sent successfully');
