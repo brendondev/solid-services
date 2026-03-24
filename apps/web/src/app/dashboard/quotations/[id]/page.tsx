@@ -18,6 +18,7 @@ import {
   Package
 } from 'lucide-react';
 import { showToast } from '@/lib/toast';
+import SignDocumentButton from '@/components/digital-signature/SignDocumentButton';
 
 const statusLabels: Record<string, string> = {
   pending: 'Pendente',
@@ -410,6 +411,18 @@ export default function QuotationDetailPage() {
               <span className="hidden sm:inline">Download PDF</span>
               <span className="sm:hidden">PDF</span>
             </button>
+
+            {/* Botão de Assinatura Digital */}
+            <SignDocumentButton
+              documentType="quotation"
+              documentId={quotation.id}
+              documentNumber={quotation.number}
+              isSigned={!!quotation.signedAt}
+              signedAt={quotation.signedAt}
+              signedBy={quotation.signedBy}
+              signedDocumentUrl={quotation.signedDocumentUrl}
+              onSignSuccess={loadQuotation}
+            />
 
             {quotation.status === 'approved' && (
               <button

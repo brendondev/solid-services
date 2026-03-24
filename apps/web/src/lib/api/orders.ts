@@ -11,6 +11,11 @@ export interface ServiceOrder {
   completedAt: string | null;
   notes: string | null;
   totalAmount: number;
+  // Assinatura Digital
+  signedAt?: string | null;
+  signedBy?: string | null;
+  signedDocumentUrl?: string | null;
+  signatureHash?: string | null;
   createdAt: string;
   updatedAt: string;
   customer?: {

@@ -9,6 +9,11 @@ export interface Quotation {
   discount?: number;
   validUntil: string | null;
   notes: string | null;
+  // Assinatura Digital
+  signedAt?: string | null;
+  signedBy?: string | null;
+  signedDocumentUrl?: string | null;
+  signatureHash?: string | null;
   createdAt: string;
   updatedAt: string;
   customer?: {

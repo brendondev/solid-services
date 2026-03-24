@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
 import { AttachmentsSection } from '@/components/orders/AttachmentsSection';
+import SignDocumentButton from '@/components/digital-signature/SignDocumentButton';
 import {
   ArrowLeft,
   Calendar,
@@ -334,6 +335,20 @@ export default function OrderDetailPage() {
             <span>Cancelar</span>
           </button>
         )}
+      </div>
+
+      {/* Assinatura Digital */}
+      <div className="bg-white p-3 sm:p-4 rounded-lg shadow border border-border">
+        <SignDocumentButton
+          documentType="order"
+          documentId={order.id}
+          documentNumber={order.number}
+          isSigned={!!order.signedAt}
+          signedAt={order.signedAt}
+          signedBy={order.signedBy}
+          signedDocumentUrl={order.signedDocumentUrl}
+          onSignSuccess={loadOrder}
+        />
       </div>
 
       {/* Info Cards */}
