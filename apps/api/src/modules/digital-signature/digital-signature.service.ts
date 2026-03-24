@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../core/database';
 import { StorageService } from '../../core/storage';
 import { TenantContextService } from '../../core/tenant';
+import { RealTimeService } from '../notifications/real-time.service';
+import { NotificationsDataService } from '../notifications/notifications-data.service';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { SignDocumentDto } from './dto';
 import {
@@ -30,6 +32,8 @@ export class DigitalSignatureService {
     private readonly tenantContext: TenantContextService,
     private readonly govbrService: GovBrSignatureService,
     private readonly localService: LocalSignatureService,
+    private readonly realTimeService: RealTimeService,
+    private readonly notificationsData: NotificationsDataService,
   ) {}
 
   /**
@@ -102,6 +106,9 @@ export class DigitalSignatureService {
       signedDocumentUrl,
       signatureHash,
     });
+
+    // Enviar notificações
+    await this.notifyDocumentSigned(documentType, documentId, document, userId);
 
     return {
       signedDocumentUrl,
@@ -341,6 +348,84 @@ export class DigitalSignatureService {
     } catch (error) {
       console.error('[DigitalSignature] Error generating PDF:', error);
       throw new BadRequestException('Erro ao gerar PDF do documento');
+    }
+  }
+
+  /**
+   * Envia notificações de documento assinado
+   */
+  private async notifyDocumentSigned(
+    documentType: string,
+    documentId: string,
+    document: any,
+    signedByUserId: string,
+  ): Promise<void> {
+    try {
+      const tenantId = this.tenantContext.getTenantId();
+
+      // Buscar usuário que assinou
+      const signedByUser = await this.prisma.user.findUnique({
+        where: { id: signedByUserId },
+        select: { name: true, email: true },
+      });
+
+      // Determinar tipo e número do documento
+      const docTypeLabel = documentType === 'quotation' ? 'Orçamento' : 'Ordem de Serviço';
+      const docNumber = document.number || documentId.substring(0, 8);
+
+      // Buscar admins do tenant para notificar
+      const admins = await this.prisma.user.findMany({
+        where: {
+          tenantId,
+          status: 'active',
+          roles: {
+            has: 'admin',
+          },
+        },
+        select: { id: true },
+      });
+
+      const adminIds = admins.map((admin) => admin.id);
+
+      // Se o documento tem um criador (createdBy), adicionar à lista
+      const createdBy = document.createdBy || document.customerId;
+      const usersToNotify = new Set<string>(adminIds);
+
+      if (createdBy && createdBy !== signedByUserId) {
+        usersToNotify.add(createdBy);
+      }
+
+      // Preparar dados da notificação
+      const notificationData = {
+        type: 'DOCUMENT_SIGNED',
+        title: `${docTypeLabel} Assinado`,
+        message: `${docTypeLabel} #${docNumber} foi assinado digitalmente por ${signedByUser?.name || 'um usuário'}`,
+        data: {
+          documentType,
+          documentId,
+          documentNumber: docNumber,
+          signedBy: signedByUser?.name,
+          signedAt: new Date(),
+        },
+      };
+
+      // Criar notificações no banco para cada usuário
+      const notificationsToCreate = Array.from(usersToNotify).map((userId) => ({
+        userId,
+        ...notificationData,
+      }));
+
+      if (notificationsToCreate.length > 0) {
+        await this.notificationsData.createMany(notificationsToCreate);
+
+        // Enviar notificações em tempo real
+        Array.from(usersToNotify).forEach((userId) => {
+          this.realTimeService.sendToUser(tenantId, userId, notificationData);
+        });
+      }
+    } catch (error) {
+      // Não falhar a assinatura se a notificação falhar
+      console.error('[DigitalSignature] Error sending notification:', error);
     }
   }
 
