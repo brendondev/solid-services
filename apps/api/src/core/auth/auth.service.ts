@@ -42,10 +42,16 @@ export class AuthService {
       await this.turnstileService.verifyOrThrow(loginDto.turnstileToken);
     }
 
+    // Log para debug - remover espaços em branco
+    const email = loginDto.email.trim().toLowerCase();
+    const password = loginDto.password;
+
+    console.log('[Auth] Login attempt:', { email, hasPassword: !!password, passwordLength: password.length });
+
     // Buscar usuário por email (sem filtro de tenant)
     const user = await this.prisma.user.findFirst({
       where: {
-        email: loginDto.email,
+        email: email,
         status: 'active',
       },
       include: {
@@ -54,11 +60,21 @@ export class AuthService {
     });
 
     if (!user) {
+      console.log('[Auth] User not found or inactive:', { email });
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    console.log('[Auth] User found:', {
+      id: user.id,
+      email: user.email,
+      hasPasswordHash: !!user.passwordHash,
+      tenantActive: user.tenant.status === 'active'
+    });
+
     // Validar senha
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+    console.log('[Auth] Password validation:', { isPasswordValid });
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -66,8 +82,11 @@ export class AuthService {
 
     // Verificar se tenant está ativo
     if (user.tenant.status !== 'active') {
+      console.log('[Auth] Tenant is not active:', { tenantId: user.tenantId, status: user.tenant.status });
       throw new UnauthorizedException('Tenant is not active');
     }
+
+    console.log('[Auth] Login successful:', { userId: user.id, email: user.email });
 
     // Gerar tokens
     const { accessToken, refreshToken } = await this.generateTokens(user);
