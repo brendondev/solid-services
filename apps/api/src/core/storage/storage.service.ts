@@ -154,7 +154,48 @@ export class StorageService {
   }
 
   /**
+   * Obtém arquivo do storage (S3 ou local)
+   * @param key - Key do arquivo no S3 ou path local
+   * @returns Buffer do arquivo
+   */
+  async getFile(key: string): Promise<Buffer> {
+    try {
+      if (this.useS3 && this.s3Client) {
+        // Buscar do S3
+        this.logger.log(`Baixando arquivo do S3: ${key}`);
+        const command = new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        });
+
+        const response = await this.s3Client.send(command);
+
+        // Converter stream para buffer
+        const chunks: Uint8Array[] = [];
+        for await (const chunk of response.Body as any) {
+          chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+
+        this.logger.log(`✅ Arquivo baixado do S3: ${key} (${buffer.length} bytes)`);
+        return buffer;
+      } else {
+        // Buscar do filesystem local
+        this.logger.log(`Lendo arquivo local: ${key}`);
+        const filePath = path.join(this.localStoragePath, key);
+        const buffer = await fs.readFile(filePath);
+        this.logger.log(`✅ Arquivo lido localmente: ${key} (${buffer.length} bytes)`);
+        return buffer;
+      }
+    } catch (error: any) {
+      this.logger.error(`Erro ao obter arquivo: ${error.message}`, error.stack);
+      throw new Error(`Arquivo não encontrado: ${error.message}`);
+    }
+  }
+
+  /**
    * Obtém arquivo do storage local (usado quando S3 não está configurado)
+   * @deprecated Use getFile() instead
    */
   async getLocalFile(key: string): Promise<Buffer> {
     try {

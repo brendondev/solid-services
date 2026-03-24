@@ -4,8 +4,7 @@ import { StorageService } from './storage.service';
 import { Public } from '@core/auth/decorators';
 
 /**
- * Controller para servir arquivos do storage local
- * Usado apenas quando S3 não está configurado
+ * Controller para servir arquivos do storage (S3 ou local)
  */
 @Controller('storage')
 export class StorageController {
@@ -15,16 +14,37 @@ export class StorageController {
   @Get('download/:key(*)')
   async downloadFile(@Param('key') key: string, @Res() res: Response) {
     try {
-      const fileBuffer = await this.storageService.getLocalFile(decodeURIComponent(key));
+      // Usar getFile() que detecta automaticamente S3 ou local
+      const fileBuffer = await this.storageService.getFile(decodeURIComponent(key));
 
       // Extrair nome do arquivo do key
       const fileName = key.split('/').pop() || 'file';
 
+      // Detectar Content-Type baseado na extensão
+      const extension = fileName.split('.').pop()?.toLowerCase();
+      const contentType = this.getContentType(extension || '');
+
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Type', contentType);
       res.send(fileBuffer);
     } catch (error: any) {
       throw new NotFoundException('Arquivo não encontrado');
     }
+  }
+
+  /**
+   * Determina Content-Type baseado na extensão
+   */
+  private getContentType(extension: string): string {
+    const contentTypes: Record<string, string> = {
+      pdf: 'application/pdf',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      txt: 'text/plain',
+      zip: 'application/zip',
+    };
+    return contentTypes[extension] || 'application/octet-stream';
   }
 }
