@@ -3,6 +3,7 @@ import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 
 export interface NotificationEvent {
+  id?: string; // ID do banco (opcional para compatibilidade)
   tenantId: string;
   userId: string;
   type: string;
