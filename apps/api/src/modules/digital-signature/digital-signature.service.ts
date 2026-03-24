@@ -481,8 +481,7 @@ export class DigitalSignatureService {
         this.realTimeService.sendToUser(tenantId, notification.userId, {
           ...notificationData,
           id: notification.id, // ← Incluir o ID do banco!
-          createdAt: notification.createdAt,
-        });
+        } as any); // Type cast porque incluímos o ID
       });
 
       console.log('[DigitalSignature] Real-time notifications sent successfully');
