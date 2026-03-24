@@ -31,6 +31,11 @@ export interface Quotation {
   validUntil: string;
   createdAt: string;
   items: QuotationItem[];
+  // Assinatura Digital
+  signedAt?: string | null;
+  signedBy?: string | null;
+  signedDocumentUrl?: string | null;
+  signatureHash?: string | null;
 }
 
 export interface OrderItem {
@@ -75,6 +80,11 @@ export interface ServiceOrder {
   timeline: OrderTimeline[];
   checklists?: OrderChecklist[];
   attachments?: OrderAttachment[];
+  // Assinatura Digital
+  signedAt?: string | null;
+  signedBy?: string | null;
+  signedDocumentUrl?: string | null;
+  signatureHash?: string | null;
 }
 
 export interface ServiceHistory {

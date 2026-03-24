@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import PortalLayout from '@/components/portal/PortalLayout';
+import SignDocumentButtonPortal from '@/components/digital-signature/SignDocumentButtonPortal';
 import {
   validateToken,
   getQuotation,
@@ -38,23 +39,23 @@ export default function QuotationDetailPage() {
     'approve' | 'reject' | null
   >(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const [customerData, quotationData] = await Promise.all([
-          validateToken(),
-          getQuotation(id),
-        ]);
-        setCustomer(customerData);
-        setQuotation(quotationData);
-      } catch (err) {
-        console.error('Error loading quotation:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [customerData, quotationData] = await Promise.all([
+        validateToken(),
+        getQuotation(id),
+      ]);
+      setCustomer(customerData);
+      setQuotation(quotationData);
+    } catch (err) {
+      console.error('Error loading quotation:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadData();
   }, [token, id]);
 
@@ -254,6 +255,22 @@ export default function QuotationDetailPage() {
             </p>
           </div>
         )}
+
+        {/* Assinatura Digital */}
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+            Assinatura Digital
+          </h3>
+          <SignDocumentButtonPortal
+            documentType="quotation"
+            documentId={quotation.id}
+            documentNumber={quotation.number}
+            isSigned={!!quotation.signedAt}
+            signedAt={quotation.signedAt}
+            signedDocumentUrl={quotation.signedDocumentUrl}
+            onSignSuccess={loadData}
+          />
+        </div>
 
         {/* Actions */}
         {canRespond && (
