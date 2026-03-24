@@ -63,8 +63,8 @@ export class SseAuthGuard extends AuthGuard('jwt') {
       };
 
       return true;
-    } catch (error) {
-      console.log('[SseAuthGuard] ❌ Erro ao validar token:', error.message);
+    } catch (error: any) {
+      console.log('[SseAuthGuard] ❌ Erro ao validar token:', error?.message || error);
       throw new UnauthorizedException('Token inválido ou expirado');
     }
   }
