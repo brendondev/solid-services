@@ -476,11 +476,25 @@ export class DigitalSignatureService {
         ...notificationData,
       }));
 
+      console.log('[DigitalSignature] Creating notifications:', {
+        count: notificationsToCreate.length,
+        userIds: notificationsToCreate.map(n => n.userId),
+      });
+
       const createdNotifications = await this.notificationsData.createManyAndReturn(notificationsToCreate, tenantId);
-      console.log('[DigitalSignature] Notifications created in database:', createdNotifications.length);
+      console.log('[DigitalSignature] Notifications created in database:', {
+        count: createdNotifications.length,
+        notifications: createdNotifications.map(n => ({ id: n.id, userId: n.userId, type: n.type })),
+      });
 
       // Enviar notificações em tempo real COM o ID do banco
       createdNotifications.forEach((notification) => {
+        console.log('[DigitalSignature] Sending SSE to user:', {
+          userId: notification.userId,
+          notificationId: notification.id,
+          tenantId,
+        });
+
         this.realTimeService.sendToUser(tenantId, notification.userId, {
           ...notificationData,
           id: notification.id, // ← Incluir o ID do banco!

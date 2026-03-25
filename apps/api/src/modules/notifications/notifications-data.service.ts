@@ -93,7 +93,13 @@ export class NotificationsDataService {
   async findByUser(userId: string, unreadOnly: boolean = false) {
     const tenantId = this.tenantContext.getTenantId();
 
-    return this.prisma.notification.findMany({
+    console.log('[NotificationsData] Finding notifications:', {
+      tenantId,
+      userId,
+      unreadOnly,
+    });
+
+    const notifications = await this.prisma.notification.findMany({
       where: {
         tenantId,
         userId,
@@ -104,6 +110,14 @@ export class NotificationsDataService {
       },
       take: 50, // Últimas 50 notificações
     });
+
+    console.log('[NotificationsData] Found notifications:', {
+      count: notifications.length,
+      userIds: notifications.map(n => n.userId),
+      ids: notifications.map(n => n.id),
+    });
+
+    return notifications;
   }
 
   /**

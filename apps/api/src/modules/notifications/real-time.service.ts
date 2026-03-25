@@ -38,11 +38,12 @@ export class RealTimeService {
       createdAt: new Date(),
     };
 
-    console.log('[RealTimeService] Sending notification:', {
-      tenantId,
-      userId,
-      type: notification.type,
-      title: notification.title,
+    console.log('[RealTimeService] Event created:', {
+      eventUserId: event.userId,
+      paramUserId: userId,
+      tenantId: event.tenantId,
+      type: event.type,
+      id: event.id,
       activeObservers: this.events$.observers.length,
     });
 
