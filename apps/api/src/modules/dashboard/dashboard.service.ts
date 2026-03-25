@@ -305,4 +305,188 @@ export class DashboardService {
       },
     };
   }
+
+  /**
+   * Histórico de receita dos últimos N meses
+   */
+  async getRevenueHistory(months: number = 6) {
+    const tenantId = this.tenantContext.getTenantId();
+    const now = new Date();
+    const history = [];
+
+    // Buscar dados dos últimos N meses
+    for (let i = months - 1; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+      const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+
+      const [paymentsReceived, receivablesCreated] = await Promise.all([
+        // Valores recebidos no mês
+        this.prisma.payment.aggregate({
+          where: {
+            receivable: {
+              tenantId,
+            },
+            paidAt: {
+              gte: firstDay,
+              lte: lastDay,
+            },
+          },
+          _sum: {
+            amount: true,
+          },
+        }),
+
+        // Valores a receber criados no mês
+        this.prisma.receivable.aggregate({
+          where: {
+            tenantId,
+            createdAt: {
+              gte: firstDay,
+              lte: lastDay,
+            },
+          },
+          _sum: {
+            amount: true,
+          },
+        }),
+      ]);
+
+      history.push({
+        month: monthDate.getMonth() + 1,
+        year: monthDate.getFullYear(),
+        label: monthDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }),
+        received: Number(paymentsReceived._sum.amount || 0),
+        total: Number(receivablesCreated._sum.amount || 0),
+      });
+    }
+
+    return history;
+  }
+
+  /**
+   * Histórico de ordens dos últimos N meses
+   */
+  async getOrdersHistory(months: number = 6) {
+    const tenantId = this.tenantContext.getTenantId();
+    const now = new Date();
+    const history = [];
+
+    for (let i = months - 1; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+      const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+
+      const [created, completed, cancelled] = await Promise.all([
+        this.prisma.serviceOrder.count({
+          where: {
+            tenantId,
+            createdAt: {
+              gte: firstDay,
+              lte: lastDay,
+            },
+          },
+        }),
+
+        this.prisma.serviceOrder.count({
+          where: {
+            tenantId,
+            status: 'completed',
+            completedAt: {
+              gte: firstDay,
+              lte: lastDay,
+            },
+          },
+        }),
+
+        this.prisma.serviceOrder.count({
+          where: {
+            tenantId,
+            status: 'cancelled',
+            updatedAt: {
+              gte: firstDay,
+              lte: lastDay,
+            },
+          },
+        }),
+      ]);
+
+      history.push({
+        month: monthDate.getMonth() + 1,
+        year: monthDate.getFullYear(),
+        label: monthDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }),
+        created,
+        completed,
+        cancelled,
+      });
+    }
+
+    return history;
+  }
+
+  /**
+   * Top clientes por receita
+   */
+  async getTopCustomers(limit: number = 5) {
+    const tenantId = this.tenantContext.getTenantId();
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Buscar todos os receivables com seus clientes
+    const receivables = await this.prisma.receivable.findMany({
+      where: {
+        tenantId,
+        createdAt: {
+          gte: firstDayOfMonth,
+        },
+      },
+      include: {
+        serviceOrder: {
+          include: {
+            customer: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Agrupar por cliente
+    const customerMap = new Map<string, {
+      id: string;
+      name: string;
+      totalRevenue: number;
+      ordersCount: number;
+    }>();
+
+    for (const receivable of receivables) {
+      if (!receivable.serviceOrder?.customer) continue;
+
+      const customer = receivable.serviceOrder.customer;
+      const revenue = Number(receivable.paidAmount || 0);
+
+      if (customerMap.has(customer.id)) {
+        const existing = customerMap.get(customer.id)!;
+        existing.totalRevenue += revenue;
+        existing.ordersCount += 1;
+      } else {
+        customerMap.set(customer.id, {
+          id: customer.id,
+          name: customer.name,
+          totalRevenue: revenue,
+          ordersCount: 1,
+        });
+      }
+    }
+
+    // Converter para array e ordenar por receita
+    const topCustomers = Array.from(customerMap.values())
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+      .slice(0, limit);
+
+    return topCustomers;
+  }
 }

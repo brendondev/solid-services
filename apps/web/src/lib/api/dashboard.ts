@@ -80,6 +80,30 @@ export interface MonthlyPerformance {
   }>;
 }
 
+export interface RevenueHistory {
+  month: number;
+  year: number;
+  label: string;
+  received: number;
+  total: number;
+}
+
+export interface OrdersHistory {
+  month: number;
+  year: number;
+  label: string;
+  created: number;
+  completed: number;
+  cancelled: number;
+}
+
+export interface TopCustomer {
+  id: string;
+  name: string;
+  totalRevenue: number;
+  ordersCount: number;
+}
+
 export const dashboardApi = {
   getOperationalDashboard: async (): Promise<DashboardStats> => {
     const response = await api.get('/dashboard/operational');
@@ -102,6 +126,21 @@ export const dashboardApi = {
     const response = await api.get(
       `/dashboard/monthly-performance?${params.toString()}`
     );
+    return response.data;
+  },
+
+  getRevenueHistory: async (months: number = 6): Promise<RevenueHistory[]> => {
+    const response = await api.get(`/dashboard/revenue-history?months=${months}`);
+    return response.data;
+  },
+
+  getOrdersHistory: async (months: number = 6): Promise<OrdersHistory[]> => {
+    const response = await api.get(`/dashboard/orders-history?months=${months}`);
+    return response.data;
+  },
+
+  getTopCustomers: async (limit: number = 5): Promise<TopCustomer[]> => {
+    const response = await api.get(`/dashboard/top-customers?limit=${limit}`);
     return response.data;
   },
 };

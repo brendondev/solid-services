@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { dashboardApi, DashboardStats, QuickStats, MonthlyPerformance } from '@/lib/api/dashboard';
+import { useEffect, useState, useCallback } from 'react';
+import { dashboardApi, DashboardStats, QuickStats, MonthlyPerformance, RevenueHistory, OrdersHistory, TopCustomer } from '@/lib/api/dashboard';
 import {
   Users,
   Wrench,
@@ -18,38 +18,52 @@ import {
   Loader2,
   BarChart3
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
 
 export default function DashboardMainPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [quickStats, setQuickStats] = useState<QuickStats | null>(null);
   const [monthlyPerf, setMonthlyPerf] = useState<MonthlyPerformance | null>(null);
+  const [revenueHistory, setRevenueHistory] = useState<RevenueHistory[]>([]);
+  const [ordersHistory, setOrdersHistory] = useState<OrdersHistory[]>([]);
+  const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
-
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const [dashboardData, quickData, monthlyData] = await Promise.all([
+      const [dashboardData, quickData, monthlyData, revenueData, ordersData, customersData] = await Promise.all([
         dashboardApi.getOperationalDashboard(),
         dashboardApi.getQuickStats(),
         dashboardApi.getMonthlyPerformance(),
+        dashboardApi.getRevenueHistory(6),
+        dashboardApi.getOrdersHistory(6),
+        dashboardApi.getTopCustomers(5),
       ]);
       setStats(dashboardData);
       setQuickStats(quickData);
       setMonthlyPerf(monthlyData);
+      setRevenueHistory(revenueData);
+      setOrdersHistory(ordersData);
+      setTopCustomers(customersData);
+      setLastUpdate(new Date());
     } catch (err: any) {
       console.error('Erro ao carregar dashboard:', err);
       setError(err.response?.data?.message || 'Erro ao carregar dashboard');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Auto-refresh a cada 30 segundos
+  useEffect(() => {
+    loadDashboard();
+    const interval = setInterval(loadDashboard, 30000); // 30s
+    return () => clearInterval(interval);
+  }, [loadDashboard]);
 
   if (loading) {
     return (
@@ -156,9 +170,25 @@ export default function DashboardMainPage() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 animate-fadeInUp">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão geral do seu negócio</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão geral do seu negócio</p>
+        </div>
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+          <Clock className="w-4 h-4" />
+          <span>
+            Atualizado: {lastUpdate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+          <button
+            onClick={loadDashboard}
+            disabled={loading}
+            className="p-1 hover:bg-muted rounded-lg transition-colors disabled:opacity-50"
+            title="Atualizar agora"
+          >
+            <Loader2 className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Resumo Principal */}
@@ -372,6 +402,200 @@ export default function DashboardMainPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Histórico de Receita e Ordens */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Gráfico de Linha - Evolução de Receita */}
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-success/10 rounded-lg">
+              <DollarSign className="w-5 h-5 text-success" />
+            </div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+              Evolução de Receita (6 meses)
+            </h3>
+          </div>
+          {revenueHistory.length > 0 ? (
+            <div className="h-64 sm:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueHistory}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(value) => `R$ ${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    formatter={(value) => [formatCurrency(Number(value)), '']}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                    }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="received"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    name="Recebido"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    name="Total"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-64 sm:h-80 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado de receita disponível</p>
+            </div>
+          )}
+        </div>
+
+        {/* Gráfico de Linha - Evolução de Ordens */}
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <ClipboardList className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+              Evolução de Ordens (6 meses)
+            </h3>
+          </div>
+          {ordersHistory.length > 0 ? (
+            <div className="h-64 sm:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={ordersHistory}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    formatter={(value, name) => {
+                      const labels: Record<string, string> = {
+                        created: 'Criadas',
+                        completed: 'Concluídas',
+                        cancelled: 'Canceladas',
+                      };
+                      return [`${value} ordens`, labels[name as string] || name];
+                    }}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                    formatter={(value) => {
+                      const labels: Record<string, string> = {
+                        created: 'Criadas',
+                        completed: 'Concluídas',
+                        cancelled: 'Canceladas',
+                      };
+                      return labels[value] || value;
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="created"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="completed"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="cancelled"
+                    stroke="#EF4444"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-64 sm:h-80 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado de ordens disponível</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Top 5 Clientes */}
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            Top 5 Clientes do Mês
+          </h3>
+        </div>
+        {topCustomers.length > 0 ? (
+          <div className="space-y-3">
+            {topCustomers.map((customer, index) => (
+              <div
+                key={customer.id}
+                className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border border-border"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{customer.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {customer.ordersCount} {customer.ordersCount === 1 ? 'ordem' : 'ordens'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-base font-bold text-success">
+                    {formatCurrency(customer.totalRevenue)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            Nenhum cliente com receita neste mês
+          </p>
+        )}
       </div>
 
       {/* Performance Mensal */}
