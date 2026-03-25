@@ -64,8 +64,18 @@ export class NotificationsController {
     @Req() req: any,
     @Query('unreadOnly') unreadOnly?: string,
   ) {
+    console.log('[NotificationsController] GET /notifications request:', {
+      hasUser: !!req.user,
+      user: req.user,
+      userSub: req.user?.sub,
+      userId: req.user?.userId,
+      id: req.user?.id,
+    });
+
     const userId = req.user.sub;
     const unread = unreadOnly === 'true';
+
+    console.log('[NotificationsController] Calling findByUser with userId:', userId);
 
     return this.notificationsDataService.findByUser(userId, unread);
   }
