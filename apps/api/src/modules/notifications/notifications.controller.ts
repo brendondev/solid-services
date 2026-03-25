@@ -43,7 +43,7 @@ export class NotificationsController {
   })
   stream(@Req() req: any): Observable<any> {
     const tenantId = req.user.tenantId;
-    const userId = req.user.sub;
+    const userId = req.user.id; // ← Corrigido: usar req.user.id
 
     console.log('[NotificationsController] SSE stream requested:', {
       tenantId,
@@ -64,18 +64,8 @@ export class NotificationsController {
     @Req() req: any,
     @Query('unreadOnly') unreadOnly?: string,
   ) {
-    console.log('[NotificationsController] GET /notifications request:', {
-      hasUser: !!req.user,
-      user: req.user,
-      userSub: req.user?.sub,
-      userId: req.user?.userId,
-      id: req.user?.id,
-    });
-
-    const userId = req.user.sub;
+    const userId = req.user.id; // ← Corrigido: usar req.user.id ao invés de req.user.sub
     const unread = unreadOnly === 'true';
-
-    console.log('[NotificationsController] Calling findByUser with userId:', userId);
 
     return this.notificationsDataService.findByUser(userId, unread);
   }
@@ -86,7 +76,7 @@ export class NotificationsController {
   @Get('unread/count')
   @ApiOperation({ summary: 'Contar notificações não lidas' })
   async countUnread(@Req() req: any) {
-    const userId = req.user.sub;
+    const userId = req.user.id; // ← Corrigido: usar req.user.id
     const count = await this.notificationsDataService.countUnread(userId);
 
     return { count };
@@ -107,7 +97,7 @@ export class NotificationsController {
   @Post('read-all')
   @ApiOperation({ summary: 'Marcar todas notificações como lidas' })
   async markAllAsRead(@Req() req: any) {
-    const userId = req.user.sub;
+    const userId = req.user.id; // ← Corrigido: usar req.user.id
 
     return this.notificationsDataService.markAllAsRead(userId);
   }
