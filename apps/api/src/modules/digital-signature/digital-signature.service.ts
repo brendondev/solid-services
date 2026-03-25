@@ -392,8 +392,8 @@ export class DigitalSignatureService {
   /**
    * Envia notificações de documento assinado
    *
-   * IMPORTANTE: Para assinaturas do portal (cliente), não enviamos notificações aqui
-   * pois elas já são enviadas pelo método approveQuotation no customer-portal.service.ts
+   * IMPORTANTE: Este é o único lugar onde notificações de assinatura são criadas no banco.
+   * O método approveQuotation apenas envia emails, não cria notificações no banco.
    */
   private async notifyDocumentSigned(
     tenantId: string,
@@ -411,13 +411,6 @@ export class DigitalSignatureService {
         signedByUserId,
         isPortalSignature,
       });
-
-      // Se é assinatura do portal, não enviar notificações aqui
-      // Elas já foram enviadas pelo customer-portal.service.ts quando o orçamento foi aprovado
-      if (isPortalSignature) {
-        console.log('[DigitalSignature] Portal signature - skipping notifications (already sent by approval flow)');
-        return;
-      }
 
       // Buscar usuário que assinou
       const signedByUser = await this.prisma.user.findUnique({
@@ -442,12 +435,16 @@ export class DigitalSignatureService {
 
       console.log('[DigitalSignature] Active users found:', users.length);
 
-      // Para assinatura interna, notificar todos EXCETO quem assinou
-      const usersToNotify = users
-        .filter((user) => user.id !== signedByUserId)
-        .map((user) => user.id);
+      // Se é assinatura do portal (cliente), notificar TODOS os funcionários
+      // Se é assinatura interna, notificar todos EXCETO quem assinou
+      const usersToNotify = isPortalSignature
+        ? users.map((user) => user.id)
+        : users
+            .filter((user) => user.id !== signedByUserId)
+            .map((user) => user.id);
 
-      console.log('[DigitalSignature] Users to notify:', usersToNotify.length, '(internal signature - exclude signer)');
+      console.log('[DigitalSignature] Users to notify:', usersToNotify.length,
+                  isPortalSignature ? '(portal signature - notify all)' : '(internal signature - exclude signer)');
 
       if (usersToNotify.length === 0) {
         console.log('[DigitalSignature] No users to notify, skipping...');
@@ -455,11 +452,13 @@ export class DigitalSignatureService {
       }
 
       // Preparar dados da notificação
-      const signerName = signedByUser?.name || 'um usuário';
+      const signerName = isPortalSignature
+        ? `${document.customer?.name || 'Cliente'}`
+        : signedByUser?.name || 'um usuário';
 
       const notificationData = {
         type: 'DOCUMENT_SIGNED',
-        title: `${docTypeLabel} Assinado`,
+        title: isPortalSignature ? `${docTypeLabel} Aprovado pelo Cliente` : `${docTypeLabel} Assinado`,
         message: `${docTypeLabel} #${docNumber} foi assinado digitalmente por ${signerName}`,
         data: {
           documentType,

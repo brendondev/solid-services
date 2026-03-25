@@ -255,7 +255,7 @@ export class CustomerPortalService {
         select: { id: true, email: true },
       });
 
-      // Enviar e-mails
+      // Enviar e-mails (notificações no banco serão criadas pela assinatura digital)
       for (const admin of admins) {
         await this.notificationsService.sendQuotationApproved({
           to: admin.email,
@@ -265,29 +265,8 @@ export class CustomerPortalService {
         });
       }
 
-      // Criar notificações no banco e enviar em tempo real
-      const adminIds = admins.map(a => a.id);
-      const notificationData = {
-        type: 'quotation_approved',
-        title: 'Orçamento Aprovado',
-        message: `O cliente ${quotation.customer.name} aprovou o orçamento ${quotation.number}`,
-        data: {
-          quotationId: quotation.id,
-          quotationNumber: quotation.number,
-          customerId: quotation.customerId,
-          customerName: quotation.customer.name,
-        },
-      };
-
-      // Salvar no banco
-      const notifications = adminIds.map(userId => ({
-        userId,
-        ...notificationData,
-      }));
-      await this.notificationsDataService.createMany(notifications);
-
-      // Enviar em tempo real
-      this.realTimeService.sendToUsers(tenantId, adminIds, notificationData);
+      // NOTA: As notificações no banco são criadas pelo fluxo de assinatura digital
+      // em digital-signature.service.ts para evitar duplicação
     } catch (error) {
       console.error('Failed to send approval notification:', error);
     }
