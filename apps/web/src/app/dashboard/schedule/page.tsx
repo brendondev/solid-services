@@ -440,8 +440,8 @@ export default function SchedulePage() {
         <DnDCalendar
           localizer={localizer}
           events={events}
-          startAccessor="start"
-          endAccessor="end"
+          startAccessor={(event: any) => event.start}
+          endAccessor={(event: any) => event.end}
           style={{ height: '100%' }}
           onSelectEvent={handleSelectEvent}
           onSelectSlot={handleSelectSlot}
