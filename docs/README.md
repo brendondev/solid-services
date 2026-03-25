@@ -1,70 +1,77 @@
-# 📚 Documentação - Solid Service
+# Documentação do Solid Service
 
-Documentação completa do projeto organizada por categoria.
+Bem-vindo à documentação do projeto Solid Service.
 
-## 🚀 Início Rápido
+## 📚 Documentos Essenciais
 
-- **[Getting Started](./GETTING_STARTED.md)** - Guia completo de instalação e primeiro acesso
+### Para Começar
+- **[Getting Started](GETTING_STARTED.md)** - Guia de instalação e configuração do projeto
 
-## 📦 Deploy
+### Status e Planejamento
+- **[Status do Projeto](PROJECT-STATUS.md)** - Análise completa do estado atual (75% completo)
+- **[Roadmap Futuro](PASSOS-FINAIS-NFE-ETC.md)** - Próximas funcionalidades (NFe, WhatsApp, etc.)
 
-- **[Deployment Guide](./deployment/DEPLOYMENT.md)** - Deploy completo em Railway + Vercel
-- **[Railway Setup](./deployment/RAILWAY_SETUP.md)** - Configuração específica do Railway
+### Funcionalidades
+- **[Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md)** - Atalhos de teclado implementados
+- **[Testes de Segurança](SECURITY-TESTS.md)** - Instruções para validar segurança
 
-## 💻 Desenvolvimento
-
-- **[API Documentation](./development/API.md)** - Documentação completa da API REST
-- **[Design System](./development/DESIGN_SYSTEM.md)** - Componentes e padrões UI
-- **[RBAC](./development/RBAC.md)** - Sistema de permissões e roles
-- **[Audit Log](./development/AUDIT_LOG_IMPLEMENTATION.md)** - Sistema de auditoria
-- **[Performance](./development/PERFORMANCE_OPTIMIZATIONS.md)** - Otimizações aplicadas
-- **[E2E Tests](./development/TESTS_E2E_SUMMARY.md)** - Testes end-to-end
-
-## 📂 Estrutura
+## 📂 Estrutura da Documentação
 
 ```
 docs/
-├── README.md                    # Este arquivo
-├── GETTING_STARTED.md           # Guia de início
+├── README.md (este arquivo)
+├── PROJECT-STATUS.md ⭐ Status completo do projeto
+├── GETTING_STARTED.md - Setup inicial
+├── PASSOS-FINAIS-NFE-ETC.md - Roadmap futuro
+├── KEYBOARD_SHORTCUTS.md - Atalhos
+├── SECURITY-TESTS.md - Segurança
 │
-├── deployment/                  # Deploy e infraestrutura
-│   ├── DEPLOYMENT.md           # Guia completo
-│   └── RAILWAY_SETUP.md        # Setup Railway
-│
-├── development/                 # Documentação técnica
-│   ├── API.md                  # Endpoints da API
-│   ├── DESIGN_SYSTEM.md        # UI/UX
-│   ├── RBAC.md                 # Permissões
-│   ├── AUDIT_LOG_IMPLEMENTATION.md
-│   ├── PERFORMANCE_OPTIMIZATIONS.md
-│   └── TESTS_E2E_SUMMARY.md
-│
-└── archive/                     # Documentos históricos
-    ├── PROGRESS*.md            # Progresso de desenvolvimento
-    ├── RESUMO*.md              # Resumos de sessões
-    └── IMPLEMENTED.md          # Features implementadas
+├── archive/ - Documentos históricos/antigos
+├── architecture/ - Diagramas de arquitetura
+├── deployment/ - Deploy e infraestrutura
+└── development/ - Guias de desenvolvimento
 ```
 
-## 🔗 Links Úteis
+## 🚀 Quick Start
 
-- [README Principal](../README.md)
-- [Contributing Guide](../CONTRIBUTING.md)
-- [API Swagger](https://solid-services-production.up.railway.app/api/docs)
-- [GitHub Issues](https://github.com/brendondev/solid-services/issues)
+```bash
+# 1. Clonar repositório
+git clone <repo-url>
 
-## 📖 Navegação Rápida
+# 2. Instalar dependências
+npm install
 
-### Quero Instalar e Rodar
-→ [GETTING_STARTED.md](./GETTING_STARTED.md)
+# 3. Configurar ambiente
+cp .env.example .env
 
-### Quero Fazer Deploy
-→ [deployment/DEPLOYMENT.md](./deployment/DEPLOYMENT.md)
+# 4. Rodar migrations
+cd packages/database && npx prisma migrate dev
 
-### Quero Entender a API
-→ [development/API.md](./development/API.md)
+# 5. Iniciar backend
+cd apps/api && npm run dev
 
-### Quero Contribuir
-→ [../CONTRIBUTING.md](../CONTRIBUTING.md)
+# 6. Iniciar frontend (em outro terminal)
+cd apps/web && npm run dev
+```
 
-### Quero Ver o que Já Foi Feito
-→ [archive/IMPLEMENTED.md](./archive/IMPLEMENTED.md)
+Ver detalhes completos em [GETTING_STARTED.md](GETTING_STARTED.md)
+
+## 📊 Status Atual
+
+- **Backend**: 90% ✅ (19 módulos funcionais)
+- **Frontend**: 70% ✅ (26 páginas)
+- **Banco de Dados**: 100% ✅ (21 tabelas)
+- **Testes**: 10% ⚠️ (CRÍTICO - apenas 2 testes)
+
+Ver análise completa em [PROJECT-STATUS.md](PROJECT-STATUS.md)
+
+## 🎯 Próximos Passos
+
+1. **Testes** (crítico) - Adicionar testes unitários e E2E
+2. **Dashboard** - Completar gráficos e métricas
+3. **Mobile Polish** - Melhorar responsividade
+4. **Agenda** - Completar calendário e drag & drop
+
+## 📞 Suporte
+
+Para dúvidas técnicas, consulte a documentação específica em cada seção.
