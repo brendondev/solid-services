@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { subscriptionsApi, Plan, SubscriptionStatus } from '@/lib/api/subscriptions';
-import { Crown, Check, Zap, TrendingUp, Calendar, CreditCard, AlertCircle } from 'lucide-react';
+import { Crown, Check, Zap, TrendingUp, Calendar, CreditCard, AlertCircle, ArrowLeftRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PlanChangeModal, UsageAlerts, PlanComparisonModal } from '@/components/subscriptions';
 
 export default function PlanosPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgradingToPlan, setUpgradingToPlan] = useState<string | null>(null);
+
+  // Modals state
+  const [selectedPlanForChange, setSelectedPlanForChange] = useState<Plan | null>(null);
+  const [showPlanChangeModal, setShowPlanChangeModal] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -31,13 +37,20 @@ export default function PlanosPage() {
     }
   };
 
-  const handleUpgrade = async (planId: string) => {
-    if (!window.confirm('Deseja fazer upgrade/downgrade do seu plano?')) return;
+  const handleUpgrade = (plan: Plan) => {
+    setSelectedPlanForChange(plan);
+    setShowPlanChangeModal(true);
+  };
 
-    setUpgradingToPlan(planId);
+  const confirmPlanChange = async () => {
+    if (!selectedPlanForChange) return;
+
+    setUpgradingToPlan(selectedPlanForChange.id);
     try {
-      await subscriptionsApi.updateSubscription({ planId });
+      await subscriptionsApi.updateSubscription({ planId: selectedPlanForChange.id });
       toast.success('Plano atualizado com sucesso!');
+      setShowPlanChangeModal(false);
+      setSelectedPlanForChange(null);
       await loadData();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Erro ao atualizar plano');
@@ -57,18 +70,53 @@ export default function PlanosPage() {
   const currentPlan = status?.subscription.plan;
   const isYearly = status?.subscription.billingCycle === 'yearly';
 
+  // Preparar dados de uso para alertas
+  const usageAlerts = status?.usage
+    .filter(u => !u.isUnlimited && u.percentage >= 70)
+    .map(u => ({
+      feature: u.metric === 'users' ? 'usuários' :
+               u.metric === 'customers' ? 'clientes' :
+               u.metric === 'orders' ? 'ordens de serviço' :
+               'MB de armazenamento',
+      current: u.currentValue,
+      limit: u.limit,
+    })) || [];
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <Crown className="w-8 h-8 text-amber-500" />
-          Planos e Assinaturas
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Escolha o plano ideal para o seu negócio
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Crown className="w-8 h-8 text-amber-500" />
+            Planos e Assinaturas
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Escolha o plano ideal para o seu negócio
+          </p>
+        </div>
+        <button
+          onClick={() => setShowComparisonModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+        >
+          <ArrowLeftRight className="w-4 h-4" />
+          Comparar Planos
+        </button>
       </div>
+
+      {/* Usage Alerts */}
+      {usageAlerts.length > 0 && (
+        <UsageAlerts
+          usage={usageAlerts}
+          onUpgrade={() => {
+            // Sugere o próximo plano acima
+            const currentIndex = plans.findIndex(p => p.id === currentPlan?.id);
+            if (currentIndex >= 0 && currentIndex < plans.length - 1) {
+              handleUpgrade(plans[currentIndex + 1]);
+            }
+          }}
+        />
+      )}
 
       {/* Current Plan Info */}
       {currentPlan && (
@@ -248,7 +296,7 @@ export default function PlanosPage() {
 
               {/* CTA Button */}
               <button
-                onClick={() => handleUpgrade(plan.id)}
+                onClick={() => handleUpgrade(plan)}
                 disabled={isCurrentPlan || upgradingToPlan === plan.id}
                 className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
                   isCurrentPlan
@@ -293,6 +341,79 @@ export default function PlanosPage() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      {selectedPlanForChange && currentPlan && (
+        <PlanChangeModal
+          isOpen={showPlanChangeModal}
+          onClose={() => {
+            setShowPlanChangeModal(false);
+            setSelectedPlanForChange(null);
+          }}
+          onConfirm={confirmPlanChange}
+          currentPlan={{
+            name: currentPlan.name,
+            price: isYearly && currentPlan.yearlyPrice ? currentPlan.yearlyPrice : currentPlan.price,
+            features: [
+              currentPlan.limits.maxUsers === -1 ? 'Usuários ilimitados' : `${currentPlan.limits.maxUsers} usuários`,
+              currentPlan.limits.maxCustomers === -1 ? 'Clientes ilimitados' : `${currentPlan.limits.maxCustomers} clientes`,
+              currentPlan.limits.maxOrders === -1 ? 'Ordens ilimitadas' : `${currentPlan.limits.maxOrders} ordens/mês`,
+            ],
+          }}
+          newPlan={{
+            name: selectedPlanForChange.name,
+            price: isYearly && selectedPlanForChange.yearlyPrice ? selectedPlanForChange.yearlyPrice : selectedPlanForChange.price,
+            features: [
+              selectedPlanForChange.limits.maxUsers === -1 ? 'Usuários ilimitados' : `${selectedPlanForChange.limits.maxUsers} usuários`,
+              selectedPlanForChange.limits.maxCustomers === -1 ? 'Clientes ilimitados' : `${selectedPlanForChange.limits.maxCustomers} clientes`,
+              selectedPlanForChange.limits.maxOrders === -1 ? 'Ordens ilimitadas' : `${selectedPlanForChange.limits.maxOrders} ordens/mês`,
+            ],
+          }}
+          isUpgrade={selectedPlanForChange.price > currentPlan.price}
+          loading={upgradingToPlan === selectedPlanForChange.id}
+        />
+      )}
+
+      {currentPlan && (
+        <PlanComparisonModal
+          isOpen={showComparisonModal}
+          onClose={() => setShowComparisonModal(false)}
+          plans={plans.map(plan => ({
+            id: plan.id,
+            name: plan.name,
+            slug: plan.slug,
+            price: isYearly && plan.yearlyPrice ? plan.yearlyPrice : plan.price,
+            billingCycle: isYearly ? 'yearly' : 'monthly',
+            description: plan.description || '',
+            features: {
+              maxUsers: plan.limits.maxUsers,
+              maxCustomers: plan.limits.maxCustomers,
+              maxOrdersPerMonth: plan.limits.maxOrders,
+              maxStorageMB: plan.limits.maxStorage || 100,
+              features: [
+                'Usuários',
+                'Clientes',
+                'Ordens de Serviço',
+                'Armazenamento',
+                ...(plan.features.nfe ? ['Emissão de NFe/NFS-e'] : []),
+                ...(plan.features.whatsapp ? ['Integração WhatsApp'] : []),
+                ...(plan.features.api ? ['Acesso à API'] : []),
+                ...(plan.features.customization ? ['Customização avançada'] : []),
+              ],
+            },
+            isPopular: plan.slug === 'pro',
+            isCurrent: plan.id === currentPlan.id,
+          }))}
+          currentPlanId={currentPlan.id}
+          onSelectPlan={(planId) => {
+            const plan = plans.find(p => p.id === planId);
+            if (plan) {
+              setShowComparisonModal(false);
+              handleUpgrade(plan);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
