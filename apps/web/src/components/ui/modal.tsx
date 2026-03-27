@@ -35,11 +35,11 @@ export function Modal({ isOpen, onClose, children, size = 'md' }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-xl shadow-xl ${sizes[size]} w-full max-h-[90vh] overflow-y-auto animate-scaleIn`}
+        className={`bg-card text-card-foreground border border-border rounded-xl shadow-xl ${sizes[size]} w-full max-h-[90vh] overflow-y-auto animate-scaleIn`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -55,12 +55,12 @@ interface ModalHeaderProps {
 
 export function ModalHeader({ children, onClose }: ModalHeaderProps) {
   return (
-    <div className="flex items-center justify-between p-6 border-b border-gray-200">
-      <h2 className="text-xl font-semibold text-gray-900">{children}</h2>
+    <div className="flex items-center justify-between p-6 border-b border-border">
+      <h2 className="text-xl font-semibold text-foreground">{children}</h2>
       {onClose && (
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <svg
             className="w-6 h-6"
@@ -97,7 +97,7 @@ interface ModalFooterProps {
 
 export function ModalFooter({ children, className = '' }: ModalFooterProps) {
   return (
-    <div className={`flex items-center justify-end gap-3 p-6 border-t border-gray-200 ${className}`}>
+    <div className={`flex items-center justify-end gap-3 p-6 border-t border-border ${className}`}>
       {children}
     </div>
   );
