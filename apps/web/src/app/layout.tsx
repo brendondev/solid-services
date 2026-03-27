@@ -5,6 +5,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts";
 import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts";
 import { PWAWrapper } from "@/components/pwa/pwa-wrapper";
+import { ThemeProvider } from "@/components/theme";
 
 export const metadata: Metadata = {
   title: "Solid Service - ERP SaaS",
@@ -55,15 +56,22 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="antialiased" suppressHydrationWarning>
-        <QueryProvider>
-          <ToastProvider>
-            <KeyboardShortcutsProvider>
-              <PWAWrapper />
-              {children}
-              <KeyboardShortcutsDialog />
-            </KeyboardShortcutsProvider>
-          </ToastProvider>
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <ToastProvider>
+              <KeyboardShortcutsProvider>
+                <PWAWrapper />
+                {children}
+                <KeyboardShortcutsDialog />
+              </KeyboardShortcutsProvider>
+            </ToastProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
