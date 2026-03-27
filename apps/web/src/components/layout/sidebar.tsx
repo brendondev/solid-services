@@ -12,6 +12,7 @@ import {
   Truck,
   ChevronLeft,
   Crown,
+  MessageCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -28,6 +29,7 @@ const navigation = [
   { name: 'Ordens de Serviço', href: '/dashboard/orders', icon: Wrench },
   { name: 'Orçamentos', href: '/dashboard/quotations', icon: FileText },
   { name: 'Agenda', href: '/dashboard/schedule', icon: Calendar },
+  { name: 'Chat', href: '/dashboard/chat', icon: MessageCircle },
   { name: 'Financeiro', href: '/dashboard/financial', icon: DollarSign },
   { name: 'Serviços', href: '/dashboard/services', icon: ClipboardList },
   { name: 'Fornecedores', href: '/dashboard/suppliers', icon: Truck },

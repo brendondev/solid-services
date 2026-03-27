@@ -43,6 +43,7 @@ import { DigitalSignatureModule } from './modules/digital-signature/digital-sign
 
 // Interceptors
 import { TenantContextInterceptor } from './common/interceptors';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   controllers: [AppController, ...devControllers],
@@ -83,6 +84,7 @@ import { TenantContextInterceptor } from './common/interceptors';
     SubscriptionsModule,
     UsersModule,
     DigitalSignatureModule,
+    ChatModule,
   ],
   providers: [
     // ORDEM CRÍTICA:

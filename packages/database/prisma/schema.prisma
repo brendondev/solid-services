@@ -161,6 +161,7 @@ model Customer {
   serviceOrders ServiceOrder[]
   receivables   Receivable[]
   portalTokens  CustomerPortalToken[]
+  conversations Conversation[]
 
   @@unique([tenantId, document])
   @@index([tenantId])
@@ -585,4 +586,62 @@ model Notification {
   @@index([tenantId, userId, read])
   @@index([tenantId, createdAt])
   @@map("notifications")
+}
+
+// ============================================================================
+// CHAT
+// ============================================================================
+
+model Conversation {
+  id         String   @id @default(uuid())
+  tenantId   String   @map("tenant_id")
+  customerId String   @map("customer_id")
+  status     String   @default("open") // open, closed, archived
+  title      String?
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@index([tenantId])
+  @@index([tenantId, customerId])
+  @@index([tenantId, status])
+  @@index([tenantId, lastMessageAt])
+  @@map("conversations")
+}
+
+model ChatMessage {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  senderId       String   @map("sender_id")
+  senderType     String   @map("sender_type") // customer, employee
+  content        String
+  read           Boolean  @default(false)
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  attachments  ChatAttachment[]
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("chat_messages")
+}
+
+model ChatAttachment {
+  id        String   @id @default(uuid())
+  messageId String   @map("message_id")
+  fileName  String   @map("file_name")
+  fileSize  Int      @map("file_size")
+  mimeType  String   @map("mime_type")
+  storageKey String  @map("storage_key")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("chat_attachments")
 }
