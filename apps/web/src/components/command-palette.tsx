@@ -26,13 +26,27 @@ import {
   Search,
   Settings,
   TrendingUp,
+  MessageCircle,
+  Crown,
+  Truck,
 } from 'lucide-react';
 import { customersApi } from '@/lib/api/customers';
+import { servicesApi } from '@/lib/api/services';
+import axios from 'axios';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 interface RecentItem {
   id: string;
   name: string;
-  type: 'customer' | 'order' | 'quotation';
+  type: 'customer' | 'order' | 'quotation' | 'service';
+}
+
+interface SearchResult {
+  id: string;
+  name: string;
+  type: 'customer' | 'order' | 'quotation' | 'service';
+  subtitle?: string;
 }
 
 // Context para compartilhar estado do Command Palette
@@ -79,14 +93,111 @@ function CommandPaletteDialog() {
   const { open, setOpen } = useCommandPalette();
   const [search, setSearch] = useState('');
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Load recent items when opening
   useEffect(() => {
     if (open) {
       loadRecentItems();
+      setSearch('');
+      setSearchResults([]);
     }
   }, [open]);
+
+  // Search entities when user types
+  useEffect(() => {
+    const searchEntities = async () => {
+      if (!search || search.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      try {
+        setIsSearching(true);
+        const token = localStorage.getItem('token');
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Search in parallel
+        const [customers, orders, quotations, services] = await Promise.all([
+          axios.get(`${API_URL}/customers`, { headers }).catch(() => ({ data: [] })),
+          axios.get(`${API_URL}/service-orders`, { headers }).catch(() => ({ data: [] })),
+          axios.get(`${API_URL}/quotations`, { headers }).catch(() => ({ data: [] })),
+          axios.get(`${API_URL}/services`, { headers }).catch(() => ({ data: [] })),
+        ]);
+
+        const results: SearchResult[] = [];
+
+        // Filter customers
+        customers.data
+          .filter((c: any) => c.name.toLowerCase().includes(search.toLowerCase()))
+          .slice(0, 3)
+          .forEach((c: any) => {
+            results.push({
+              id: c.id,
+              name: c.name,
+              type: 'customer',
+              subtitle: c.document || c.contacts?.[0]?.email,
+            });
+          });
+
+        // Filter orders
+        orders.data
+          .filter((o: any) =>
+            o.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
+            o.description?.toLowerCase().includes(search.toLowerCase())
+          )
+          .slice(0, 3)
+          .forEach((o: any) => {
+            results.push({
+              id: o.id,
+              name: `OS #${o.id.slice(0, 8)} - ${o.customer?.name || 'Cliente'}`,
+              type: 'order',
+              subtitle: o.status,
+            });
+          });
+
+        // Filter quotations
+        quotations.data
+          .filter((q: any) =>
+            q.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
+            q.description?.toLowerCase().includes(search.toLowerCase())
+          )
+          .slice(0, 3)
+          .forEach((q: any) => {
+            results.push({
+              id: q.id,
+              name: `Orçamento #${q.id.slice(0, 8)} - ${q.customer?.name || 'Cliente'}`,
+              type: 'quotation',
+              subtitle: q.status,
+            });
+          });
+
+        // Filter services
+        services.data
+          .filter((s: any) => s.name.toLowerCase().includes(search.toLowerCase()))
+          .slice(0, 3)
+          .forEach((s: any) => {
+            results.push({
+              id: s.id,
+              name: s.name,
+              type: 'service',
+              subtitle: s.description,
+            });
+          });
+
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Error searching entities:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const debounce = setTimeout(searchEntities, 300);
+    return () => clearTimeout(debounce);
+  }, [search]);
 
   const loadRecentItems = async () => {
     try {
@@ -129,13 +240,32 @@ function CommandPaletteDialog() {
     runCommand(() => router.push(path));
   };
 
-  const handleRecentItem = (item: RecentItem) => {
+  const handleRecentItem = (item: RecentItem | SearchResult) => {
     const routes = {
       customer: '/dashboard/customers/',
       order: '/dashboard/orders/',
       quotation: '/dashboard/quotations/',
+      service: '/dashboard/services/',
     };
-    runCommand(() => router.push(`${routes[item.type]}${item.id}`));
+    runCommand(() => {
+      router.push(`${routes[item.type]}${item.id}`);
+      addToRecent({ id: item.id, name: item.name, type: item.type });
+    });
+  };
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'customer':
+        return Users;
+      case 'order':
+        return ClipboardList;
+      case 'quotation':
+        return FileText;
+      case 'service':
+        return Wrench;
+      default:
+        return Search;
+    }
   };
 
   return (
@@ -172,6 +302,29 @@ function CommandPaletteDialog() {
           </CommandItem>
         </CommandGroup>
 
+        {/* Search results */}
+        {searchResults.length > 0 && (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading="Resultados da Busca">
+              {searchResults.map((result) => {
+                const Icon = getIcon(result.type);
+                return (
+                  <CommandItem key={result.id} onSelect={() => handleRecentItem(result)}>
+                    <Icon className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col">
+                      <span>{result.name}</span>
+                      {result.subtitle && (
+                        <span className="text-xs text-muted-foreground">{result.subtitle}</span>
+                      )}
+                    </div>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </>
+        )}
+
         <CommandSeparator />
 
         <CommandGroup heading="Navegação">
@@ -199,17 +352,25 @@ function CommandPaletteDialog() {
             <Calendar className="mr-2 h-4 w-4" />
             <span>Agenda</span>
           </CommandItem>
+          <CommandItem onSelect={() => handleNavigation('/dashboard/chat')}>
+            <MessageCircle className="mr-2 h-4 w-4" />
+            <span>Chat</span>
+          </CommandItem>
           <CommandItem onSelect={() => handleNavigation('/dashboard/financial')}>
             <DollarSign className="mr-2 h-4 w-4" />
             <span>Financeiro - Recebíveis</span>
           </CommandItem>
           <CommandItem onSelect={() => handleNavigation('/dashboard/suppliers')}>
-            <Building2 className="mr-2 h-4 w-4" />
+            <Truck className="mr-2 h-4 w-4" />
             <span>Fornecedores</span>
           </CommandItem>
           <CommandItem onSelect={() => handleNavigation('/dashboard/payables')}>
             <Receipt className="mr-2 h-4 w-4" />
             <span>Contas a Pagar</span>
+          </CommandItem>
+          <CommandItem onSelect={() => handleNavigation('/dashboard/planos')}>
+            <Crown className="mr-2 h-4 w-4" />
+            <span>Planos e Assinatura</span>
           </CommandItem>
         </CommandGroup>
 
@@ -217,17 +378,21 @@ function CommandPaletteDialog() {
           <>
             <CommandSeparator />
             <CommandGroup heading="Recentes">
-              {recentItems.map((item) => (
-                <CommandItem key={item.id} onSelect={() => handleRecentItem(item)}>
-                  <Search className="mr-2 h-4 w-4" />
-                  <span>{item.name}</span>
-                  <CommandShortcut>
-                    {item.type === 'customer' && 'Cliente'}
-                    {item.type === 'order' && 'Ordem'}
-                    {item.type === 'quotation' && 'Orçamento'}
-                  </CommandShortcut>
-                </CommandItem>
-              ))}
+              {recentItems.map((item) => {
+                const Icon = getIcon(item.type);
+                return (
+                  <CommandItem key={item.id} onSelect={() => handleRecentItem(item)}>
+                    <Icon className="mr-2 h-4 w-4" />
+                    <span>{item.name}</span>
+                    <CommandShortcut>
+                      {item.type === 'customer' && 'Cliente'}
+                      {item.type === 'order' && 'Ordem'}
+                      {item.type === 'quotation' && 'Orçamento'}
+                      {item.type === 'service' && 'Serviço'}
+                    </CommandShortcut>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </>
         )}
