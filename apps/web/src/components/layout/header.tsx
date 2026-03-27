@@ -1,7 +1,8 @@
 'use client';
 
-import { Bell, Menu, Search, Settings } from 'lucide-react';
+import { Menu, Search, Settings } from 'lucide-react';
 import { ThemeToggleDropdown } from '@/components/theme';
+import { NotificationsDropdown } from '@/components/notifications';
 import { useState } from 'react';
 
 interface HeaderProps {
@@ -38,11 +39,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Right side */}
         <div className="flex items-center gap-2">
           {/* Notifications */}
-          <button className="relative flex items-center justify-center w-9 h-9 rounded-lg hover:bg-accent transition-colors">
-            <Bell className="w-5 h-5" />
-            {/* Badge */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-          </button>
+          <NotificationsDropdown />
 
           {/* Theme Toggle */}
           <ThemeToggleDropdown />
