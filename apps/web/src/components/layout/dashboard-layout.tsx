@@ -21,7 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col lg:pl-64">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
