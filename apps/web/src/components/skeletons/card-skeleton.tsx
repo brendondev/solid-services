@@ -23,7 +23,7 @@ export function CardSkeleton({
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-lg border border-border p-4 sm:p-6"
+          className="bg-card rounded-lg border border-border p-4 sm:p-6"
         >
           {showImage && (
             <Skeleton className="h-48 w-full rounded-lg mb-4" />
@@ -50,7 +50,7 @@ export function StatCardSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-lg border border-border p-4 sm:p-6"
+          className="bg-card rounded-lg border border-border p-4 sm:p-6"
         >
           <div className="flex items-center justify-between mb-2">
             <Skeleton className="h-4 w-24" />
@@ -69,7 +69,7 @@ export function StatCardSkeleton({ count = 4 }: { count?: number }) {
  */
 export function DetailCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-border p-6">
+    <div className="bg-card rounded-lg border border-border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b">
         <div className="space-y-2">

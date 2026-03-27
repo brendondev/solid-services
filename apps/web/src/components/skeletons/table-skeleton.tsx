@@ -34,7 +34,7 @@ export function TableSkeleton({
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div
             key={`row-${rowIndex}`}
-            className="grid gap-4 p-4 bg-white rounded-lg border border-border"
+            className="grid gap-4 p-4 bg-card rounded-lg border border-border"
             style={{ gridTemplateColumns: `repeat(${columns + (showActions ? 1 : 0)}, 1fr)` }}
           >
             {Array.from({ length: columns }).map((_, colIndex) => (
@@ -64,7 +64,7 @@ export function MobileTableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: rows }).map((_, index) => (
-        <div key={index} className="bg-white rounded-lg border border-border p-4 space-y-3">
+        <div key={index} className="bg-card rounded-lg border border-border p-4 space-y-3">
           <div className="flex items-center justify-between">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-6 w-16 rounded-full" />

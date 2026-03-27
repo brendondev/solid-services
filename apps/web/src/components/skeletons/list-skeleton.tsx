@@ -25,7 +25,7 @@ export function ListSkeleton({
       {Array.from({ length: items }).map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-lg border border-border p-4 flex items-center gap-4"
+          className="bg-card rounded-lg border border-border p-4 flex items-center gap-4"
         >
           <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
           <div className="flex-1 space-y-2">
@@ -51,7 +51,7 @@ function DetailedListSkeleton({ items }: { items: number }) {
       {Array.from({ length: items }).map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-lg border border-border p-6"
+          className="bg-card rounded-lg border border-border p-6"
         >
           {/* Header */}
           <div className="flex items-start justify-between mb-4">

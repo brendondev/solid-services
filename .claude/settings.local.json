@@ -68,7 +68,12 @@
       "Bash(apps/api/.env <<'EOF'\n# Database \\(local para testes\\)\nDATABASE_URL=\"file:./dev.db\"\n\n# JWT\nJWT_SECRET=\"test-secret-key-change-in-production\"\nJWT_EXPIRES_IN=\"15m\"\nREFRESH_TOKEN_EXPIRES_IN=\"7d\"\n\n# App\nNODE_ENV=\"development\"\nPORT=3000\nAPI_BASE_URL=\"https://solid-services-production.up.railway.app\"\nWEB_URL=\"http://localhost:3001\"\nEOF)",
       "Bash(npm test -- services.service.spec.ts)",
       "Bash(npm test:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx nest g module modules/chat)",
+      "Bash(npx nest:*)",
+      "Bash(npx nest g service:*)",
+      "Bash(xargs:*)",
+      "Bash(powershell:*)"
     ]
   }
 }

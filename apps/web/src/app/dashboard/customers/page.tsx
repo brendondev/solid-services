@@ -299,18 +299,18 @@ export default function CustomersPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white p-6 rounded-lg shadow border border-border">
+            <div key={i} className="bg-card p-6 rounded-lg shadow border border-border">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-16" />
             </div>
           ))}
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 rounded-lg shadow border border-border">
           <Skeleton className="h-10 w-full" />
         </div>
 
-        <div className="bg-white rounded-lg shadow border border-border">
+        <div className="bg-card rounded-lg shadow border border-border">
           <div className="p-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full mb-2" />
@@ -326,7 +326,7 @@ export default function CustomersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Clientes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Clientes</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Gerencie sua base de clientes</p>
         </div>
         <Button
@@ -340,11 +340,11 @@ export default function CustomersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Total de Clientes</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
             </div>
             <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
               <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
@@ -352,7 +352,7 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Clientes Ativos</p>
@@ -364,11 +364,11 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Empresas</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.companies}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.companies}</p>
             </div>
             <div className="p-2 sm:p-3 bg-accent rounded-lg">
               <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
@@ -376,11 +376,11 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Pessoas Físicas</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.individuals}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.individuals}</p>
             </div>
             <div className="p-2 sm:p-3 bg-secondary rounded-lg">
               <User className="w-5 h-5 sm:w-6 sm:h-6 text-secondary-foreground" />
@@ -446,9 +446,9 @@ export default function CustomersPage() {
 
       {/* Data Table or Empty State */}
       {filteredData.length === 0 && !loading ? (
-        <div className="bg-white rounded-lg shadow border border-border p-6 sm:p-12 text-center">
+        <div className="bg-card rounded-lg shadow border border-border p-6 sm:p-12 text-center">
           <Users className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+          <p className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             {data.length === 0 ? 'Nenhum cliente encontrado' : 'Nenhum resultado encontrado'}
           </p>
           <p className="text-sm sm:text-base text-muted-foreground mb-6">
@@ -467,7 +467,7 @@ export default function CustomersPage() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow border border-border p-3 sm:p-6">
+        <div className="bg-card rounded-lg shadow border border-border p-3 sm:p-6">
           <DataTable
             columns={columns}
             data={filteredData}

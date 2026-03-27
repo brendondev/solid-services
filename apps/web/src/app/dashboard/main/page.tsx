@@ -172,7 +172,7 @@ export default function DashboardMainPage() {
     <div className="space-y-6 p-4 sm:p-6 animate-fadeInUp">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão geral do seu negócio</p>
         </div>
         <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
@@ -193,11 +193,11 @@ export default function DashboardMainPage() {
 
       {/* Resumo Principal */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Clientes Ativos</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
                 {safeStats.summary.activeCustomers}
               </p>
             </div>
@@ -207,11 +207,11 @@ export default function DashboardMainPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Serviços Cadastrados</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
                 {safeStats.summary.activeServices}
               </p>
             </div>
@@ -221,11 +221,11 @@ export default function DashboardMainPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Ordens do Mês</p>
-              <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">
                 {safeStats.summary.ordersThisMonth}
               </p>
             </div>
@@ -235,7 +235,7 @@ export default function DashboardMainPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">A Receber</p>
@@ -252,12 +252,12 @@ export default function DashboardMainPage() {
 
       {/* Métricas Rápidas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-warning/10 rounded-lg">
               <FileText className="w-5 h-5 text-warning" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Orçamentos Pendentes</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Orçamentos Pendentes</h3>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm text-muted-foreground">Aguardando resposta</span>
@@ -267,12 +267,12 @@ export default function DashboardMainPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Clock className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Ordens Ativas</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Ordens Ativas</h3>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm text-muted-foreground">Em andamento</span>
@@ -282,12 +282,12 @@ export default function DashboardMainPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-destructive/10 rounded-lg">
               <XCircle className="w-5 h-5 text-destructive" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Pagamentos Atrasados</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">Pagamentos Atrasados</h3>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs sm:text-sm text-muted-foreground">Vencidos</span>
@@ -301,12 +301,12 @@ export default function DashboardMainPage() {
       {/* Gráficos Visuais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Gráfico de Donut - Status de Ordens */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-primary/10 rounded-lg">
               <BarChart3 className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Distribuição de Ordens
             </h3>
           </div>
@@ -332,10 +332,11 @@ export default function DashboardMainPage() {
                   <Tooltip
                     formatter={(value: any) => [`${value} ordens`, '']}
                     contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       fontSize: '14px',
+                      color: 'hsl(var(--foreground))',
                     }}
                   />
                   <Legend
@@ -355,12 +356,12 @@ export default function DashboardMainPage() {
         </div>
 
         {/* Gráfico de Barras - Top Serviços */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-success/10 rounded-lg">
               <TrendingUp className="w-5 h-5 text-success" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Top 5 Serviços do Mês
             </h3>
           </div>
@@ -386,10 +387,11 @@ export default function DashboardMainPage() {
                       return [formatCurrency(Number(value ?? 0)), 'Receita'];
                     }}
                     contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       fontSize: '14px',
+                      color: 'hsl(var(--foreground))',
                     }}
                   />
                   <Bar dataKey="ordens" fill="#3B82F6" radius={[0, 8, 8, 0]} />
@@ -407,12 +409,12 @@ export default function DashboardMainPage() {
       {/* Histórico de Receita e Ordens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Gráfico de Linha - Evolução de Receita */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-success/10 rounded-lg">
               <DollarSign className="w-5 h-5 text-success" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Evolução de Receita (6 meses)
             </h3>
           </div>
@@ -435,10 +437,11 @@ export default function DashboardMainPage() {
                   <Tooltip
                     formatter={(value) => [formatCurrency(Number(value)), '']}
                     contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       fontSize: '14px',
+                      color: 'hsl(var(--foreground))',
                     }}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
@@ -471,12 +474,12 @@ export default function DashboardMainPage() {
         </div>
 
         {/* Gráfico de Linha - Evolução de Ordens */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-primary/10 rounded-lg">
               <ClipboardList className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Evolução de Ordens (6 meses)
             </h3>
           </div>
@@ -503,10 +506,11 @@ export default function DashboardMainPage() {
                       return [`${value} ordens`, labels[name as string] || name];
                     }}
                     contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                       fontSize: '14px',
+                      color: 'hsl(var(--foreground))',
                     }}
                   />
                   <Legend
@@ -556,12 +560,12 @@ export default function DashboardMainPage() {
       </div>
 
       {/* Top 5 Clientes */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Users className="w-5 h-5 text-primary" />
           </div>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">
             Top 5 Clientes do Mês
           </h3>
         </div>
@@ -577,7 +581,7 @@ export default function DashboardMainPage() {
                     {index + 1}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{customer.name}</p>
+                    <p className="text-sm font-medium text-foreground">{customer.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {customer.ordersCount} {customer.ordersCount === 1 ? 'ordem' : 'ordens'}
                     </p>
@@ -604,35 +608,35 @@ export default function DashboardMainPage() {
           <div className="p-2 bg-primary/20 rounded-lg">
             <TrendingUp className="w-5 h-5 text-primary" />
           </div>
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">
             Performance de {safeMonthlyPerf.month}/{safeMonthlyPerf.year}
           </h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white/50 p-4 rounded-lg">
+          <div className="bg-card/50 p-4 rounded-lg">
             <p className="text-xs text-muted-foreground">Ordens Concluídas</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
               {safeMonthlyPerf.orders.completed}/{safeMonthlyPerf.orders.total}
             </p>
             <p className="text-xs text-success mt-1">
               {safeMonthlyPerf.orders.completionRate.toFixed(1)}% de taxa de conclusão
             </p>
           </div>
-          <div className="bg-white/50 p-4 rounded-lg">
+          <div className="bg-card/50 p-4 rounded-lg">
             <p className="text-xs text-muted-foreground">Receita Total</p>
             <p className="text-xl sm:text-2xl font-bold text-success mt-1">
               {formatCurrency(safeMonthlyPerf.revenue.total)}
             </p>
           </div>
-          <div className="bg-white/50 p-4 rounded-lg">
+          <div className="bg-card/50 p-4 rounded-lg">
             <p className="text-xs text-muted-foreground">Recebido</p>
             <p className="text-xl sm:text-2xl font-bold text-primary mt-1">
               {formatCurrency(safeMonthlyPerf.revenue.received)}
             </p>
           </div>
-          <div className="bg-white/50 p-4 rounded-lg">
+          <div className="bg-card/50 p-4 rounded-lg">
             <p className="text-xs text-muted-foreground">Novos Clientes</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+            <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
               {safeMonthlyPerf.customers.new}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -644,12 +648,12 @@ export default function DashboardMainPage() {
 
       {/* Status de Orçamentos e Ordens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-primary/10 rounded-lg">
               <FileText className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Orçamentos
             </h3>
           </div>
@@ -659,7 +663,7 @@ export default function DashboardMainPage() {
                 <Clock className="w-4 h-4" />
                 Rascunho
               </span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-muted text-muted-foreground border border-border rounded-full text-sm font-medium">
                 {safeStats.quotations.draft}
               </span>
             </div>
@@ -668,7 +672,7 @@ export default function DashboardMainPage() {
                 <FileText className="w-4 h-4" />
                 Enviados
               </span>
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-full text-sm font-medium">
                 {safeStats.quotations.sent}
               </span>
             </div>
@@ -693,12 +697,12 @@ export default function DashboardMainPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-warning/10 rounded-lg">
               <ClipboardList className="w-5 h-5 text-warning" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               Ordens de Serviço
             </h3>
           </div>
@@ -708,7 +712,7 @@ export default function DashboardMainPage() {
                 <Clock className="w-4 h-4" />
                 Abertas
               </span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-muted text-muted-foreground border border-border rounded-full text-sm font-medium">
                 {safeStats.orders.open}
               </span>
             </div>
@@ -717,7 +721,7 @@ export default function DashboardMainPage() {
                 <Calendar className="w-4 h-4" />
                 Agendadas
               </span>
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-full text-sm font-medium">
                 {safeStats.orders.scheduled}
               </span>
             </div>
@@ -745,8 +749,8 @@ export default function DashboardMainPage() {
 
       {/* Ordens Recentes e Próximas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">
             Ordens Recentes
           </h3>
           {safeStats.recentOrders.length === 0 ? (
@@ -759,7 +763,7 @@ export default function DashboardMainPage() {
                   className="flex items-center justify-between border-b border-border pb-3 last:border-b-0 hover:bg-muted/50 p-2 rounded-lg transition-colors active:bg-muted"
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {order.number}
                     </p>
                     <p className="text-xs text-muted-foreground">{order.customer.name}</p>
@@ -781,8 +785,8 @@ export default function DashboardMainPage() {
           )}
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">
             Próximos Agendamentos
           </h3>
           {safeStats.upcomingOrders.length === 0 ? (
@@ -795,7 +799,7 @@ export default function DashboardMainPage() {
                   className="flex items-center justify-between border-b border-border pb-3 last:border-b-0 hover:bg-muted/50 p-2 rounded-lg transition-colors active:bg-muted"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {order.number}
                     </p>
                     <p className="text-xs text-muted-foreground">{order.customer.name}</p>
