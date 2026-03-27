@@ -267,7 +267,7 @@ export default function QuotationsPage() {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="space-y-6 animate-fadeInUp">
+      <div className="space-y-4 animate-fadeInUp">
         <div className="flex items-center justify-between">
           <div>
             <Skeleton className="h-9 w-40" />
@@ -301,7 +301,7 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fadeInUp">
+    <div className="space-y-4 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

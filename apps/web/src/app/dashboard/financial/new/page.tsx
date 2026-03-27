@@ -112,7 +112,7 @@ export default function NewReceivablePage() {
   }
 
   return (
-    <div className="space-y-6 animate-fadeInUp">
+    <div className="space-y-4 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center space-x-4">
         <button
@@ -137,7 +137,7 @@ export default function NewReceivablePage() {
 
       {/* Form */}
       <div className="bg-card rounded-lg shadow border border-border p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Cliente */}
           <div>
             <label htmlFor="customerId" className="block text-sm font-medium text-gray-700 mb-1">

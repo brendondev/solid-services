@@ -312,7 +312,7 @@ export default function FinancialPage() {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="space-y-6 animate-fadeInUp">
+      <div className="space-y-4 animate-fadeInUp">
         <div className="flex items-center justify-between">
           <div>
             <Skeleton className="h-9 w-40" />
@@ -346,7 +346,7 @@ export default function FinancialPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 animate-fadeInUp">
+    <div className="space-y-4 sm:space-y-4 p-4 sm:p-6 animate-fadeInUp">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

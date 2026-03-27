@@ -67,7 +67,7 @@ export default function NewPayablePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fadeInUp">
+    <div className="max-w-2xl mx-auto space-y-4 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center gap-4">
         <button
@@ -89,7 +89,7 @@ export default function NewPayablePage() {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow border border-border p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow border border-border p-6 space-y-4">
         <div className="flex items-center gap-3 pb-4 border-b border-border">
           <div className="p-3 bg-destructive/10 rounded-lg">
             <DollarSign className="w-6 h-6 text-destructive" />

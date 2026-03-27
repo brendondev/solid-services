@@ -365,7 +365,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fadeInUp max-w-full overflow-x-hidden">
+    <div className="space-y-4 animate-fadeInUp max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>

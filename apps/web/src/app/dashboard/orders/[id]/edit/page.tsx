@@ -121,7 +121,7 @@ export default function EditOrderPage() {
 
   if (!order) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           Ordem não encontrada
         </div>
@@ -139,7 +139,7 @@ export default function EditOrderPage() {
   // Se ordem não pode ser editada
   if (order.status === 'completed' || order.status === 'cancelled') {
     return (
-      <div className="space-y-6 animate-fadeInUp">
+      <div className="space-y-4 animate-fadeInUp">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push(`/dashboard/orders/${orderId}`)}
@@ -174,7 +174,7 @@ export default function EditOrderPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fadeInUp">
+    <div className="space-y-4 animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center gap-4">
         <button
@@ -208,12 +208,12 @@ export default function EditOrderPage() {
       </div>
 
       {/* Formulário */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Informações Editáveis */}
         <div className="bg-card p-6 rounded-lg shadow border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">Informações da Ordem</h2>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <label htmlFor="customerId" className="block text-sm font-medium text-gray-700 mb-2">
                 Cliente *

@@ -224,7 +224,7 @@ export default function OrderDetailPage() {
 
   if (error || !order) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
           {error || 'Ordem não encontrada'}
         </div>
@@ -243,7 +243,7 @@ export default function OrderDetailPage() {
   const StatusIcon = statusInfo?.icon || Clock;
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 pb-24 animate-fadeInUp">
+    <div className="space-y-4 sm:space-y-4 p-4 sm:p-6 pb-24 animate-fadeInUp">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">

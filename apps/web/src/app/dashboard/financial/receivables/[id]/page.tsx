@@ -111,7 +111,7 @@ export default function ReceivableDetailPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6 animate-fadeInUp">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-4 p-4 sm:p-6 animate-fadeInUp">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <button onClick={() => router.push('/dashboard/financial')} className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors">
@@ -256,7 +256,7 @@ export default function ReceivableDetailPage() {
       {/* Payment Modal */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="bg-card rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6 space-y-4 sm:space-y-4">
             <h3 className="text-lg sm:text-xl font-bold text-foreground">Registrar Pagamento</h3>
 
             <form onSubmit={handleRegisterPayment} className="space-y-4">

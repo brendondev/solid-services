@@ -333,7 +333,7 @@ export default function SchedulePage() {
   }
 
   return (
-    <div className="space-y-6 animate-fadeInUp p-4 sm:p-6">
+    <div className="space-y-4 animate-fadeInUp p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
