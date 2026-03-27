@@ -169,7 +169,7 @@ export default function DashboardMainPage() {
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 animate-fadeInUp">
+    <div className="space-y-6 animate-fadeInUp max-w-full overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>

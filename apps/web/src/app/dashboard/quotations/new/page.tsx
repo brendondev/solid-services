@@ -174,13 +174,13 @@ export default function NewQuotationPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
         <button
           onClick={() => router.push('/dashboard/quotations')}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 min-h-[44px]"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-foreground min-h-[44px]"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="sm:inline">Voltar</span>
         </button>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Novo Orçamento</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Novo Orçamento</h1>
           <p className="text-sm sm:text-base text-gray-600">Crie um orçamento para um cliente</p>
         </div>
       </div>
@@ -194,8 +194,8 @@ export default function NewQuotationPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
         {/* Informações do Orçamento */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow-sm">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">
             Informações do Orçamento
           </h2>
 
@@ -294,9 +294,9 @@ export default function NewQuotationPage() {
         </div>
 
         {/* Itens do Orçamento */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">
               Itens do Orçamento
             </h2>
             <button
@@ -328,7 +328,7 @@ export default function NewQuotationPage() {
               >
                 {/* Header do item */}
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">Item {index + 1}</h3>
+                  <h3 className="font-medium text-foreground">Item {index + 1}</h3>
                   {fields.length > 1 && (
                     <button
                       type="button"
@@ -446,7 +446,7 @@ export default function NewQuotationPage() {
                 {/* Total do item */}
                 <div className="flex justify-between items-center pt-2 border-t">
                   <span className="text-sm text-gray-600">Total do item:</span>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-bold text-foreground">
                     {formatCurrency(calculateItemTotal(index))}
                   </span>
                 </div>
@@ -469,7 +469,7 @@ export default function NewQuotationPage() {
             {/* Subtotal */}
             <div className="flex justify-between items-center text-base">
               <span className="text-gray-700">Subtotal:</span>
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-foreground">
                 {formatCurrency(calculateSubtotal())}
               </span>
             </div>
@@ -478,7 +478,7 @@ export default function NewQuotationPage() {
 
             {/* Total */}
             <div className="flex justify-between items-center pt-3 border-t border-primary/20">
-              <span className="text-lg sm:text-xl font-semibold text-gray-900">
+              <span className="text-lg sm:text-xl font-semibold text-foreground">
                 Total:
               </span>
               <span className="text-2xl sm:text-3xl font-bold text-primary">

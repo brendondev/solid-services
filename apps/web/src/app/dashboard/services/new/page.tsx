@@ -61,12 +61,12 @@ export default function NewServicePage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push('/dashboard/services')}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-foreground"
         >
           ← Voltar
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Novo Serviço</h1>
+          <h1 className="text-2xl font-bold text-foreground">Novo Serviço</h1>
           <p className="text-gray-600">Adicione um serviço ao catálogo</p>
         </div>
       </div>
@@ -78,8 +78,8 @@ export default function NewServicePage() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Informações do Serviço
           </h2>
 

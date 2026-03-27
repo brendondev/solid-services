@@ -158,12 +158,12 @@ export default function NewOrderPage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push('/dashboard/orders')}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-foreground"
         >
           ← Voltar
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nova Ordem de Serviço</h1>
+          <h1 className="text-2xl font-bold text-foreground">Nova Ordem de Serviço</h1>
           <p className="text-gray-600">Crie uma ordem de serviço manualmente</p>
         </div>
       </div>
@@ -176,8 +176,8 @@ export default function NewOrderPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Informações da Ordem */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Informações da Ordem
           </h2>
 
@@ -248,9 +248,9 @@ export default function NewOrderPage() {
         </div>
 
         {/* Itens da Ordem */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-card p-6 rounded-lg shadow">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-foreground">
               Serviços a Executar
             </h2>
             <button
@@ -277,7 +277,7 @@ export default function NewOrderPage() {
                 className="p-4 border border-gray-200 rounded-lg space-y-4"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">Serviço {index + 1}</h3>
+                  <h3 className="font-medium text-foreground">Serviço {index + 1}</h3>
                   {fields.length > 1 && (
                     <button
                       type="button"
@@ -374,7 +374,7 @@ export default function NewOrderPage() {
 
                 <div className="text-right">
                   <span className="text-sm text-gray-600">Total: </span>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-bold text-foreground">
                     {formatCurrency(calculateItemTotal(index))}
                   </span>
                 </div>
@@ -394,7 +394,7 @@ export default function NewOrderPage() {
         {/* Total Geral */}
         <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold text-gray-900">
+            <span className="text-lg font-semibold text-foreground">
               Valor Total da Ordem
             </span>
             <span className="text-3xl font-bold text-purple-600">

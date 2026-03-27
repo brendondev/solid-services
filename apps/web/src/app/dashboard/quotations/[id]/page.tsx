@@ -29,9 +29,9 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-700',
-  draft: 'bg-gray-100 text-gray-700',
-  sent: 'bg-blue-100 text-blue-700',
+  pending: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+  draft: 'bg-muted text-muted-foreground',
+  sent: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
   approved: 'bg-success/10 text-success',
   rejected: 'bg-destructive/10 text-destructive',
 };
@@ -197,12 +197,12 @@ export default function QuotationDetailPage() {
         <div className="flex items-center space-x-3 sm:space-x-4">
           <button
             onClick={() => router.push('/dashboard/quotations')}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-foreground active:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
               Orçamento {quotation.number}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -219,56 +219,56 @@ export default function QuotationDetailPage() {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
               <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Cliente</p>
-              <p className="text-base sm:text-lg font-semibold text-gray-900">
+              <p className="text-base sm:text-lg font-semibold text-foreground">
                 {quotation.customer?.name || 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
               <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Valor Total</p>
-              <p className="text-base sm:text-lg font-semibold text-gray-900">
+              <p className="text-base sm:text-lg font-semibold text-foreground">
                 {formatCurrency(Number(quotation.totalAmount))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-warning/10 rounded-lg">
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Válido até</p>
-              <p className="text-base sm:text-lg font-semibold text-gray-900">
+              <p className="text-base sm:text-lg font-semibold text-foreground">
                 {quotation.validUntil ? formatDate(quotation.validUntil) : 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-accent rounded-lg">
               <Package className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Itens</p>
-              <p className="text-base sm:text-lg font-semibold text-gray-900">
+              <p className="text-base sm:text-lg font-semibold text-foreground">
                 {quotation.items?.length || 0}
               </p>
             </div>
@@ -279,15 +279,15 @@ export default function QuotationDetailPage() {
       {/* Observações */}
       {quotation.notes && (
         <div className="bg-blue-50 border border-blue-200 p-3 sm:p-4 rounded-lg">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">Observações</h3>
+          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-2">Observações</h3>
           <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{quotation.notes}</p>
         </div>
       )}
 
       {/* Items Table */}
-      <div className="bg-white rounded-lg shadow border border-border overflow-hidden">
+      <div className="bg-card rounded-lg shadow border border-border overflow-hidden">
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Itens do Orçamento</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">Itens do Orçamento</h2>
         </div>
         {/* Mobile: Indicador de scroll */}
         <div className="px-4 py-2 text-xs text-muted-foreground sm:hidden bg-muted/30">
@@ -316,16 +316,16 @@ export default function QuotationDetailPage() {
                 const subtotal = Number(item.quantity) * Number(item.unitPrice);
                 return (
                   <tr key={index} className="hover:bg-muted/50 active:bg-muted transition-colors">
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-foreground whitespace-nowrap">
                       {item.description}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 text-right whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-foreground text-right whitespace-nowrap">
                       {item.quantity}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 text-right whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-foreground text-right whitespace-nowrap">
                       {formatCurrency(Number(item.unitPrice))}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-900 text-right whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-foreground text-right whitespace-nowrap">
                       {formatCurrency(subtotal)}
                     </td>
                   </tr>
@@ -334,7 +334,7 @@ export default function QuotationDetailPage() {
             </tbody>
             <tfoot className="bg-muted">
               <tr>
-                <td colSpan={3} className="px-3 sm:px-6 py-3 sm:py-4 text-right text-xs sm:text-sm font-semibold text-gray-900 whitespace-nowrap">
+                <td colSpan={3} className="px-3 sm:px-6 py-3 sm:py-4 text-right text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">
                   Total Geral
                 </td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 text-right text-base sm:text-lg font-bold text-primary whitespace-nowrap">
@@ -347,7 +347,7 @@ export default function QuotationDetailPage() {
       </div>
 
       {/* Sticky Action Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-10">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             {(quotation.status === 'pending' || quotation.status === 'draft') && (

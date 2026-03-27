@@ -77,7 +77,7 @@ export default function NewPayablePage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Nova Conta a Pagar</h1>
+          <h1 className="text-3xl font-bold text-foreground">Nova Conta a Pagar</h1>
           <p className="text-muted-foreground mt-1">Registre uma nova despesa</p>
         </div>
       </div>
@@ -89,13 +89,13 @@ export default function NewPayablePage() {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow border border-border p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow border border-border p-6 space-y-6">
         <div className="flex items-center gap-3 pb-4 border-b border-border">
           <div className="p-3 bg-destructive/10 rounded-lg">
             <DollarSign className="w-6 h-6 text-destructive" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Dados da Despesa</h2>
+            <h2 className="text-lg font-semibold text-foreground">Dados da Despesa</h2>
             <p className="text-sm text-muted-foreground">Preencha as informações abaixo</p>
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function NewPayablePage() {
               <select
                 value={formData.supplierId}
                 onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-card"
                 disabled={loadingSuppliers}
               >
                 <option value="">Selecione um fornecedor</option>
@@ -154,7 +154,7 @@ export default function NewPayablePage() {
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-card"
               >
                 <option value="">Selecione uma categoria</option>
                 <option value="rent">Aluguel</option>

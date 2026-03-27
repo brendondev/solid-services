@@ -189,7 +189,7 @@ export default function OrderDetailPage() {
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
     open: {
       label: 'Aberta',
-      color: 'bg-gray-100 text-gray-700 border-gray-200',
+      color: 'bg-muted text-muted-foreground border-gray-200',
       icon: Clock
     },
     scheduled: {
@@ -249,12 +249,12 @@ export default function OrderDetailPage() {
         <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
           <button
             onClick={() => router.push('/dashboard/orders')}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-foreground active:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 sm:flex-none">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
               Ordem {order.number}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Ações de Status */}
-      <div className="bg-white p-3 sm:p-4 rounded-lg shadow border border-border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+      <div className="bg-card p-3 sm:p-4 rounded-lg shadow border border-border flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
         {order.status === 'open' && (
           <button
             onClick={() => handleStatusChange('scheduled')}
@@ -338,7 +338,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Assinatura Digital */}
-      <div className="bg-white p-3 sm:p-4 rounded-lg shadow border border-border">
+      <div className="bg-card p-3 sm:p-4 rounded-lg shadow border border-border">
         <SignDocumentButton
           documentType="order"
           documentId={order.id}
@@ -353,7 +353,7 @@ export default function OrderDetailPage() {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-primary/10 rounded-lg flex-shrink-0">
               <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
@@ -368,48 +368,48 @@ export default function OrderDetailPage() {
                   {order.customer.name}
                 </button>
               ) : (
-                <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">N/A</p>
+                <p className="text-sm sm:text-base lg:text-lg font-semibold text-foreground">N/A</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-success/10 rounded-lg flex-shrink-0">
               <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm text-muted-foreground">Valor Total</p>
-              <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+              <p className="text-sm sm:text-base lg:text-lg font-semibold text-foreground">
                 {formatCurrency(Number(order.totalAmount))}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-warning/10 rounded-lg flex-shrink-0">
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm text-muted-foreground">Agendamento</p>
-              <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+              <p className="text-sm sm:text-base lg:text-lg font-semibold text-foreground">
                 {order.scheduledFor ? new Date(order.scheduledFor).toLocaleDateString('pt-BR') : 'Não agendado'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2 sm:p-3 bg-accent rounded-lg flex-shrink-0">
               <Package className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm text-muted-foreground">Itens</p>
-              <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900">
+              <p className="text-sm sm:text-base lg:text-lg font-semibold text-foreground">
                 {order.items?.length || 0}
               </p>
             </div>
@@ -419,15 +419,15 @@ export default function OrderDetailPage() {
 
       {/* Observações */}
       {order.notes && (
-        <div className="bg-blue-50 border border-blue-200 p-4 sm:p-6 rounded-lg">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2">Observações</h3>
+        <div className="bg-blue-500/10 border border-blue-500/20 p-4 sm:p-6 rounded-lg">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground mb-2">Observações</h3>
           <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{order.notes}</p>
         </div>
       )}
 
       {/* Serviços */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Serviços</h2>
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">Serviços</h2>
 
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <div className="inline-block min-w-full align-middle">
@@ -448,20 +448,20 @@ export default function OrderDetailPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide-gray-200 bg-card">
                 {order.items && order.items.length > 0 ? (
                   order.items.map((item, index) => (
                     <tr key={item.id || index}>
-                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900">
+                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-foreground">
                         {item.description}
                       </td>
-                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 text-right whitespace-nowrap">
+                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-foreground text-right whitespace-nowrap">
                         {item.quantity}
                       </td>
-                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 text-right whitespace-nowrap">
+                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm text-foreground text-right whitespace-nowrap">
                         {formatCurrency(item.unitPrice)}
                       </td>
-                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900 text-right whitespace-nowrap">
+                      <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium text-foreground text-right whitespace-nowrap">
                         {formatCurrency(item.totalPrice)}
                       </td>
                     </tr>
@@ -484,7 +484,7 @@ export default function OrderDetailPage() {
           </div>
           <div className="text-right ml-auto">
             <span className="text-xs sm:text-sm text-gray-600">Valor Total: </span>
-            <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
+            <span className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
               {formatCurrency(order.totalAmount)}
             </span>
           </div>
@@ -492,9 +492,9 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Timeline */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900">Timeline de Eventos</h2>
+          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-foreground">Timeline de Eventos</h2>
           <button
             onClick={() => setShowTimelineModal(true)}
             className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:bg-primary/80 transition-colors font-medium"
@@ -513,7 +513,7 @@ export default function OrderDetailPage() {
                 <div className={`flex-1 pb-3 sm:pb-4 ${index < (order.timeline?.length || 0) - 1 ? 'border-l-2 border-border' : ''} pl-3 sm:pl-4`}>
                   <div className="flex items-start justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm sm:text-base font-semibold text-gray-900">{event.event}</p>
+                      <p className="text-sm sm:text-base font-semibold text-foreground">{event.event}</p>
                       {event.description && (
                         <p className="text-xs sm:text-sm text-gray-600 mt-1">
                           {event.description}
@@ -545,9 +545,9 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Checklist */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900">Checklist de Tarefas</h2>
+          <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-foreground">Checklist de Tarefas</h2>
           <button
             onClick={() => setShowChecklistModal(true)}
             className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 active:bg-primary/80 transition-colors font-medium"
@@ -580,7 +580,7 @@ export default function OrderDetailPage() {
                   className={`flex-1 text-sm sm:text-base ${
                     item.isCompleted
                       ? 'line-through text-muted-foreground'
-                      : 'text-gray-900 font-medium'
+                      : 'text-foreground font-medium'
                   }`}
                 >
                   {item.title}
@@ -605,8 +605,8 @@ export default function OrderDetailPage() {
       {/* Modal Timeline */}
       {showTimelineModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full animate-scaleIn">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Adicionar Evento</h3>
+          <div className="bg-card p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full animate-scaleIn">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4">Adicionar Evento</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -661,8 +661,8 @@ export default function OrderDetailPage() {
       {/* Modal Checklist */}
       {showChecklistModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full animate-scaleIn">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Adicionar Tarefa</h3>
+          <div className="bg-card p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full animate-scaleIn">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4">Adicionar Tarefa</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -704,20 +704,20 @@ export default function OrderDetailPage() {
       {/* Modal de Exclusão */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full animate-scaleIn">
+          <div className="bg-card p-4 sm:p-6 rounded-lg shadow-xl max-w-md w-full animate-scaleIn">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 sm:p-3 bg-destructive/10 rounded-lg flex-shrink-0">
                 <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">Excluir Ordem de Serviço</h3>
+                <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground">Excluir Ordem de Serviço</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">Esta ação não pode ser desfeita</p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="bg-destructive/5 border border-destructive/20 p-3 sm:p-4 rounded-lg">
-                <p className="text-xs sm:text-sm text-gray-900">
+                <p className="text-xs sm:text-sm text-foreground">
                   Você está prestes a excluir a ordem <strong>{order.number}</strong>.
                 </p>
               </div>
@@ -733,7 +733,7 @@ export default function OrderDetailPage() {
                   <p className="text-xs sm:text-sm font-medium text-destructive mb-3">
                     {deleteError}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-900 mb-3">
+                  <p className="text-xs sm:text-sm text-foreground mb-3">
                     Este registro possui vínculos com:
                   </p>
                   <div className="space-y-2">
@@ -751,9 +751,9 @@ export default function OrderDetailPage() {
                           const route = routes[link.type] || '/dashboard';
                           router.push(`${route}/${link.id}`);
                         }}
-                        className="flex items-center gap-2 w-full min-h-[44px] px-3 py-2 bg-white border border-destructive/20 rounded hover:bg-destructive/5 active:bg-destructive/10 transition-colors text-left"
+                        className="flex items-center gap-2 w-full min-h-[44px] px-3 py-2 bg-card border border-destructive/20 rounded hover:bg-destructive/5 active:bg-destructive/10 transition-colors text-left"
                       >
-                        <span className="text-xs sm:text-sm text-gray-900 flex-1">{link.label}</span>
+                        <span className="text-xs sm:text-sm text-foreground flex-1">{link.label}</span>
                         <span className="text-xs text-primary flex-shrink-0">Ver →</span>
                       </button>
                     ))}

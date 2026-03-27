@@ -117,12 +117,12 @@ export default function NewReceivablePage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push('/dashboard/financial')}
-          className="text-gray-600 hover:text-gray-900 transition-colors"
+          className="text-gray-600 hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Novo Recebível</h1>
+          <h1 className="text-3xl font-bold text-foreground">Novo Recebível</h1>
           <p className="text-muted-foreground mt-1">
             Registre um novo valor a receber
           </p>
@@ -136,7 +136,7 @@ export default function NewReceivablePage() {
       )}
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow border border-border p-6">
+      <div className="bg-card rounded-lg shadow border border-border p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Cliente */}
           <div>
@@ -146,7 +146,7 @@ export default function NewReceivablePage() {
             <select
               {...register('customerId')}
               id="customerId"
-              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-card"
               disabled={isSubmitting}
             >
               <option value="">Selecione um cliente</option>
@@ -170,7 +170,7 @@ export default function NewReceivablePage() {
               <select
                 {...register('serviceOrderId')}
                 id="serviceOrderId"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-card"
                 disabled={isSubmitting || loadingOrders}
               >
                 <option value="">Sem ordem de serviço</option>

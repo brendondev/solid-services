@@ -118,7 +118,7 @@ export default function ReceivableDetailPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 w-full sm:w-auto">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Conta a Receber</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Conta a Receber</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">{receivable.customer?.name || 'Cliente não informado'}</p>
         </div>
         {remaining > 0 && (
@@ -140,11 +140,11 @@ export default function ReceivableDetailPage() {
       )}
 
       {/* Resumo */}
-      <div className="bg-white rounded-lg shadow border border-border p-4 sm:p-6">
+      <div className="bg-card rounded-lg shadow border border-border p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div>
             <p className="text-xs sm:text-sm text-muted-foreground mb-1">Valor Total</p>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{formatCurrency(Number(receivable.amount))}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">{formatCurrency(Number(receivable.amount))}</p>
           </div>
           <div>
             <p className="text-xs sm:text-sm text-muted-foreground mb-1">Valor Pago</p>
@@ -175,7 +175,7 @@ export default function ReceivableDetailPage() {
               <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs sm:text-sm text-muted-foreground">Cliente</p>
-                <p className="text-sm sm:text-base font-medium text-gray-900 truncate">{receivable.customer.name}</p>
+                <p className="text-sm sm:text-base font-medium text-foreground truncate">{receivable.customer.name}</p>
               </div>
             </div>
           )}
@@ -183,7 +183,7 @@ export default function ReceivableDetailPage() {
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm text-muted-foreground">Vencimento</p>
-              <p className="text-sm sm:text-base font-medium text-gray-900">
+              <p className="text-sm sm:text-base font-medium text-foreground">
                 {new Date(receivable.dueDate).toLocaleDateString('pt-BR')}
               </p>
             </div>
@@ -207,14 +207,14 @@ export default function ReceivableDetailPage() {
         {receivable.description && (
           <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
             <p className="text-xs sm:text-sm text-muted-foreground mb-2">Descrição</p>
-            <p className="text-sm sm:text-base text-gray-900">{receivable.description}</p>
+            <p className="text-sm sm:text-base text-foreground">{receivable.description}</p>
           </div>
         )}
       </div>
 
       {/* Histórico de Pagamentos */}
-      <div className="bg-white rounded-lg shadow border border-border p-4 sm:p-6">
-        <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 mb-4">Histórico de Pagamentos</h2>
+      <div className="bg-card rounded-lg shadow border border-border p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg lg:text-xl font-bold text-foreground mb-4">Histórico de Pagamentos</h2>
 
         {!receivable.payments || receivable.payments.length === 0 ? (
           <div className="text-center py-8 sm:py-12">
@@ -233,7 +233,7 @@ export default function ReceivableDetailPage() {
                     <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm sm:text-base font-medium text-gray-900">{formatCurrency(Number(payment.amount))}</p>
+                    <p className="text-sm sm:text-base font-medium text-foreground">{formatCurrency(Number(payment.amount))}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground">
                       {paymentMethodLabels[payment.method] || payment.method} •{' '}
                       {new Date(payment.paidAt).toLocaleDateString('pt-BR')}
@@ -244,7 +244,7 @@ export default function ReceivableDetailPage() {
                 {payment.user && (
                   <div className="text-left sm:text-right w-full sm:w-auto flex-shrink-0">
                     <p className="text-xs sm:text-sm text-muted-foreground">Registrado por</p>
-                    <p className="text-xs sm:text-sm font-medium text-gray-900">{payment.user.name}</p>
+                    <p className="text-xs sm:text-sm font-medium text-foreground">{payment.user.name}</p>
                   </div>
                 )}
               </div>
@@ -256,8 +256,8 @@ export default function ReceivableDetailPage() {
       {/* Payment Modal */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6 space-y-4 sm:space-y-6">
-            <h3 className="text-lg sm:text-xl font-bold text-gray-900">Registrar Pagamento</h3>
+          <div className="bg-card rounded-lg shadow-xl max-w-md w-full p-4 sm:p-6 space-y-4 sm:space-y-6">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground">Registrar Pagamento</h3>
 
             <form onSubmit={handleRegisterPayment} className="space-y-4">
               <div>
@@ -280,7 +280,7 @@ export default function ReceivableDetailPage() {
                 <select
                   value={paymentForm.method}
                   onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
-                  className="w-full h-11 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-base sm:text-sm"
+                  className="w-full h-11 px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-card text-base sm:text-sm"
                 >
                   <option value="pix">PIX</option>
                   <option value="bank_transfer">Transferência</option>

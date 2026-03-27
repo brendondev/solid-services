@@ -55,7 +55,7 @@ export default function NewSupplierPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Novo Fornecedor</h1>
+          <h1 className="text-3xl font-bold text-foreground">Novo Fornecedor</h1>
           <p className="text-muted-foreground mt-1">Cadastre um novo fornecedor</p>
         </div>
       </div>
@@ -67,13 +67,13 @@ export default function NewSupplierPage() {
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow border border-border p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-card rounded-lg shadow border border-border p-6 space-y-6">
         <div className="flex items-center gap-3 pb-4 border-b border-border">
           <div className="p-3 bg-primary/10 rounded-lg">
             <Building2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Dados do Fornecedor</h2>
+            <h2 className="text-lg font-semibold text-foreground">Dados do Fornecedor</h2>
             <p className="text-sm text-muted-foreground">Preencha as informações abaixo</p>
           </div>
         </div>

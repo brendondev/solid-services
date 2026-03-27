@@ -67,12 +67,12 @@ export default function CustomerDetailPage() {
         <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
           <button
             onClick={() => router.push('/dashboard/customers')}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-gray-900 active:bg-gray-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-foreground active:bg-gray-100 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{customer.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{customer.name}</h1>
             <p className="text-sm sm:text-base text-gray-600">Detalhes do cliente</p>
           </div>
         </div>
@@ -85,32 +85,32 @@ export default function CustomerDetailPage() {
       </div>
 
       {/* Informações Principais */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">
           Informações Gerais
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-xs sm:text-sm text-gray-600 block mb-1">Nome</label>
-            <p className="text-sm sm:text-base text-gray-900 font-medium">{customer.name}</p>
+            <p className="text-sm sm:text-base text-foreground font-medium">{customer.name}</p>
           </div>
           <div>
             <label className="text-xs sm:text-sm text-gray-600 block mb-1">Tipo</label>
-            <p className="text-sm sm:text-base text-gray-900 font-medium">
+            <p className="text-sm sm:text-base text-foreground font-medium">
               {customer.type === 'company' ? 'Empresa' : 'Pessoa Física'}
             </p>
           </div>
           <div>
             <label className="text-xs sm:text-sm text-gray-600 block mb-1">Email</label>
-            <p className="text-sm sm:text-base text-gray-900 font-medium break-all">{primaryContact.email || '-'}</p>
+            <p className="text-sm sm:text-base text-foreground font-medium break-all">{primaryContact.email || '-'}</p>
           </div>
           <div>
             <label className="text-xs sm:text-sm text-gray-600 block mb-1">Telefone</label>
-            <p className="text-sm sm:text-base text-gray-900 font-medium">{primaryContact.phone || '-'}</p>
+            <p className="text-sm sm:text-base text-foreground font-medium">{primaryContact.phone || '-'}</p>
           </div>
           <div>
             <label className="text-xs sm:text-sm text-gray-600 block mb-1">CPF/CNPJ</label>
-            <p className="text-sm sm:text-base text-gray-900 font-medium">{customer.document || '-'}</p>
+            <p className="text-sm sm:text-base text-foreground font-medium">{customer.document || '-'}</p>
           </div>
           <div>
             <label className="text-xs sm:text-sm text-gray-600 block mb-1">Status</label>
@@ -131,8 +131,8 @@ export default function CustomerDetailPage() {
 
       {/* Contatos */}
       {customer.contacts && customer.contacts.length > 0 && (
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Contatos</h2>
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">Contatos</h2>
           <div className="space-y-4">
             {customer.contacts.map((contact) => (
               <div
@@ -140,7 +140,7 @@ export default function CustomerDetailPage() {
                 className="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b pb-4 last:border-b-0 gap-2"
               >
                 <div className="flex-1">
-                  <p className="text-sm sm:text-base font-medium text-gray-900">
+                  <p className="text-sm sm:text-base font-medium text-foreground">
                     {contact.name}
                     {contact.isPrimary && (
                       <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded font-medium">
@@ -174,8 +174,8 @@ export default function CustomerDetailPage() {
 
       {/* Endereços */}
       {customer.addresses && customer.addresses.length > 0 && (
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Endereços</h2>
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">Endereços</h2>
           <div className="space-y-4">
             {customer.addresses.map((address) => (
               <div
@@ -188,7 +188,7 @@ export default function CustomerDetailPage() {
                       Principal
                     </span>
                   )}
-                  <p className="text-sm sm:text-base text-gray-900">
+                  <p className="text-sm sm:text-base text-foreground">
                     {address.street}, {address.number}
                     {address.complement && ` - ${address.complement}`}
                   </p>
@@ -204,20 +204,20 @@ export default function CustomerDetailPage() {
       )}
 
       {/* Informações de Sistema */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">
           Informações do Sistema
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
           <div>
             <label className="text-gray-600 block mb-1">Criado em</label>
-            <p className="text-gray-900">
+            <p className="text-foreground">
               {new Date(customer.createdAt).toLocaleString('pt-BR')}
             </p>
           </div>
           <div>
             <label className="text-gray-600 block mb-1">Última atualização</label>
-            <p className="text-gray-900">
+            <p className="text-foreground">
               {new Date(customer.updatedAt).toLocaleString('pt-BR')}
             </p>
           </div>

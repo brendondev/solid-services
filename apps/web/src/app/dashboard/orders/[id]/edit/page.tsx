@@ -148,7 +148,7 @@ export default function EditOrderPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Editar Ordem {order.number}</h1>
+            <h1 className="text-3xl font-bold text-foreground">Editar Ordem {order.number}</h1>
             <p className="text-muted-foreground mt-1">Atualizar informações da ordem</p>
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function EditOrderPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Editar Ordem {order.number}</h1>
+          <h1 className="text-3xl font-bold text-foreground">Editar Ordem {order.number}</h1>
           <p className="text-muted-foreground mt-1">Atualizar informações da ordem</p>
         </div>
       </div>
@@ -196,8 +196,8 @@ export default function EditOrderPage() {
       )}
 
       {/* Aviso sobre limitações */}
-      <div className="bg-blue-50 border border-blue-200 px-4 py-3 rounded-lg flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+      <div className="bg-blue-500/10 border border-blue-500/20 px-4 py-3 rounded-lg flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-blue-900">
           <p className="font-medium">Limitações de Edição</p>
           <p className="mt-1">
@@ -210,8 +210,8 @@ export default function EditOrderPage() {
       {/* Formulário */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Informações Editáveis */}
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Informações da Ordem</h2>
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Informações da Ordem</h2>
 
           <div className="space-y-6">
             <div>
@@ -221,7 +221,7 @@ export default function EditOrderPage() {
               <select
                 {...register('customerId')}
                 id="customerId"
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-card"
                 disabled={submitting}
               >
                 <option value="">Selecione um cliente</option>
@@ -270,7 +270,7 @@ export default function EditOrderPage() {
 
         {/* Serviços (Somente Leitura) */}
         <div className="bg-gray-50 p-6 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Serviços (Somente Leitura)
           </h2>
 
@@ -296,14 +296,14 @@ export default function EditOrderPage() {
                 {order.items && order.items.length > 0 ? (
                   order.items.map((item) => (
                     <tr key={item.id}>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.description}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                      <td className="px-4 py-3 text-sm text-foreground">{item.description}</td>
+                      <td className="px-4 py-3 text-sm text-foreground text-right">
                         {item.quantity}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 text-right">
+                      <td className="px-4 py-3 text-sm text-foreground text-right">
                         {formatCurrency(item.unitPrice)}
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 text-right">
+                      <td className="px-4 py-3 text-sm font-medium text-foreground text-right">
                         {formatCurrency(item.totalPrice)}
                       </td>
                     </tr>
@@ -322,7 +322,7 @@ export default function EditOrderPage() {
           <div className="mt-4 pt-4 border-t flex justify-end">
             <div className="text-right">
               <span className="text-sm text-gray-600">Valor Total: </span>
-              <span className="text-2xl font-bold text-gray-900">
+              <span className="text-2xl font-bold text-foreground">
                 {formatCurrency(order.totalAmount)}
               </span>
             </div>

@@ -98,12 +98,12 @@ export default function NewCustomerPage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push('/dashboard/customers')}
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-foreground"
         >
           ← Voltar
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Novo Cliente</h1>
+          <h1 className="text-2xl font-bold text-foreground">Novo Cliente</h1>
           <p className="text-gray-600">Cadastre um novo cliente</p>
         </div>
       </div>
@@ -115,8 +115,8 @@ export default function NewCustomerPage() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-card p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Informações Básicas
           </h2>
 
@@ -253,8 +253,8 @@ export default function NewCustomerPage() {
         </div>
       </form>
 
-      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-        <p className="text-sm text-blue-700">
+      <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-lg">
+        <p className="text-sm text-blue-600 dark:text-blue-400">
           <strong>Dica:</strong> Após criar o cliente, você poderá adicionar
           contatos e endereços na página de detalhes.
         </p>
