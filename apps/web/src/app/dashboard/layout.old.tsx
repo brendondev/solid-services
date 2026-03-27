@@ -1,0 +1,279 @@
+'use client';
+
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { authApi } from '@/lib/api/auth';
+import { Toaster } from 'react-hot-toast';
+import { CommandPaletteProvider, CommandPaletteTrigger } from '@/components/command-palette';
+import { NotificationsProvider } from '@/contexts/notifications/NotificationsContext';
+import NotificationsBadge from '@/components/notifications/NotificationsBadge';
+import NotificationsPanel from '@/components/notifications/NotificationsPanel';
+import ToastContainer from '@/components/notifications/ToastContainer';
+import {
+  LayoutDashboard,
+  Users,
+  Wrench,
+  FileText,
+  ClipboardList,
+  Calendar,
+  DollarSign,
+  Building2,
+  Receipt,
+  Menu,
+  X,
+  LogOut,
+  Loader2,
+  Crown,
+  Shield
+} from 'lucide-react';
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: any;
+}
+
+const navigation: NavItem[] = [
+  { name: 'Dashboard', href: '/dashboard/main', icon: LayoutDashboard },
+  { name: 'Clientes', href: '/dashboard/customers', icon: Users },
+  { name: 'Serviços', href: '/dashboard/services', icon: Wrench },
+  { name: 'Orçamentos', href: '/dashboard/quotations', icon: FileText },
+  { name: 'Ordens de Serviço', href: '/dashboard/orders', icon: ClipboardList },
+  { name: 'Agenda', href: '/dashboard/schedule', icon: Calendar },
+  { name: 'Financeiro', href: '/dashboard/financial', icon: DollarSign },
+  { name: 'Fornecedores', href: '/dashboard/suppliers', icon: Building2 },
+  { name: 'Contas a Pagar', href: '/dashboard/payables', icon: Receipt },
+  { name: 'Usuários', href: '/dashboard/users', icon: Shield },
+];
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile-first: iniciar fechada
+  const [isMounted, setIsMounted] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  // Mobile-first: Detectar tamanho da tela e ajustar sidebar
+  useEffect(() => {
+    setIsMounted(true);
+
+    // Abrir sidebar automaticamente em desktop (>= 1024px)
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    // Configurar estado inicial
+    handleResize();
+
+    // Listener para mudanças de tamanho
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const storedUser = authApi.getStoredUser();
+    const token = authApi.getStoredToken();
+
+    if (!storedUser || !token) {
+      router.push('/auth/login');
+      return;
+    }
+
+    setUser(storedUser);
+  }, [router]);
+
+  // Auto-fechar sidebar em mobile ao navegar
+  useEffect(() => {
+    if (isMounted && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, [pathname, isMounted]);
+
+  const handleLogout = () => {
+    authApi.logout();
+    router.push('/auth/login');
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <CommandPaletteProvider>
+      <NotificationsProvider>
+        <Toaster />
+        <ToastContainer />
+        <div className="min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-border shadow-sm transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-lg flex items-center justify-center">
+                <LayoutDashboard className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                Solid Service
+              </h1>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Fechar menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => {
+                    // Auto-fechar em mobile ao clicar
+                    if (window.innerWidth < 1024) {
+                      setSidebarOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium rounded-lg transition-all ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span>{item.name}</span>
+                </a>
+              );
+            })}
+          </nav>
+
+          {/* Planos - logo acima do user info */}
+          <div className="px-3 pb-3">
+            <a
+              href="/dashboard/planos"
+              onClick={() => {
+                // Auto-fechar em mobile ao clicar
+                if (window.innerWidth < 1024) {
+                  setSidebarOpen(false);
+                }
+              }}
+              className={`flex items-center gap-3 px-4 py-3 min-h-[44px] text-sm font-medium rounded-lg transition-all ${
+                pathname === '/dashboard/planos'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 border border-amber-200 active:from-amber-100 active:to-orange-100'
+              }`}
+            >
+              <Crown className="w-5 h-5 flex-shrink-0" />
+              <span>Planos</span>
+            </a>
+          </div>
+
+          {/* User info */}
+          <div className="border-t border-border px-3 py-4">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-semibold shadow-sm">
+                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-400 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors active:bg-destructive/20"
+                title="Sair"
+                aria-label="Sair da conta"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div
+        className={`transition-all duration-300 ${
+          sidebarOpen ? 'lg:pl-64' : ''
+        }`}
+      >
+        {/* Top bar */}
+        <header className="bg-white border-b border-border shadow-sm sticky top-0 z-40">
+          <div className="flex items-center gap-4 px-4 sm:px-6 py-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200"
+              aria-label={sidebarOpen ? 'Fechar menu' : 'Abrir menu'}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="flex-1 max-w-2xl hidden sm:block">
+              <CommandPaletteTrigger />
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Notifications Badge */}
+              <div className="relative">
+                <NotificationsBadge onClick={() => setNotificationsOpen(!notificationsOpen)} />
+                <NotificationsPanel
+                  isOpen={notificationsOpen}
+                  onClose={() => setNotificationsOpen(false)}
+                />
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-lg">
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                <span className="text-sm text-muted-foreground">
+                  Tenant: <span className="font-medium text-gray-900">{user.tenantSlug}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="p-4 sm:p-6">{children}</main>
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ease-in-out"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Fechar menu"
+        />
+      )}
+        </div>
+      </NotificationsProvider>
+    </CommandPaletteProvider>
+  );
+}
