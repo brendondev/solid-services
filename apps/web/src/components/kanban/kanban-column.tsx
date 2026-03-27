@@ -37,7 +37,7 @@ export function KanbanColumn({
   return (
     <div
       className={cn(
-        'flex flex-col min-w-[300px] max-w-[300px] bg-muted/30 rounded-lg p-4 h-full',
+        'flex flex-col min-w-[260px] max-w-[260px] bg-muted/30 rounded-lg p-4 h-full',
         isOver && 'bg-muted/50 ring-2 ring-primary'
       )}
     >

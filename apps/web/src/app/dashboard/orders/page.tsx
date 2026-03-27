@@ -365,7 +365,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 animate-fadeInUp">
+    <div className="space-y-4 sm:space-y-6 animate-fadeInUp max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -478,7 +478,7 @@ export default function OrdersPage() {
 
       {/* Kanban View */}
       {viewMode === 'kanban' && (
-        <div className="bg-card rounded-lg shadow border border-border p-4">
+        <div className="bg-card rounded-lg shadow border border-border overflow-hidden">
           {kanbanOrders.length === 0 ? (
             <div className="p-6 sm:p-12 text-center">
               <ClipboardList className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
