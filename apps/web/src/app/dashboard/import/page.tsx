@@ -23,6 +23,7 @@ export default function ImportPage() {
   const [editedData, setEditedData] = useState<any[]>([]);
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const entities = [
     {
@@ -145,11 +146,12 @@ export default function ImportPage() {
     return new File([blob], file!.name, { type: 'text/csv' });
   };
 
-  const handleImport = async () => {
+  const executeImport = async () => {
     if (!file || !selectedEntity || !preview) return;
 
     try {
       setImporting(true);
+      setShowConfirmDialog(false);
 
       // Criar novo arquivo a partir dos dados editados
       const editedFile = createFileFromEditedData();
@@ -174,6 +176,27 @@ export default function ImportPage() {
       toast.error(error.response?.data?.message || 'Erro ao importar dados');
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!file || !selectedEntity || !preview) return;
+
+    // Verificar se há erros de estrutura (bloqueiam importação)
+    const structureErrors = preview.validationErrors.filter(e => e.row === 0);
+    if (structureErrors.length > 0) {
+      toast.error('Corrija os erros de estrutura antes de importar');
+      return;
+    }
+
+    // Verificar se há erros de dados (não bloqueiam, mas confirmam)
+    const dataErrors = preview.validationErrors.filter(e => e.row !== 0);
+    if (dataErrors.length > 0) {
+      // Mostrar dialog de confirmação
+      setShowConfirmDialog(true);
+    } else {
+      // Sem erros, importar diretamente
+      await executeImport();
     }
   };
 
@@ -462,7 +485,9 @@ export default function ImportPage() {
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      Importar {preview.totalRows} Registros
+                      {preview.validationErrors.filter(e => e.row !== 0).length > 0
+                        ? `Revisar e Importar ${preview.totalRows} Registros`
+                        : `Importar ${preview.totalRows} Registros`}
                     </>
                   )}
                 </button>
@@ -471,6 +496,11 @@ export default function ImportPage() {
               {preview.validationErrors.some(e => e.row === 0) && (
                 <p className="text-sm text-destructive mt-2 text-center">
                   ⚠️ Corrija os erros de estrutura antes de importar
+                </p>
+              )}
+              {preview.validationErrors.filter(e => e.row !== 0).length > 0 && !preview.validationErrors.some(e => e.row === 0) && (
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-2 text-center">
+                  ℹ️ Há avisos de validação - você poderá escolher importar mesmo assim
                 </p>
               )}
             </div>
@@ -562,6 +592,73 @@ export default function ImportPage() {
               <Upload className="w-4 h-4" />
               Nova Importação
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && preview && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg border border-border max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  Dados com Possíveis Problemas
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Encontramos <strong>{preview.validationErrors.filter(e => e.row !== 0).length} linha(s)</strong> com avisos de validação.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  O sistema tentará importar todas as linhas. Linhas com erros serão ignoradas e reportadas no final.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg p-3 mb-4 max-h-32 overflow-y-auto">
+              <p className="text-xs font-medium text-amber-900 dark:text-amber-400 mb-2">
+                Exemplos de avisos:
+              </p>
+              <div className="space-y-1">
+                {preview.validationErrors.filter(e => e.row !== 0).slice(0, 3).map((error, i) => (
+                  <p key={i} className="text-xs text-amber-800 dark:text-amber-400">
+                    • Linha {error.row}: {error.error}
+                  </p>
+                ))}
+                {preview.validationErrors.filter(e => e.row !== 0).length > 3 && (
+                  <p className="text-xs text-amber-700 dark:text-amber-500 italic">
+                    ... e mais {preview.validationErrors.filter(e => e.row !== 0).length - 3} aviso(s)
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+              >
+                ✏️ Voltar e Editar
+              </button>
+              <button
+                onClick={executeImport}
+                disabled={importing}
+                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors font-medium"
+              >
+                {importing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Importando...
+                  </span>
+                ) : (
+                  '✅ Importar Mesmo Assim'
+                )}
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              💡 Apenas linhas válidas serão importadas
+            </p>
           </div>
         </div>
       )}
