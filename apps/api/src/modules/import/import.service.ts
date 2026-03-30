@@ -180,11 +180,27 @@ export class ImportService {
   }
 
   /**
+   * Limpa e normaliza documento (remove formatação)
+   */
+  private cleanDocument(documento: string): string {
+    if (!documento) return '';
+    return documento.replace(/\D/g, '');
+  }
+
+  /**
+   * Limpa e normaliza CEP (remove formatação)
+   */
+  private cleanCEP(cep: string): string {
+    if (!cep) return '';
+    return cep.replace(/\D/g, '');
+  }
+
+  /**
    * Detecta automaticamente o tipo baseado no documento (CPF ou CNPJ)
    */
   private detectCustomerType(documento: string): 'pessoa_fisica' | 'pessoa_juridica' {
     // Remove caracteres não numéricos
-    const numeros = documento.replace(/\D/g, '');
+    const numeros = this.cleanDocument(documento);
 
     if (numeros.length === 11) {
       return 'pessoa_fisica'; // CPF
@@ -197,10 +213,10 @@ export class ImportService {
   }
 
   /**
-   * Valida CPF
+   * Valida CPF (aceita com ou sem formatação)
    */
   private isValidCPF(cpf: string): boolean {
-    const numeros = cpf.replace(/\D/g, '');
+    const numeros = this.cleanDocument(cpf);
 
     if (numeros.length !== 11) return false;
 
@@ -228,10 +244,10 @@ export class ImportService {
   }
 
   /**
-   * Valida CNPJ
+   * Valida CNPJ (aceita com ou sem formatação)
    */
   private isValidCNPJ(cnpj: string): boolean {
-    const numeros = cnpj.replace(/\D/g, '');
+    const numeros = this.cleanDocument(cnpj);
 
     if (numeros.length !== 14) return false;
 
@@ -290,15 +306,22 @@ export class ImportService {
           throw new Error('Nome e documento são obrigatórios');
         }
 
-        // Detectar tipo automaticamente baseado no documento
-        const tipo = this.detectCustomerType(row.documento);
+        // Limpar e normalizar documento
+        const documentoNumeros = this.cleanDocument(row.documento);
+
+        // Validar quantidade de dígitos
+        if (documentoNumeros.length !== 11 && documentoNumeros.length !== 14) {
+          throw new Error(`Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos. Recebido: ${documentoNumeros.length}`);
+        }
+
+        // Detectar tipo automaticamente baseado no documento limpo
+        const tipo = this.detectCustomerType(documentoNumeros);
 
         // Validar documento
-        const documentoNumeros = row.documento.replace(/\D/g, '');
-        if (tipo === 'pessoa_fisica' && !this.isValidCPF(row.documento)) {
+        if (tipo === 'pessoa_fisica' && !this.isValidCPF(documentoNumeros)) {
           throw new Error('CPF inválido');
         }
-        if (tipo === 'pessoa_juridica' && !this.isValidCNPJ(row.documento)) {
+        if (tipo === 'pessoa_juridica' && !this.isValidCNPJ(documentoNumeros)) {
           throw new Error('CNPJ inválido');
         }
 
@@ -338,7 +361,7 @@ export class ImportService {
               district: row.bairro || '',
               city: row.cidade || '',
               state: row.estado || '',
-              zipCode: row.cep?.replace(/\D/g, '') || '',
+              zipCode: this.cleanCEP(row.cep) || '',
               isPrimary: true,
             },
           });

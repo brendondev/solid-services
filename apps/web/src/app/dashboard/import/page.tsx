@@ -20,6 +20,7 @@ export default function ImportPage() {
   const [uploading, setUploading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [editedData, setEditedData] = useState<any[]>([]);
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -105,9 +106,10 @@ export default function ImportPage() {
 
       const result = await importApi.analyze(file, selectedEntity);
       setPreview(result);
+      setEditedData(result.data); // Copiar dados para edição
 
       if (result.validationErrors.length > 0) {
-        toast.error(`${result.validationErrors.length} erro(s) de validação encontrado(s)`);
+        toast.success(`Arquivo analisado! ${result.validationErrors.length} linha(s) precisam de correção.`);
       } else {
         toast.success('Arquivo analisado com sucesso!');
       }
@@ -118,13 +120,41 @@ export default function ImportPage() {
     }
   };
 
+  const handleCellEdit = (rowIndex: number, column: string, value: string) => {
+    const newData = [...editedData];
+    newData[rowIndex] = { ...newData[rowIndex], [column]: value };
+    setEditedData(newData);
+  };
+
+  const createFileFromEditedData = (): File => {
+    // Criar CSV a partir dos dados editados
+    const headers = preview!.columns.join(',');
+    const rows = editedData.map(row =>
+      preview!.columns.map(col => {
+        const value = row[col] || '';
+        // Escapar valores com vírgula ou aspas
+        if (value.toString().includes(',') || value.toString().includes('"')) {
+          return `"${value.toString().replace(/"/g, '""')}"`;
+        }
+        return value;
+      }).join(',')
+    );
+
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    return new File([blob], file!.name, { type: 'text/csv' });
+  };
+
   const handleImport = async () => {
     if (!file || !selectedEntity || !preview) return;
 
     try {
       setImporting(true);
 
-      const result = await importApi.execute(file, selectedEntity);
+      // Criar novo arquivo a partir dos dados editados
+      const editedFile = createFileFromEditedData();
+
+      const result = await importApi.execute(editedFile, selectedEntity);
 
       setImportStats({
         total: result.total,
@@ -151,6 +181,7 @@ export default function ImportPage() {
     setSelectedEntity(null);
     setFile(null);
     setPreview(null);
+    setEditedData([]);
     setImportStats(null);
     setErrors([]);
   };
@@ -332,48 +363,65 @@ export default function ImportPage() {
                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
                     4
                   </div>
-                  <h2 className="text-xl font-semibold">Pré-visualização</h2>
+                  <h2 className="text-xl font-semibold">Pré-visualização e Edição</h2>
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {preview.totalRows} registros encontrados
                 </span>
               </div>
 
+              {/* Info sobre edição */}
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-400">
+                  💡 <strong>Dica:</strong> Você pode editar os dados diretamente na tabela abaixo antes de importar!
+                </p>
+              </div>
+
               {/* Validation Errors */}
               {preview.validationErrors.length > 0 && (
-                <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg">
-                  <h4 className="font-semibold text-red-900 dark:text-red-400 mb-2">
-                    Erros de Validação ({preview.validationErrors.length})
+                <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg">
+                  <h4 className="font-semibold text-amber-900 dark:text-amber-400 mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Atenção - Corrija os dados abaixo ({preview.validationErrors.length})
                   </h4>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
                     {preview.validationErrors.map((error, i) => (
-                      <p key={i} className="text-sm text-red-800 dark:text-red-400">
-                        {error.row === 0 ? 'Estrutura' : `Linha ${error.row}`}: {error.error}
+                      <p key={i} className="text-sm text-amber-800 dark:text-amber-400">
+                        {error.row === 0 ? '📋 Estrutura' : `📝 Linha ${error.row}`}: {error.error}
                       </p>
                     ))}
                   </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-500 mt-2">
+                    Edite as células com problemas diretamente na tabela abaixo.
+                  </p>
                 </div>
               )}
 
               <div className="overflow-x-auto mb-4">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left p-2 font-medium">#</th>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="text-left p-2 font-medium sticky left-0 bg-muted/50">#</th>
                       {preview.columns.map((col) => (
-                        <th key={col} className="text-left p-2 font-medium capitalize">
-                          {col}
+                        <th key={col} className="text-left p-2 font-medium capitalize min-w-[150px]">
+                          {col.replace(/_/g, ' ')}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {preview.data.map((row, i) => (
-                      <tr key={i} className="border-b border-border/50 hover:bg-muted/50">
-                        <td className="p-2 text-muted-foreground">{i + 1}</td>
+                    {editedData.map((row, i) => (
+                      <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="p-2 text-muted-foreground font-medium sticky left-0 bg-card">{i + 1}</td>
                         {preview.columns.map((col) => (
-                          <td key={col} className="p-2">
-                            {row[col] || '-'}
+                          <td key={col} className="p-1">
+                            <input
+                              type="text"
+                              value={row[col] || ''}
+                              onChange={(e) => handleCellEdit(i, col, e.target.value)}
+                              className="w-full px-2 py-1 text-sm rounded border border-input bg-background hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                              placeholder={`Digite ${col}...`}
+                            />
                           </td>
                         ))}
                       </tr>
@@ -383,28 +431,48 @@ export default function ImportPage() {
               </div>
 
               {preview.data.length < preview.totalRows && (
-                <p className="text-sm text-muted-foreground mb-4">
-                  Mostrando {preview.data.length} de {preview.totalRows} registros
-                </p>
+                <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-center">
+                    ✏️ Mostrando primeiras <strong>{preview.data.length}</strong> linhas de <strong>{preview.totalRows}</strong> total.
+                    As demais linhas serão importadas se estiverem válidas.
+                  </p>
+                </div>
               )}
 
-              <button
-                onClick={handleImport}
-                disabled={importing || preview.validationErrors.some(e => e.row === 0)}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-              >
-                {importing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Importando...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    Importar {preview.totalRows} Registros
-                  </>
-                )}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setEditedData(preview.data);
+                    toast.success('Dados restaurados para o original');
+                  }}
+                  className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+                >
+                  Restaurar Original
+                </button>
+                <button
+                  onClick={handleImport}
+                  disabled={importing || preview.validationErrors.some(e => e.row === 0)}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                >
+                  {importing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Importando...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Importar {preview.totalRows} Registros
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {preview.validationErrors.some(e => e.row === 0) && (
+                <p className="text-sm text-destructive mt-2 text-center">
+                  ⚠️ Corrija os erros de estrutura antes de importar
+                </p>
+              )}
             </div>
           )}
         </div>
