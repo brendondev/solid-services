@@ -1,17 +1,18 @@
 'use client';
 
-import { Menu, Search, Settings } from 'lucide-react';
+import { Menu, Settings, User, LogOut, Users as UsersIcon, Crown } from 'lucide-react';
 import { ThemeToggleDropdown } from '@/components/theme';
 import { NotificationsDropdown } from '@/components/notifications';
-import { useState } from 'react';
+import { CommandPaletteTrigger } from '@/components/command-palette';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { authApi } from '@/lib/api/auth';
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
-  const [searchOpen, setSearchOpen] = useState(false);
-
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center gap-4 px-4">
@@ -23,17 +24,9 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Search */}
+        {/* Search - Command Palette */}
         <div className="flex-1 flex items-center gap-2 max-w-2xl">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Buscar... (⌘K)"
-              className="w-full h-9 pl-9 pr-4 text-sm rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-              onFocus={() => setSearchOpen(true)}
-            />
-          </div>
+          <CommandPaletteTrigger />
         </div>
 
         {/* Right side */}
@@ -45,9 +38,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           <ThemeToggleDropdown />
 
           {/* Settings */}
-          <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-accent transition-colors">
-            <Settings className="w-5 h-5" />
-          </button>
+          <SettingsDropdown />
 
           {/* User Menu */}
           <UserMenu />
@@ -57,15 +48,76 @@ export function Header({ onMenuClick }: HeaderProps) {
   );
 }
 
+function SettingsDropdown() {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-accent transition-colors"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
+
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-popover shadow-lg z-50 overflow-hidden">
+            <div className="py-1">
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/dashboard/profile');
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Meu Perfil
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/dashboard/planos');
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+              >
+                <Crown className="w-4 h-4" />
+                Planos e Assinatura
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/dashboard/users');
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+              >
+                <UsersIcon className="w-4 h-4" />
+                Gerenciar Usuários
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function UserMenu() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
-  // TODO: Get user from auth context
-  const user = {
-    name: 'Usuário',
-    email: 'usuario@example.com',
-    avatar: null,
-  };
+  useEffect(() => {
+    const storedUser = authApi.getStoredUser();
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
 
   const getInitials = (name: string) => {
     return name
@@ -76,6 +128,15 @@ function UserMenu() {
       .slice(0, 2);
   };
 
+  const handleLogout = () => {
+    authApi.logout();
+    router.push('/auth/login');
+  };
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="relative">
       <button
@@ -85,9 +146,10 @@ function UserMenu() {
         <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
           {getInitials(user.name)}
         </div>
-        <span className="hidden md:block text-sm font-medium max-w-[120px] truncate">
-          {user.name}
-        </span>
+        <div className="hidden md:flex flex-col items-start max-w-[150px]">
+          <span className="text-sm font-medium truncate w-full">{user.name}</span>
+          <span className="text-xs text-muted-foreground truncate w-full">{user.email}</span>
+        </div>
       </button>
 
       {open && (
@@ -96,44 +158,61 @@ function UserMenu() {
             className="fixed inset-0 z-40"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-popover shadow-lg z-50 overflow-hidden">
+          <div className="absolute right-0 mt-2 w-64 rounded-lg border border-border bg-popover shadow-lg z-50 overflow-hidden">
             {/* User info */}
-            <div className="p-3 border-b border-border">
-              <p className="text-sm font-medium text-foreground">{user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <div className="p-4 border-b border-border bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                  {getInitials(user.name)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+              </div>
             </div>
 
             {/* Menu items */}
             <div className="py-1">
-              <a
-                href="/dashboard/profile"
-                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/dashboard/profile');
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
               >
+                <User className="w-4 h-4" />
                 Meu Perfil
-              </a>
-              <a
-                href="/dashboard/planos"
-                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/dashboard/planos');
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
               >
+                <Crown className="w-4 h-4" />
                 Planos e Assinatura
-              </a>
-              <a
-                href="/dashboard/users"
-                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push('/dashboard/users');
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent transition-colors"
               >
-                Usuários
-              </a>
+                <UsersIcon className="w-4 h-4" />
+                Gerenciar Usuários
+              </button>
             </div>
 
             {/* Logout */}
             <div className="border-t border-border py-1">
               <button
-                onClick={() => {
-                  // TODO: Implement logout
-                  window.location.href = '/auth/login';
-                }}
+                onClick={handleLogout}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent transition-colors"
               >
+                <LogOut className="w-4 h-4" />
                 Sair
               </button>
             </div>
