@@ -78,52 +78,13 @@ export function NotificationsDropdown() {
   };
 
   // SSE - Real-time updates
+  // 🔧 DESABILITADO - Endpoint SSE não implementado no backend
+  // O componente agora recarrega notificações apenas quando o dropdown é aberto
   useEffect(() => {
-    let eventSource: EventSource | null = null;
-
-    const connectSSE = () => {
-      try {
-        eventSource = notificationsAPI.createEventSource();
-
-        eventSource.onmessage = (event) => {
-          try {
-            const notification = JSON.parse(event.data);
-
-            // Adiciona nova notificação
-            setNotifications((prev) => [notification, ...prev]);
-            setUnreadCount((prev) => prev + 1);
-
-            // Mostra toast
-            toast.info(notification.title, {
-              description: notification.message,
-            });
-          } catch (error) {
-            console.error('Erro ao processar notificação SSE:', error);
-          }
-        };
-
-        eventSource.onerror = (error) => {
-          console.error('Erro SSE:', error);
-          eventSource?.close();
-
-          // Reconecta após 5 segundos
-          setTimeout(() => {
-            connectSSE();
-          }, 5000);
-        };
-      } catch (error) {
-        console.error('Erro ao conectar SSE:', error);
-      }
-    };
-
-    // Conecta apenas se houver token
-    const token = localStorage.getItem('token');
-    if (token) {
-      connectSSE();
-    }
-
+    // SSE desabilitado temporariamente
+    // Notificações serão atualizadas ao abrir o dropdown
     return () => {
-      eventSource?.close();
+      // Cleanup vazio
     };
   }, []);
 

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../core/database/prisma.service';
 
 // Import PDFKit usando require (CommonJS module)
 const PDFDocument = require('pdfkit');
 
 @Injectable()
 export class QuotationPdfService {
+  constructor(private readonly prisma: PrismaService) {}
+
   private readonly primaryColor = '#3b82f6';
   private readonly darkGray = '#1f2937';
   private readonly lightGray = '#6b7280';
@@ -12,6 +15,26 @@ export class QuotationPdfService {
   private readonly borderGray = '#e5e7eb';
 
   async generateQuotationPdf(quotation: any): Promise<Buffer> {
+    // Buscar dados da empresa (tenant)
+    const companyData = await this.prisma.tenant.findUnique({
+      where: { id: quotation.tenantId },
+      select: {
+        companyName: true,
+        tradingName: true,
+        document: true,
+        email: true,
+        phone: true,
+        website: true,
+        logo: true,
+        street: true,
+        number: true,
+        complement: true,
+        district: true,
+        city: true,
+        state: true,
+        zipCode: true,
+      },
+    });
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({
@@ -26,11 +49,11 @@ export class QuotationPdfService {
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
 
-        // HEADER COM GRADIENTE
-        this.addHeader(doc, quotation);
+        // HEADER COM DADOS DA EMPRESA
+        this.addHeader(doc, quotation, companyData);
 
         // CONTEÚDO PRINCIPAL
-        doc.y = 120; // Posição após o header
+        doc.y = 140; // Posição após o header (aumentado para acomodar dados da empresa)
         this.addClientInfo(doc, quotation);
         this.addQuotationInfo(doc, quotation);
         this.addItemsTable(doc, quotation);
@@ -51,44 +74,67 @@ export class QuotationPdfService {
     });
   }
 
-  private addHeader(doc: any, quotation: any) {
-    // Background azul no topo
+  private addHeader(doc: any, quotation: any, companyData: any) {
+    // Background azul no topo (altura maior para acomodar dados da empresa)
     doc
-      .rect(0, 0, 595, 100)
+      .rect(0, 0, 595, 120)
       .fill(this.primaryColor);
 
     // Nome da empresa (branco)
+    const companyName = companyData?.companyName || companyData?.tradingName || 'EMPRESA';
     doc
       .fillColor('#ffffff')
-      .fontSize(24)
+      .fontSize(20)
       .font('Helvetica-Bold')
-      .text('SOLID SERVICE', 50, 30, { align: 'left' });
+      .text(companyName.toUpperCase(), 50, 20, { width: 300 });
 
-    // Subtítulo
-    doc
-      .fontSize(10)
-      .font('Helvetica')
-      .text('Sistema de Gestão para Prestadores de Serviços', 50, 60);
+    // Dados da empresa (documento, email, telefone)
+    let currentY = 48;
+    if (companyData?.document) {
+      const docLabel = companyData.document.length <= 14 ? 'CNPJ' : 'CPF/CNPJ';
+      doc
+        .fontSize(8)
+        .font('Helvetica')
+        .text(`${docLabel}: ${this.formatDocument(companyData.document)}`, 50, currentY);
+      currentY += 12;
+    }
+
+    if (companyData?.email || companyData?.phone) {
+      const contactInfo = [companyData.email, companyData.phone].filter(Boolean).join(' | ');
+      doc
+        .fontSize(8)
+        .font('Helvetica')
+        .text(contactInfo, 50, currentY, { width: 300 });
+      currentY += 12;
+    }
+
+    if (companyData?.street) {
+      const address = `${companyData.street}, ${companyData.number || 's/n'} - ${companyData.city || ''}/${companyData.state || ''}`;
+      doc
+        .fontSize(8)
+        .font('Helvetica')
+        .text(address, 50, currentY, { width: 300 });
+    }
 
     // Número do orçamento (direita)
     doc
       .fontSize(14)
       .font('Helvetica-Bold')
-      .text('ORÇAMENTO', 400, 30, { align: 'right', width: 145 })
+      .text('ORÇAMENTO', 400, 25, { align: 'right', width: 145 })
       .fontSize(18)
-      .text(quotation.number, 400, 50, { align: 'right', width: 145 });
+      .text(quotation.number, 400, 45, { align: 'right', width: 145 });
 
     // Status badge
     const statusInfo = this.getStatusBadge(quotation.status);
     doc
-      .rect(420, 75, 125, 18)
+      .rect(420, 90, 125, 20)
       .fill(statusInfo.bg);
 
     doc
       .fillColor(statusInfo.color)
       .fontSize(10)
       .font('Helvetica-Bold')
-      .text(statusInfo.label, 420, 79, { align: 'center', width: 125 });
+      .text(statusInfo.label, 420, 95, { align: 'center', width: 125 });
   }
 
   private addClientInfo(doc: any, quotation: any) {
