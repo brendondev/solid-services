@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   Crown,
   MessageCircle,
+  Upload,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,6 +34,7 @@ const navigation = [
   { name: 'Financeiro', href: '/dashboard/financial', icon: DollarSign },
   { name: 'Serviços', href: '/dashboard/services', icon: ClipboardList },
   { name: 'Fornecedores', href: '/dashboard/suppliers', icon: Truck },
+  { name: 'Importar Dados', href: '/dashboard/import', icon: Upload },
   { name: 'Planos', href: '/dashboard/planos', icon: Crown },
 ];
 
