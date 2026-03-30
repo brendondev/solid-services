@@ -19,6 +19,29 @@ model Tenant {
   name      String
   status    String   @default("active")
   settings  Json?
+
+  // Dados da Empresa
+  logo              String?  // URL ou path do logo
+  companyName       String?  @map("company_name")      // Razão Social
+  tradingName       String?  @map("trading_name")      // Nome Fantasia
+  document          String?  // CNPJ
+  email             String?
+  phone             String?
+  website           String?
+
+  // Endereço
+  street            String?
+  number            String?
+  complement        String?
+  district          String?
+  city              String?
+  state             String?
+  zipCode           String?  @map("zip_code")
+
+  // Dados fiscais/adicionais
+  stateRegistration String?  @map("state_registration") // Inscrição Estadual
+  municipalRegistration String? @map("municipal_registration") // Inscrição Municipal
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

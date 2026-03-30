@@ -147,4 +147,24 @@ export const customersApi = {
     const response = await api.delete(`/portal/management/revoke-token/${id}`);
     return response.data;
   },
+
+  // Atualizar contato
+  updateContact: async (
+    customerId: string,
+    contactId: string,
+    data: Partial<CustomerContact>
+  ): Promise<CustomerContact> => {
+    const response = await api.patch(`/customers/${customerId}/contacts/${contactId}`, data);
+    return response.data;
+  },
+
+  // Atualizar endereço
+  updateAddress: async (
+    customerId: string,
+    addressId: string,
+    data: Partial<CustomerAddress>
+  ): Promise<CustomerAddress> => {
+    const response = await api.patch(`/customers/${customerId}/addresses/${addressId}`, data);
+    return response.data;
+  },
 };

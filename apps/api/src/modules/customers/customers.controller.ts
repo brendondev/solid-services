@@ -215,6 +215,62 @@ export class CustomersController {
     return updated;
   }
 
+  @Patch(':customerId/contacts/:contactId')
+  @ApiOperation({ summary: 'Atualizar contato de um cliente' })
+  @ApiResponse({ status: 200, description: 'Contato atualizado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Cliente ou contato não encontrado' })
+  async updateContact(
+    @Param('customerId') customerId: string,
+    @Param('contactId') contactId: string,
+    @Body() updateContactDto: any,
+    @CurrentUser('id') userId: string,
+  ) {
+    const updated = await this.customersService.updateContact(
+      customerId,
+      contactId,
+      updateContactDto,
+    );
+
+    // Audit log
+    await this.auditService.logUpdate({
+      userId,
+      entity: 'CustomerContact',
+      entityId: contactId,
+      oldData: {},
+      newData: updateContactDto,
+    });
+
+    return updated;
+  }
+
+  @Patch(':customerId/addresses/:addressId')
+  @ApiOperation({ summary: 'Atualizar endereço de um cliente' })
+  @ApiResponse({ status: 200, description: 'Endereço atualizado com sucesso' })
+  @ApiResponse({ status: 404, description: 'Cliente ou endereço não encontrado' })
+  async updateAddress(
+    @Param('customerId') customerId: string,
+    @Param('addressId') addressId: string,
+    @Body() updateAddressDto: any,
+    @CurrentUser('id') userId: string,
+  ) {
+    const updated = await this.customersService.updateAddress(
+      customerId,
+      addressId,
+      updateAddressDto,
+    );
+
+    // Audit log
+    await this.auditService.logUpdate({
+      userId,
+      entity: 'CustomerAddress',
+      entityId: addressId,
+      oldData: {},
+      newData: updateAddressDto,
+    });
+
+    return updated;
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles('admin')

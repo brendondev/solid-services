@@ -1,0 +1,17 @@
+-- AlterTable
+ALTER TABLE "tenants" ADD COLUMN     "logo" TEXT,
+ADD COLUMN     "company_name" TEXT,
+ADD COLUMN     "trading_name" TEXT,
+ADD COLUMN     "document" TEXT,
+ADD COLUMN     "email" TEXT,
+ADD COLUMN     "phone" TEXT,
+ADD COLUMN     "website" TEXT,
+ADD COLUMN     "street" TEXT,
+ADD COLUMN     "number" TEXT,
+ADD COLUMN     "complement" TEXT,
+ADD COLUMN     "district" TEXT,
+ADD COLUMN     "city" TEXT,
+ADD COLUMN     "state" TEXT,
+ADD COLUMN     "zip_code" TEXT,
+ADD COLUMN     "state_registration" TEXT,
+ADD COLUMN     "municipal_registration" TEXT;

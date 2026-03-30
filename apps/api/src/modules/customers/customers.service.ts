@@ -280,4 +280,76 @@ export class CustomersService {
       },
     });
   }
+
+  /**
+   * Atualiza contato de um cliente
+   */
+  async updateContact(
+    customerId: string,
+    contactId: string,
+    updateData: any,
+  ) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Verificar se o cliente pertence ao tenant
+    const customer = await this.prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Cliente não encontrado');
+    }
+
+    // Se está marcando como primário, desmarcar outros
+    if (updateData.isPrimary) {
+      await this.prisma.customerContact.updateMany({
+        where: {
+          customerId,
+          id: { not: contactId },
+        },
+        data: { isPrimary: false },
+      });
+    }
+
+    return this.prisma.customerContact.update({
+      where: { id: contactId },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Atualiza endereço de um cliente
+   */
+  async updateAddress(
+    customerId: string,
+    addressId: string,
+    updateData: any,
+  ) {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Verificar se o cliente pertence ao tenant
+    const customer = await this.prisma.customer.findFirst({
+      where: { id: customerId, tenantId },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Cliente não encontrado');
+    }
+
+    // Se está marcando como primário, desmarcar outros
+    if (updateData.isPrimary) {
+      await this.prisma.customerAddress.updateMany({
+        where: {
+          customerId,
+          id: { not: addressId },
+        },
+        data: { isPrimary: false },
+      });
+    }
+
+    return this.prisma.customerAddress.update({
+      where: { id: addressId },
+      data: updateData,
+    });
+  }
 }
