@@ -95,9 +95,17 @@ export class OrderPdfService {
   private addClientInfo(doc: any, order: any) {
     const startY = doc.y + 10;
 
-    // Box do cliente
+    // Buscar contato primário
+    const primaryContact = order.customer.contacts?.find((c: any) => c.isPrimary) ||
+                          order.customer.contacts?.[0];
+
+    // Buscar endereço primário
+    const primaryAddress = order.customer.addresses?.find((a: any) => a.isPrimary) ||
+                          order.customer.addresses?.[0];
+
+    // Box do cliente (altura maior para incluir mais informações)
     doc
-      .rect(50, startY, 245, 90)
+      .rect(50, startY, 245, 130)
       .strokeColor(this.borderGray)
       .lineWidth(1)
       .stroke();
@@ -109,22 +117,45 @@ export class OrderPdfService {
       .font('Helvetica-Bold')
       .text('CLIENTE', 60, startY + 12);
 
-    // Informações do cliente
+    // Nome do cliente
     doc
       .fontSize(12)
       .font('Helvetica-Bold')
       .fillColor(this.darkGray)
       .text(order.customer.name, 60, startY + 32, { width: 225 });
 
-    const contact = order.customer.contacts?.[0];
+    // CPF/CNPJ
+    if (order.customer.document) {
+      const docLabel = order.customer.document.length === 11 ? 'CPF' : 'CNPJ';
+      const formattedDoc = this.formatDocument(order.customer.document);
+      doc
+        .fontSize(8)
+        .font('Helvetica')
+        .fillColor(this.lightGray)
+        .text(`${docLabel}: ${formattedDoc}`, 60, startY + 50, { width: 225 });
+    }
+
+    // Email e Telefone
     doc
       .fontSize(9)
       .font('Helvetica')
       .fillColor(this.lightGray)
-      .text(contact?.email || 'Email não informado', 60, startY + 50, { width: 225 })
-      .text(contact?.phone || 'Telefone não informado', 60, startY + 65, { width: 225 });
+      .text(primaryContact?.email || 'Email não informado', 60, startY + 65, { width: 225 })
+      .text(primaryContact?.phone || 'Telefone não informado', 60, startY + 80, { width: 225 });
 
-    doc.y = startY + 95;
+    // Endereço
+    if (primaryAddress) {
+      const addressLine1 = `${primaryAddress.street || ''}, ${primaryAddress.number || 's/n'}`.trim();
+      const addressLine2 = `${primaryAddress.district || ''} - ${primaryAddress.city || ''}/${primaryAddress.state || ''}`.trim();
+
+      doc
+        .fontSize(8)
+        .fillColor(this.lightGray)
+        .text(addressLine1, 60, startY + 95, { width: 225 })
+        .text(addressLine2, 60, startY + 107, { width: 225 });
+    }
+
+    doc.y = startY + 135;
   }
 
   private addOrderInfo(doc: any, order: any) {
@@ -461,5 +492,20 @@ export class OrderPdfService {
     };
 
     return badges[status] || badges.pending;
+  }
+
+  private formatDocument(document: string): string {
+    // Remove tudo que não for número
+    const numbers = document.replace(/\D/g, '');
+
+    if (numbers.length === 11) {
+      // CPF: 000.000.000-00
+      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    } else if (numbers.length === 14) {
+      // CNPJ: 00.000.000/0000-00
+      return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    }
+
+    return document; // Retorna original se não for CPF nem CNPJ
   }
 }

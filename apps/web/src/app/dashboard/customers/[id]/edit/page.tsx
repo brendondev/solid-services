@@ -13,6 +13,18 @@ const customerSchema = z.object({
   document: z.string().optional(),
   type: z.enum(['individual', 'company']),
   status: z.enum(['active', 'inactive']),
+  // Contato primário
+  contactName: z.string().optional(),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  phone: z.string().optional(),
+  // Endereço primário
+  street: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  district: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
@@ -48,12 +60,28 @@ export default function EditCustomerPage() {
       const data = await customersApi.findOne(id);
       setCustomer(data);
 
+      // Buscar contato e endereço primários
+      const primaryContact = data.contacts?.find(c => c.isPrimary) || data.contacts?.[0];
+      const primaryAddress = data.addresses?.find(a => a.isPrimary) || data.addresses?.[0];
+
       // Preencher o formulário com os dados do cliente
       reset({
         name: data.name,
         document: data.document || '',
         type: data.type as 'individual' | 'company',
         status: data.status as 'active' | 'inactive',
+        // Contato
+        contactName: primaryContact?.name || '',
+        email: primaryContact?.email || '',
+        phone: primaryContact?.phone || '',
+        // Endereço
+        street: primaryAddress?.street || '',
+        number: primaryAddress?.number || '',
+        complement: primaryAddress?.complement || '',
+        district: primaryAddress?.neighborhood || '',
+        city: primaryAddress?.city || '',
+        state: primaryAddress?.state || '',
+        zipCode: primaryAddress?.zipCode || '',
       });
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Erro ao carregar cliente';
@@ -69,14 +97,17 @@ export default function EditCustomerPage() {
     setError('');
 
     try {
-      const cleanData: any = {
+      // Atualizar dados básicos
+      await customersApi.update(id, {
         name: data.name,
         type: data.type,
         status: data.status,
         document: data.document || undefined,
-      };
+      });
 
-      await customersApi.update(id, cleanData);
+      // TODO: Implementar API para atualizar contatos e endereços
+      // Por enquanto, apenas atualiza os dados básicos
+
       showToast.success('Cliente atualizado com sucesso');
       router.push(`/dashboard/customers/${id}`);
     } catch (err: any) {
@@ -99,7 +130,7 @@ export default function EditCustomerPage() {
   if (!customer) {
     return (
       <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 px-4 py-3 rounded">
           Cliente não encontrado
         </div>
         <button
@@ -113,7 +144,7 @@ export default function EditCustomerPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push(`/dashboard/customers/${id}`)}
@@ -128,13 +159,14 @@ export default function EditCustomerPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 px-4 py-3 rounded">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="bg-card p-6 rounded-lg shadow">
+        {/* Informações Básicas */}
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Informações Básicas
           </h2>
@@ -143,7 +175,7 @@ export default function EditCustomerPage() {
             <div className="md:col-span-2">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-muted-foreground mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
               >
                 Nome / Razão Social *
               </label>
@@ -151,60 +183,60 @@ export default function EditCustomerPage() {
                 {...register('name')}
                 type="text"
                 id="name"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isLoading}
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
               )}
             </div>
 
             <div>
               <label
                 htmlFor="type"
-                className="block text-sm font-medium text-muted-foreground mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
               >
                 Tipo *
               </label>
               <select
                 {...register('type')}
                 id="type"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isLoading}
               >
                 <option value="individual">Pessoa Física</option>
                 <option value="company">Empresa</option>
               </select>
               {errors.type && (
-                <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.type.message}</p>
               )}
             </div>
 
             <div>
               <label
                 htmlFor="status"
-                className="block text-sm font-medium text-muted-foreground mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
               >
                 Status *
               </label>
               <select
                 {...register('status')}
                 id="status"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isLoading}
               >
                 <option value="active">Ativo</option>
                 <option value="inactive">Inativo</option>
               </select>
               {errors.status && (
-                <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.status.message}</p>
               )}
             </div>
 
             <div className="md:col-span-2">
               <label
                 htmlFor="document"
-                className="block text-sm font-medium text-muted-foreground mb-1"
+                className="block text-sm font-medium text-foreground mb-1"
               >
                 CPF / CNPJ
               </label>
@@ -212,33 +244,230 @@ export default function EditCustomerPage() {
                 {...register('document')}
                 type="text"
                 id="document"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="000.000.000-00 ou 00.000.000/0000-00"
                 disabled={isLoading}
               />
               {errors.document && (
-                <p className="mt-1 text-sm text-red-600">{errors.document.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.document.message}</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => router.push(`/dashboard/customers/${id}`)}
-            className="px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-muted"
-            disabled={isLoading}
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
+        {/* Contato */}
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Contato Principal
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label
+                htmlFor="contactName"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Nome do Contato
+              </label>
+              <input
+                {...register('contactName')}
+                type="text"
+                id="contactName"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Nome da pessoa de contato"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Email
+              </label>
+              <input
+                {...register('email')}
+                type="email"
+                id="email"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="email@exemplo.com"
+                disabled={isLoading}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Telefone
+              </label>
+              <input
+                {...register('phone')}
+                type="tel"
+                id="phone"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="(00) 00000-0000"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Endereço */}
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Endereço Principal
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="md:col-span-2">
+              <label
+                htmlFor="street"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Rua / Avenida
+              </label>
+              <input
+                {...register('street')}
+                type="text"
+                id="street"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Nome da rua"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="number"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Número
+              </label>
+              <input
+                {...register('number')}
+                type="text"
+                id="number"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="123"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="complement"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Complemento
+              </label>
+              <input
+                {...register('complement')}
+                type="text"
+                id="complement"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Apto, sala, etc"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label
+                htmlFor="district"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Bairro
+              </label>
+              <input
+                {...register('district')}
+                type="text"
+                id="district"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Nome do bairro"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Cidade
+              </label>
+              <input
+                {...register('city')}
+                type="text"
+                id="city"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="Nome da cidade"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="state"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Estado
+              </label>
+              <input
+                {...register('state')}
+                type="text"
+                id="state"
+                maxLength={2}
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring uppercase"
+                placeholder="UF"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label
+                htmlFor="zipCode"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                CEP
+              </label>
+              <input
+                {...register('zipCode')}
+                type="text"
+                id="zipCode"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="00000-000"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-amber-600 dark:text-amber-400">
+            ⚠️ Aviso: Atualmente apenas dados básicos são salvos. Atualização de contatos e endereços em breve.
+          </p>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => router.push(`/dashboard/customers/${id}`)}
+              className="px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted"
+              disabled={isLoading}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
         </div>
       </form>
     </div>

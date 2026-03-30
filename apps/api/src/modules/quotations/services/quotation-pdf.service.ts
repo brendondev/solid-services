@@ -94,9 +94,17 @@ export class QuotationPdfService {
   private addClientInfo(doc: any, quotation: any) {
     const startY = doc.y + 10;
 
-    // Box do cliente
+    // Buscar contato primário
+    const primaryContact = quotation.customer.contacts?.find((c: any) => c.isPrimary) ||
+                          quotation.customer.contacts?.[0];
+
+    // Buscar endereço primário
+    const primaryAddress = quotation.customer.addresses?.find((a: any) => a.isPrimary) ||
+                          quotation.customer.addresses?.[0];
+
+    // Box do cliente (altura maior para incluir mais informações)
     doc
-      .rect(50, startY, 245, 90)
+      .rect(50, startY, 245, 130)
       .strokeColor(this.borderGray)
       .lineWidth(1)
       .stroke();
@@ -108,21 +116,45 @@ export class QuotationPdfService {
       .font('Helvetica-Bold')
       .text('CLIENTE', 60, startY + 12);
 
-    // Informações do cliente
+    // Nome do cliente
     doc
       .fontSize(12)
       .font('Helvetica-Bold')
       .fillColor(this.darkGray)
       .text(quotation.customer.name, 60, startY + 32, { width: 225 });
 
+    // CPF/CNPJ
+    if (quotation.customer.document) {
+      const docLabel = quotation.customer.document.length === 11 ? 'CPF' : 'CNPJ';
+      const formattedDoc = this.formatDocument(quotation.customer.document);
+      doc
+        .fontSize(8)
+        .font('Helvetica')
+        .fillColor(this.lightGray)
+        .text(`${docLabel}: ${formattedDoc}`, 60, startY + 50, { width: 225 });
+    }
+
+    // Email e Telefone
     doc
       .fontSize(9)
       .font('Helvetica')
       .fillColor(this.lightGray)
-      .text(quotation.customer.email || 'Email não informado', 60, startY + 50, { width: 225 })
-      .text(quotation.customer.phone || 'Telefone não informado', 60, startY + 65, { width: 225 });
+      .text(primaryContact?.email || 'Email não informado', 60, startY + 65, { width: 225 })
+      .text(primaryContact?.phone || 'Telefone não informado', 60, startY + 80, { width: 225 });
 
-    doc.y = startY + 95;
+    // Endereço
+    if (primaryAddress) {
+      const addressLine1 = `${primaryAddress.street || ''}, ${primaryAddress.number || 's/n'}`.trim();
+      const addressLine2 = `${primaryAddress.district || ''} - ${primaryAddress.city || ''}/${primaryAddress.state || ''}`.trim();
+
+      doc
+        .fontSize(8)
+        .fillColor(this.lightGray)
+        .text(addressLine1, 60, startY + 95, { width: 225 })
+        .text(addressLine2, 60, startY + 107, { width: 225 });
+    }
+
+    doc.y = startY + 135;
   }
 
   private addQuotationInfo(doc: any, quotation: any) {
@@ -285,16 +317,18 @@ export class QuotationPdfService {
       doc.y = 80;
     }
 
+    const boxY = doc.y;
+
     // Box do total
     doc
-      .rect(345, doc.y, 200, 50)
+      .rect(345, boxY, 200, 50)
       .fillAndStroke(this.bgGray, this.primaryColor);
 
     doc
       .fillColor(this.darkGray)
       .fontSize(12)
       .font('Helvetica-Bold')
-      .text('VALOR TOTAL', 355, doc.y + 12, { width: 180, align: 'left' });
+      .text('VALOR TOTAL', 355, boxY + 12, { width: 180, align: 'left' });
 
     doc
       .fillColor(this.primaryColor)
@@ -303,11 +337,11 @@ export class QuotationPdfService {
       .text(
         this.formatCurrency(Number(quotation.totalAmount)),
         355,
-        doc.y + 27,
+        boxY + 27,
         { width: 180, align: 'right' }
       );
 
-    doc.y += 65;
+    doc.y = boxY + 65;
   }
 
   private addNotes(doc: any, quotation: any) {
@@ -389,5 +423,20 @@ export class QuotationPdfService {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
+  }
+
+  private formatDocument(document: string): string {
+    // Remove tudo que não for número
+    const numbers = document.replace(/\D/g, '');
+
+    if (numbers.length === 11) {
+      // CPF: 000.000.000-00
+      return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    } else if (numbers.length === 14) {
+      // CNPJ: 00.000.000/0000-00
+      return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    }
+
+    return document; // Retorna original se não for CPF nem CNPJ
   }
 }
