@@ -62,11 +62,27 @@ export default function CustomerPortalLayout({
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                Portal do Cliente
-              </h1>
+            {/* Logo e Nome da Empresa */}
+            <div className="flex items-center gap-3">
+              {customer?.company?.logo ? (
+                <img
+                  src={customer.company.logo}
+                  alt="Logo"
+                  className="h-10 w-10 object-contain rounded-lg"
+                />
+              ) : (
+                <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-lg font-bold">
+                    {(customer?.company?.tradingName || customer?.company?.companyName || 'P')?.[0].toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className="flex flex-col">
+                <h1 className="text-lg font-bold text-gray-900">
+                  {customer?.company?.tradingName || customer?.company?.companyName || 'Portal do Cliente'}
+                </h1>
+                <p className="text-xs text-gray-500">Portal do Cliente</p>
+              </div>
             </div>
 
             {/* User info */}
@@ -122,7 +138,7 @@ export default function CustomerPortalLayout({
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-sm text-gray-500">
-            Portal do Cliente - Solid Service © {new Date().getFullYear()}
+            Portal do Cliente - {customer?.company?.tradingName || customer?.company?.companyName || 'Solid Service'} © {new Date().getFullYear()}
           </p>
         </div>
       </footer>

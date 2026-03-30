@@ -14,6 +14,11 @@ export interface CustomerData {
   tenantId: string;
   name: string;
   status: string;
+  company?: {
+    companyName: string | null;
+    tradingName: string | null;
+    logo: string | null;
+  };
 }
 
 export interface QuotationItem {

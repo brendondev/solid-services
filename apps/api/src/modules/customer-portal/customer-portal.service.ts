@@ -151,9 +151,23 @@ export class CustomerPortalService {
       data: updateData,
     });
 
+    // Buscar dados da empresa para exibir no portal
+    const companyData = await this.prisma.tenant.findUnique({
+      where: { id: tokenData.customer.tenantId },
+      select: {
+        companyName: true,
+        tradingName: true,
+        logo: true,
+      },
+    });
+
     // Não retornar o documento no response (segurança)
     const { document, ...customerWithoutDocument } = tokenData.customer;
-    return customerWithoutDocument;
+
+    return {
+      ...customerWithoutDocument,
+      company: companyData,
+    };
   }
 
   /**

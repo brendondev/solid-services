@@ -17,7 +17,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { companyApi } from '@/lib/api/company';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -41,6 +42,22 @@ const navigation = [
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [companyData, setCompanyData] = useState<any>(null);
+
+  useEffect(() => {
+    const loadCompanyData = async () => {
+      try {
+        const data = await companyApi.getCompanyData();
+        setCompanyData(data);
+      } catch (error) {
+        console.error('Erro ao carregar dados da empresa:', error);
+      }
+    };
+
+    loadCompanyData();
+  }, []);
+
+  const companyName = companyData?.tradingName || companyData?.companyName || 'Solid Service';
 
   return (
     <>
@@ -61,11 +78,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Header */}
         <div className="flex h-16 items-center justify-between px-4 border-b border-border lg:hidden">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-primary-foreground" />
-            </div>
+            {companyData?.logo ? (
+              <img src={companyData.logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary-foreground" />
+              </div>
+            )}
             {!collapsed && (
-              <span className="font-semibold text-foreground">Solid Service</span>
+              <span className="font-semibold text-foreground">{companyName}</span>
             )}
           </div>
           <button
@@ -79,11 +100,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo - Desktop */}
         <div className="hidden lg:flex h-16 items-center justify-between px-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-primary-foreground" />
-            </div>
+            {companyData?.logo ? (
+              <img src={companyData.logo} alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary-foreground" />
+              </div>
+            )}
             {!collapsed && (
-              <span className="font-semibold text-foreground">Solid Service</span>
+              <span className="font-semibold text-foreground">{companyName}</span>
             )}
           </div>
           <button

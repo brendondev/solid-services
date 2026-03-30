@@ -80,13 +80,30 @@ export class QuotationPdfService {
       .rect(0, 0, 595, 120)
       .fill(this.primaryColor);
 
+    let textStartX = 50;
+
+    // Logo da empresa (se existir)
+    if (companyData?.logo) {
+      try {
+        // Se a logo for base64, remover o prefixo data:image/...;base64,
+        const logoData = companyData.logo.includes('base64,')
+          ? Buffer.from(companyData.logo.split('base64,')[1], 'base64')
+          : companyData.logo;
+
+        doc.image(logoData, 50, 15, { width: 40, height: 40, fit: [40, 40] });
+        textStartX = 100; // Deslocar texto para a direita se houver logo
+      } catch (error) {
+        console.error('Erro ao adicionar logo no PDF:', error);
+      }
+    }
+
     // Nome da empresa (branco)
     const companyName = companyData?.companyName || companyData?.tradingName || 'EMPRESA';
     doc
       .fillColor('#ffffff')
       .fontSize(20)
       .font('Helvetica-Bold')
-      .text(companyName.toUpperCase(), 50, 20, { width: 300 });
+      .text(companyName.toUpperCase(), textStartX, 20, { width: 300 });
 
     // Dados da empresa (documento, email, telefone)
     let currentY = 48;
