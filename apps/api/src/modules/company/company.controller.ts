@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../core/auth/decorators/current-user.decorator';
 import { CompanyService } from './company.service';
 import { UpdateCompanyDto } from './dto/update-company.dto';
-import { AuditService } from '../../core/audit/audit.service';
+import { AuditService } from '../audit/audit.service';
 
 @ApiTags('Company')
 @ApiBearerAuth()

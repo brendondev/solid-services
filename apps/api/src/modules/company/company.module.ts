@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CompanyController } from './company.controller';
 import { CompanyService } from './company.service';
 import { DatabaseModule } from '../../core/database/database.module';
-import { AuditModule } from '../../core/audit/audit.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [DatabaseModule, AuditModule],
