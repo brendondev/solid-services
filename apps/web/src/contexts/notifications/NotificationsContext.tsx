@@ -48,6 +48,13 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       return;
     }
 
+    // 🔧 SSE DESABILITADO - Endpoint de notificações em tempo real não implementado no backend
+    // Carregar notificações iniciais apenas
+    console.log('[Notifications] Loading initial notifications (SSE disabled)...');
+    loadNotifications();
+    return; // Retorna aqui para não executar o código SSE abaixo
+
+    /* SSE CODE - DESABILITADO TEMPORARIAMENTE
     console.log('[Notifications] Initializing SSE connection...');
     loadNotifications();
 
@@ -169,6 +176,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         es.close();
       }
     };
+    */ // FIM DO CÓDIGO SSE COMENTADO
   }, [loadNotifications]);
 
   // Marcar como lida
