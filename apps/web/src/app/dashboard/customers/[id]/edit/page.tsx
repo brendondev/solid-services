@@ -78,7 +78,7 @@ export default function EditCustomerPage() {
         street: primaryAddress?.street || '',
         number: primaryAddress?.number || '',
         complement: primaryAddress?.complement || '',
-        district: primaryAddress?.neighborhood || '',
+        district: primaryAddress?.district || '',
         city: primaryAddress?.city || '',
         state: primaryAddress?.state || '',
         zipCode: primaryAddress?.zipCode || '',

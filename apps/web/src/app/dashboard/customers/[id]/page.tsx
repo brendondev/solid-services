@@ -193,7 +193,7 @@ export default function CustomerDetailPage() {
                     {address.complement && ` - ${address.complement}`}
                   </p>
                   <p className="text-sm sm:text-base text-muted-foreground">
-                    {address.neighborhood} - {address.city}/{address.state}
+                    {address.district} - {address.city}/{address.state}
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground">CEP: {address.zipCode}</p>
                 </div>

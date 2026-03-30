@@ -41,7 +41,7 @@ export interface CustomerAddress {
   street: string;
   number: string;
   complement: string | null;
-  neighborhood: string;
+  district: string;
   city: string;
   state: string;
   zipCode: string;
