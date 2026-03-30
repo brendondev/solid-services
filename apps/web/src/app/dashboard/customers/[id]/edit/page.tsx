@@ -97,7 +97,7 @@ export default function EditCustomerPage() {
     setError('');
 
     try {
-      // Atualizar dados básicos
+      // 1. Atualizar dados básicos do cliente
       await customersApi.update(id, {
         name: data.name,
         type: data.type,
@@ -105,8 +105,33 @@ export default function EditCustomerPage() {
         document: data.document || undefined,
       });
 
-      // TODO: Implementar API para atualizar contatos e endereços
-      // Por enquanto, apenas atualiza os dados básicos
+      // 2. Atualizar contato primário (se existir)
+      if (customer?.contacts && customer.contacts.length > 0) {
+        const primaryContact = customer.contacts.find(c => c.isPrimary) || customer.contacts[0];
+
+        await customersApi.updateContact(id, primaryContact.id, {
+          name: data.contactName || data.name,
+          email: data.email || null,
+          phone: data.phone || null,
+          isPrimary: true,
+        });
+      }
+
+      // 3. Atualizar endereço primário (se existir)
+      if (customer?.addresses && customer.addresses.length > 0) {
+        const primaryAddress = customer.addresses.find(a => a.isPrimary) || customer.addresses[0];
+
+        await customersApi.updateAddress(id, primaryAddress.id, {
+          street: data.street || '',
+          number: data.number || '',
+          complement: data.complement || null,
+          district: data.district || '',
+          city: data.city || '',
+          state: data.state || '',
+          zipCode: data.zipCode || '',
+          isPrimary: true,
+        });
+      }
 
       showToast.success('Cliente atualizado com sucesso');
       router.push(`/dashboard/customers/${id}`);
@@ -447,10 +472,7 @@ export default function EditCustomerPage() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            ⚠️ Aviso: Atualmente apenas dados básicos são salvos. Atualização de contatos e endereços em breve.
-          </p>
+        <div className="flex items-center justify-end">
           <div className="flex gap-4">
             <button
               type="button"

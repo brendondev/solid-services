@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Building2, Save, Upload, MapPin, Phone, Mail, Globe, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { authApi } from '@/lib/api/auth';
+import { companyApi } from '@/lib/api/company';
 
 export default function CompanySettingsPage() {
   const [loading, setLoading] = useState(false);
@@ -36,26 +36,28 @@ export default function CompanySettingsPage() {
   const loadCompanyData = async () => {
     try {
       setLoading(true);
-      const user = authApi.getStoredUser();
+      const data = await companyApi.getCompanyData();
 
-      // TODO: Buscar dados da empresa da API
-      // Por enquanto, dados mockados
-      setCompanyName('Solid Service LTDA');
-      setTradeName('Solid Service');
-      setDocument('12.345.678/0001-90');
-      setEmail('contato@solidservice.com');
-      setPhone('(11) 98765-4321');
-      setWebsite('https://solidservice.com');
+      // Dados da empresa
+      setCompanyName(data.companyName || '');
+      setTradeName(data.tradingName || '');
+      setDocument(data.document || '');
+      setEmail(data.email || '');
+      setPhone(data.phone || '');
+      setWebsite(data.website || '');
+      setLogo(data.logo || null);
 
-      setZipCode('01310-100');
-      setStreet('Avenida Paulista');
-      setNumber('1578');
-      setComplement('Sala 1001');
-      setNeighborhood('Bela Vista');
-      setCity('São Paulo');
-      setState('SP');
-    } catch (error) {
-      toast.error('Erro ao carregar dados da empresa');
+      // Endereço
+      setZipCode(data.zipCode || '');
+      setStreet(data.street || '');
+      setNumber(data.number || '');
+      setComplement(data.complement || '');
+      setNeighborhood(data.district || '');
+      setCity(data.city || '');
+      setState(data.state || '');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Erro ao carregar dados da empresa';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -67,12 +69,28 @@ export default function CompanySettingsPage() {
     try {
       setSaving(true);
 
-      // TODO: Salvar na API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await companyApi.updateCompanyData({
+        logo: logo || undefined,
+        companyName: companyName || undefined,
+        tradingName: tradeName || undefined,
+        document: document || undefined,
+        email: email || undefined,
+        phone: phone || undefined,
+        website: website || undefined,
+        // Endereço
+        zipCode: zipCode || undefined,
+        street: street || undefined,
+        number: number || undefined,
+        complement: complement || undefined,
+        district: neighborhood || undefined,
+        city: city || undefined,
+        state: state || undefined,
+      });
 
-      toast.success('Dados da empresa atualizados!');
-    } catch (error) {
-      toast.error('Erro ao salvar dados');
+      toast.success('Dados da empresa atualizados com sucesso!');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Erro ao salvar dados';
+      toast.error(message);
     } finally {
       setSaving(false);
     }
