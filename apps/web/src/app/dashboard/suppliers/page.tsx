@@ -240,18 +240,18 @@ export default function SuppliersPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white p-6 rounded-lg shadow border border-border">
+            <div key={i} className="bg-card p-6 rounded-lg shadow border border-border">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-16" />
             </div>
           ))}
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 rounded-lg shadow border border-border">
           <Skeleton className="h-10 w-full" />
         </div>
 
-        <div className="bg-white rounded-lg shadow border border-border">
+        <div className="bg-card rounded-lg shadow border border-border">
           <div className="p-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full mb-2" />
@@ -267,7 +267,7 @@ export default function SuppliersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Fornecedores</h1>
+          <h1 className="text-3xl font-bold text-foreground">Fornecedores</h1>
           <p className="text-muted-foreground mt-1">Gerencie seus fornecedores e parceiros</p>
         </div>
         <Button
@@ -281,11 +281,11 @@ export default function SuppliersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total de Fornecedores</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
             </div>
             <div className="p-3 bg-primary/10 rounded-lg">
               <Building2 className="w-6 h-6 text-primary" />
@@ -293,7 +293,7 @@ export default function SuppliersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Ativos</p>
@@ -305,23 +305,23 @@ export default function SuppliersPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Inativos</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.inactive}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stats.inactive}</p>
             </div>
-            <div className="p-3 bg-gray-100 rounded-lg">
-              <XCircle className="w-6 h-6 text-gray-600" />
+            <div className="p-3 bg-muted rounded-lg">
+              <XCircle className="w-6 h-6 text-muted-foreground" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-6 rounded-lg shadow border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Com Débitos</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stats.withDebts}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{stats.withDebts}</p>
             </div>
             <div className="p-3 bg-orange-100 rounded-lg">
               <FileText className="w-6 h-6 text-orange-600" />
@@ -354,9 +354,9 @@ export default function SuppliersPage() {
 
       {/* Data Table or Empty State */}
       {filteredData.length === 0 && !loading ? (
-        <div className="bg-white rounded-lg shadow border border-border p-12 text-center">
+        <div className="bg-card rounded-lg shadow border border-border p-12 text-center">
           <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-xl font-semibold text-gray-900 mb-2">
+          <p className="text-xl font-semibold text-foreground mb-2">
             {data.length === 0 ? 'Nenhum fornecedor encontrado' : 'Nenhum resultado encontrado'}
           </p>
           <p className="text-muted-foreground mb-6">
@@ -375,7 +375,7 @@ export default function SuppliersPage() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow border border-border p-6">
+        <div className="bg-card rounded-lg shadow border border-border p-6">
           <DataTable
             columns={columns}
             data={filteredData}

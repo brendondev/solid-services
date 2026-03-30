@@ -189,7 +189,7 @@ export default function OrderDetailPage() {
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
     open: {
       label: 'Aberta',
-      color: 'bg-muted text-muted-foreground border-gray-200',
+      color: 'bg-muted text-muted-foreground border-border',
       icon: Clock
     },
     scheduled: {
@@ -249,7 +249,7 @@ export default function OrderDetailPage() {
         <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
           <button
             onClick={() => router.push('/dashboard/orders')}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-foreground active:bg-gray-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground active:bg-muted rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -421,7 +421,7 @@ export default function OrderDetailPage() {
       {order.notes && (
         <div className="bg-blue-500/10 border border-blue-500/20 p-4 sm:p-6 rounded-lg">
           <h3 className="text-sm sm:text-base font-semibold text-foreground mb-2">Observações</h3>
-          <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">{order.notes}</p>
+          <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-wrap">{order.notes}</p>
         </div>
       )}
 
@@ -432,23 +432,23 @@ export default function OrderDetailPage() {
         <div className="overflow-x-auto -mx-4 sm:mx-0">
           <div className="inline-block min-w-full align-middle">
             <table className="min-w-full">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-muted border-b">
                 <tr>
-                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                     Descrição
                   </th>
-                  <th className="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  <th className="px-3 sm:px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                     Qtd
                   </th>
-                  <th className="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  <th className="px-3 sm:px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                     Preço Unit.
                   </th>
-                  <th className="px-3 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  <th className="px-3 sm:px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                     Total
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-card">
+              <tbody className="divide-y divide-border bg-card">
                 {order.items && order.items.length > 0 ? (
                   order.items.map((item, index) => (
                     <tr key={item.id || index}>
@@ -468,7 +468,7 @@ export default function OrderDetailPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="px-3 sm:px-4 py-8 text-center text-sm text-gray-500">
+                    <td colSpan={4} className="px-3 sm:px-4 py-8 text-center text-sm text-muted-foreground">
                       Nenhum serviço
                     </td>
                   </tr>
@@ -479,11 +479,11 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="mt-4 pt-4 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className="text-xs sm:text-sm text-gray-600 sm:hidden">
+          <div className="text-xs sm:text-sm text-muted-foreground sm:hidden">
             Deslize para ver mais →
           </div>
           <div className="text-right ml-auto">
-            <span className="text-xs sm:text-sm text-gray-600">Valor Total: </span>
+            <span className="text-xs sm:text-sm text-muted-foreground">Valor Total: </span>
             <span className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
               {formatCurrency(order.totalAmount)}
             </span>
@@ -515,7 +515,7 @@ export default function OrderDetailPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm sm:text-base font-semibold text-foreground">{event.event}</p>
                       {event.description && (
-                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           {event.description}
                         </p>
                       )}
@@ -609,7 +609,7 @@ export default function OrderDetailPage() {
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4">Adicionar Evento</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Evento *
                 </label>
                 <input
@@ -621,7 +621,7 @@ export default function OrderDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Descrição
                 </label>
                 <textarea
@@ -639,7 +639,7 @@ export default function OrderDetailPage() {
                     setTimelineEvent('');
                     setTimelineDescription('');
                   }}
-                  className="min-h-[44px] px-4 py-2 border border-border text-gray-700 rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
+                  className="min-h-[44px] px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
                   disabled={actionLoading}
                 >
                   Cancelar
@@ -665,7 +665,7 @@ export default function OrderDetailPage() {
             <h3 className="text-lg sm:text-xl font-bold text-foreground mb-4">Adicionar Tarefa</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Tarefa *
                 </label>
                 <input
@@ -682,7 +682,7 @@ export default function OrderDetailPage() {
                     setShowChecklistModal(false);
                     setChecklistItem('');
                   }}
-                  className="min-h-[44px] px-4 py-2 border border-border text-gray-700 rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
+                  className="min-h-[44px] px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
                   disabled={actionLoading}
                 >
                   Cancelar
@@ -765,7 +765,7 @@ export default function OrderDetailPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Motivo da exclusão *
                 </label>
                 <textarea
@@ -787,7 +787,7 @@ export default function OrderDetailPage() {
                     setShowDeleteModal(false);
                     setDeleteReason('');
                   }}
-                  className="min-h-[44px] px-4 py-2 border border-border text-gray-700 rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
+                  className="min-h-[44px] px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
                   disabled={actionLoading}
                 >
                   Cancelar

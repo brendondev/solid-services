@@ -67,13 +67,13 @@ export default function CustomerDetailPage() {
         <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
           <button
             onClick={() => router.push('/dashboard/customers')}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-foreground active:bg-gray-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground active:bg-muted rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">{customer.name}</h1>
-            <p className="text-sm sm:text-base text-gray-600">Detalhes do cliente</p>
+            <p className="text-sm sm:text-base text-muted-foreground">Detalhes do cliente</p>
           </div>
         </div>
         <button
@@ -91,29 +91,29 @@ export default function CustomerDetailPage() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs sm:text-sm text-gray-600 block mb-1">Nome</label>
+            <label className="text-xs sm:text-sm text-muted-foreground block mb-1">Nome</label>
             <p className="text-sm sm:text-base text-foreground font-medium">{customer.name}</p>
           </div>
           <div>
-            <label className="text-xs sm:text-sm text-gray-600 block mb-1">Tipo</label>
+            <label className="text-xs sm:text-sm text-muted-foreground block mb-1">Tipo</label>
             <p className="text-sm sm:text-base text-foreground font-medium">
               {customer.type === 'company' ? 'Empresa' : 'Pessoa Física'}
             </p>
           </div>
           <div>
-            <label className="text-xs sm:text-sm text-gray-600 block mb-1">Email</label>
+            <label className="text-xs sm:text-sm text-muted-foreground block mb-1">Email</label>
             <p className="text-sm sm:text-base text-foreground font-medium break-all">{primaryContact.email || '-'}</p>
           </div>
           <div>
-            <label className="text-xs sm:text-sm text-gray-600 block mb-1">Telefone</label>
+            <label className="text-xs sm:text-sm text-muted-foreground block mb-1">Telefone</label>
             <p className="text-sm sm:text-base text-foreground font-medium">{primaryContact.phone || '-'}</p>
           </div>
           <div>
-            <label className="text-xs sm:text-sm text-gray-600 block mb-1">CPF/CNPJ</label>
+            <label className="text-xs sm:text-sm text-muted-foreground block mb-1">CPF/CNPJ</label>
             <p className="text-sm sm:text-base text-foreground font-medium">{customer.document || '-'}</p>
           </div>
           <div>
-            <label className="text-xs sm:text-sm text-gray-600 block mb-1">Status</label>
+            <label className="text-xs sm:text-sm text-muted-foreground block mb-1">Status</label>
             <p>
               <span
                 className={`inline-block px-2 py-1 text-xs rounded-full font-medium ${
@@ -149,7 +149,7 @@ export default function CustomerDetailPage() {
                     )}
                   </p>
                   {contact.role && (
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1">{contact.role}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">{contact.role}</p>
                   )}
                   <div className="text-xs sm:text-sm text-muted-foreground mt-2 space-y-1">
                     {contact.email && (
@@ -192,10 +192,10 @@ export default function CustomerDetailPage() {
                     {address.street}, {address.number}
                     {address.complement && ` - ${address.complement}`}
                   </p>
-                  <p className="text-sm sm:text-base text-gray-600">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     {address.neighborhood} - {address.city}/{address.state}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-500">CEP: {address.zipCode}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">CEP: {address.zipCode}</p>
                 </div>
               </div>
             ))}
@@ -210,13 +210,13 @@ export default function CustomerDetailPage() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
           <div>
-            <label className="text-gray-600 block mb-1">Criado em</label>
+            <label className="text-muted-foreground block mb-1">Criado em</label>
             <p className="text-foreground">
               {new Date(customer.createdAt).toLocaleString('pt-BR')}
             </p>
           </div>
           <div>
-            <label className="text-gray-600 block mb-1">Última atualização</label>
+            <label className="text-muted-foreground block mb-1">Última atualização</label>
             <p className="text-foreground">
               {new Date(customer.updatedAt).toLocaleString('pt-BR')}
             </p>

@@ -227,7 +227,7 @@ export default function SchedulePage() {
       <div className="space-y-4 p-4">
         {/* Header Mobile */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
+          <h1 className="text-2xl font-bold text-foreground">Agenda</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {format(date, "MMMM 'de' yyyy", { locale: ptBR })}
           </p>
@@ -252,7 +252,7 @@ export default function SchedulePage() {
 
         {/* Filtros Mobile */}
         {showFilters && (
-          <div className="bg-white p-4 rounded-lg border border-border space-y-3">
+          <div className="bg-card p-4 rounded-lg border border-border space-y-3">
             <div>
               <label className="text-sm font-medium mb-2 block">Técnico</label>
               <select
@@ -337,7 +337,7 @@ export default function SchedulePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Agenda</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Agenda</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Visualize e gerencie os agendamentos
           </p>
@@ -359,11 +359,11 @@ export default function SchedulePage() {
       )}
 
       {/* Filtros Desktop */}
-      <div className="bg-white p-4 rounded-lg shadow border border-border">
+      <div className="bg-card p-4 rounded-lg shadow border border-border">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-gray-700">Filtros:</span>
+            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export default function SchedulePage() {
           {(filters.technicianId !== 'all' || filters.status !== 'all') && (
             <button
               onClick={() => setFilters({ technicianId: 'all', status: 'all' })}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-muted-foreground hover:text-gray-700 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 text-sm text-muted-foreground hover:text-muted-foreground transition-colors"
             >
               <X className="w-3 h-3" />
               Limpar filtros
@@ -409,25 +409,25 @@ export default function SchedulePage() {
       </div>
 
       {/* Legenda */}
-      <div className="bg-white p-4 rounded-lg shadow border border-border">
+      <div className="bg-card p-4 rounded-lg shadow border border-border">
         <div className="flex items-center gap-6 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-blue-100 rounded-lg">
               <CalendarIcon className="w-4 h-4 text-blue-600" />
             </div>
-            <span className="text-sm text-gray-700 font-medium">Agendado</span>
+            <span className="text-sm text-muted-foreground font-medium">Agendado</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="p-2 bg-warning/10 rounded-lg">
               <PlayCircle className="w-4 h-4 text-warning" />
             </div>
-            <span className="text-sm text-gray-700 font-medium">Em Andamento</span>
+            <span className="text-sm text-muted-foreground font-medium">Em Andamento</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="p-2 bg-success/10 rounded-lg">
               <CheckCircle className="w-4 h-4 text-success" />
             </div>
-            <span className="text-sm text-gray-700 font-medium">Concluído</span>
+            <span className="text-sm text-muted-foreground font-medium">Concluído</span>
           </div>
           <div className="ml-auto text-xs text-muted-foreground">
             💡 Dica: Arraste eventos para reagendar
@@ -436,7 +436,7 @@ export default function SchedulePage() {
       </div>
 
       {/* Calendário com Drag & Drop */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow border border-border" style={{ height: '700px' }}>
+      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border" style={{ height: '700px' }}>
         <DnDCalendar
           localizer={localizer}
           events={events}

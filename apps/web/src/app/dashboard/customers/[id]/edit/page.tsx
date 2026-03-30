@@ -91,7 +91,7 @@ export default function EditCustomerPage() {
   if (loadingCustomer) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-600">Carregando cliente...</div>
+        <div className="text-muted-foreground">Carregando cliente...</div>
       </div>
     );
   }
@@ -117,13 +117,13 @@ export default function EditCustomerPage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push(`/dashboard/customers/${id}`)}
-          className="text-gray-600 hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground"
         >
           ← Voltar
         </button>
         <div>
           <h1 className="text-2xl font-bold text-foreground">Editar Cliente</h1>
-          <p className="text-gray-600">{customer.name}</p>
+          <p className="text-muted-foreground">{customer.name}</p>
         </div>
       </div>
 
@@ -143,7 +143,7 @@ export default function EditCustomerPage() {
             <div className="md:col-span-2">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-muted-foreground mb-1"
               >
                 Nome / Razão Social *
               </label>
@@ -151,7 +151,7 @@ export default function EditCustomerPage() {
                 {...register('name')}
                 type="text"
                 id="name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
               {errors.name && (
@@ -162,14 +162,14 @@ export default function EditCustomerPage() {
             <div>
               <label
                 htmlFor="type"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-muted-foreground mb-1"
               >
                 Tipo *
               </label>
               <select
                 {...register('type')}
                 id="type"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               >
                 <option value="individual">Pessoa Física</option>
@@ -183,14 +183,14 @@ export default function EditCustomerPage() {
             <div>
               <label
                 htmlFor="status"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-muted-foreground mb-1"
               >
                 Status *
               </label>
               <select
                 {...register('status')}
                 id="status"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               >
                 <option value="active">Ativo</option>
@@ -204,7 +204,7 @@ export default function EditCustomerPage() {
             <div className="md:col-span-2">
               <label
                 htmlFor="document"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-muted-foreground mb-1"
               >
                 CPF / CNPJ
               </label>
@@ -212,7 +212,7 @@ export default function EditCustomerPage() {
                 {...register('document')}
                 type="text"
                 id="document"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="000.000.000-00 ou 00.000.000/0000-00"
                 disabled={isLoading}
               />
@@ -227,7 +227,7 @@ export default function EditCustomerPage() {
           <button
             type="button"
             onClick={() => router.push(`/dashboard/customers/${id}`)}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 border border-border text-muted-foreground rounded-lg hover:bg-muted"
             disabled={isLoading}
           >
             Cancelar
