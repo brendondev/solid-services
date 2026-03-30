@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { Upload, Download, FileSpreadsheet, CheckCircle2, XCircle, AlertCircle, ArrowRight, FileText, Users, Wrench, Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { importApi, EntityType, ImportPreview, ImportResult } from '@/lib/api/import';
 
-type EntityType = 'customers' | 'services' | 'suppliers' | 'products';
+type EntityTypeLocal = EntityType;
 
 interface ImportStats {
   total: number;
@@ -14,46 +15,46 @@ interface ImportStats {
 }
 
 export default function ImportPage() {
-  const [selectedEntity, setSelectedEntity] = useState<EntityType | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<EntityTypeLocal | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
   const entities = [
     {
-      type: 'customers' as EntityType,
+      type: 'customers' as EntityTypeLocal,
       name: 'Clientes',
       description: 'Importe sua base de clientes com contatos e endereços',
       icon: Users,
       color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30',
-      fields: ['nome', 'email', 'telefone', 'documento', 'tipo', 'endereço', 'cidade', 'estado', 'cep'],
+      fields: ['nome', 'email', 'telefone', 'documento', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep'],
     },
     {
-      type: 'services' as EntityType,
+      type: 'services' as EntityTypeLocal,
       name: 'Serviços',
       description: 'Catálogo de serviços e preços',
       icon: Wrench,
       color: 'bg-green-100 text-green-600 dark:bg-green-900/30',
-      fields: ['nome', 'descrição', 'preço', 'unidade', 'categoria', 'tempo_estimado', 'garantia'],
+      fields: ['nome', 'descricao', 'preco', 'unidade', 'categoria', 'tempo_estimado', 'garantia'],
     },
     {
-      type: 'suppliers' as EntityType,
+      type: 'suppliers' as EntityTypeLocal,
       name: 'Fornecedores',
       description: 'Base de fornecedores e parceiros',
       icon: Building2,
       color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30',
-      fields: ['razao_social', 'nome_fantasia', 'cnpj', 'email', 'telefone', 'contato', 'endereço'],
+      fields: ['razao_social', 'nome_fantasia', 'cnpj', 'email', 'telefone', 'contato', 'endereco'],
     },
     {
-      type: 'products' as EntityType,
+      type: 'products' as EntityTypeLocal,
       name: 'Produtos',
       description: 'Estoque e produtos para venda',
       icon: FileText,
       color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30',
-      fields: ['nome', 'código', 'preço_compra', 'preço_venda', 'estoque', 'fornecedor', 'categoria'],
+      fields: ['nome', 'codigo', 'preco_compra', 'preco_venda', 'estoque', 'fornecedor', 'categoria'],
     },
   ];
 
@@ -102,51 +103,45 @@ export default function ImportPage() {
     try {
       setUploading(true);
 
-      // TODO: Enviar para API para análise
-      // Simular análise
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await importApi.analyze(file, selectedEntity);
+      setPreview(result);
 
-      // Dados de exemplo
-      const mockData = [
-        { nome: 'João Silva', email: 'joao@email.com', telefone: '(11) 98765-4321', documento: '123.456.789-00' },
-        { nome: 'Maria Santos', email: 'maria@email.com', telefone: '(11) 98765-4322', documento: '987.654.321-00' },
-        { nome: 'Pedro Oliveira', email: 'pedro@email.com', telefone: '(11) 98765-4323', documento: '456.789.123-00' },
-      ];
-
-      setPreviewData(mockData);
-      toast.success('Arquivo analisado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao analisar arquivo');
+      if (result.validationErrors.length > 0) {
+        toast.error(`${result.validationErrors.length} erro(s) de validação encontrado(s)`);
+      } else {
+        toast.success('Arquivo analisado com sucesso!');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erro ao analisar arquivo');
     } finally {
       setUploading(false);
     }
   };
 
   const handleImport = async () => {
-    if (!file || !selectedEntity || previewData.length === 0) return;
+    if (!file || !selectedEntity || !preview) return;
 
     try {
       setImporting(true);
 
-      // TODO: Enviar para API para importação
-      // Simular importação
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const result = await importApi.execute(file, selectedEntity);
 
-      // Resultado de exemplo
       setImportStats({
-        total: previewData.length,
-        success: previewData.length - 1,
-        errors: 1,
-        warnings: 0,
+        total: result.total,
+        success: result.success,
+        errors: result.errors,
+        warnings: result.warnings,
       });
 
-      setErrors([
-        'Linha 2: Email "maria@email.com" já existe no sistema',
-      ]);
+      setErrors(result.errorDetails.map(e => `Linha ${e.row}: ${e.error}`));
 
-      toast.success('Importação concluída!');
-    } catch (error) {
-      toast.error('Erro ao importar dados');
+      if (result.success > 0) {
+        toast.success(`${result.success} registro(s) importado(s) com sucesso!`);
+      } else {
+        toast.error('Nenhum registro foi importado');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erro ao importar dados');
     } finally {
       setImporting(false);
     }
@@ -155,7 +150,7 @@ export default function ImportPage() {
   const resetImport = () => {
     setSelectedEntity(null);
     setFile(null);
-    setPreviewData([]);
+    setPreview(null);
     setImportStats(null);
     setErrors([]);
   };
@@ -307,7 +302,7 @@ export default function ImportPage() {
                 </div>
               </label>
 
-              {file && !previewData.length && (
+              {file && !preview && (
                 <button
                   onClick={handleAnalyze}
                   disabled={uploading}
@@ -330,7 +325,7 @@ export default function ImportPage() {
           </div>
 
           {/* Preview Data */}
-          {previewData.length > 0 && (
+          {preview && (
             <div className="bg-card rounded-lg border border-border p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -340,29 +335,45 @@ export default function ImportPage() {
                   <h2 className="text-xl font-semibold">Pré-visualização</h2>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {previewData.length} registros encontrados
+                  {preview.totalRows} registros encontrados
                 </span>
               </div>
+
+              {/* Validation Errors */}
+              {preview.validationErrors.length > 0 && (
+                <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg">
+                  <h4 className="font-semibold text-red-900 dark:text-red-400 mb-2">
+                    Erros de Validação ({preview.validationErrors.length})
+                  </h4>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {preview.validationErrors.map((error, i) => (
+                      <p key={i} className="text-sm text-red-800 dark:text-red-400">
+                        {error.row === 0 ? 'Estrutura' : `Linha ${error.row}`}: {error.error}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="overflow-x-auto mb-4">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left p-2 font-medium">#</th>
-                      {Object.keys(previewData[0] || {}).map((key) => (
-                        <th key={key} className="text-left p-2 font-medium capitalize">
-                          {key}
+                      {preview.columns.map((col) => (
+                        <th key={col} className="text-left p-2 font-medium capitalize">
+                          {col}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {previewData.slice(0, 5).map((row, i) => (
+                    {preview.data.map((row, i) => (
                       <tr key={i} className="border-b border-border/50 hover:bg-muted/50">
                         <td className="p-2 text-muted-foreground">{i + 1}</td>
-                        {Object.values(row).map((value: any, j) => (
-                          <td key={j} className="p-2">
-                            {value}
+                        {preview.columns.map((col) => (
+                          <td key={col} className="p-2">
+                            {row[col] || '-'}
                           </td>
                         ))}
                       </tr>
@@ -371,15 +382,15 @@ export default function ImportPage() {
                 </table>
               </div>
 
-              {previewData.length > 5 && (
+              {preview.data.length < preview.totalRows && (
                 <p className="text-sm text-muted-foreground mb-4">
-                  Mostrando 5 de {previewData.length} registros
+                  Mostrando {preview.data.length} de {preview.totalRows} registros
                 </p>
               )}
 
               <button
                 onClick={handleImport}
-                disabled={importing}
+                disabled={importing || preview.validationErrors.some(e => e.row === 0)}
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
               >
                 {importing ? (
@@ -390,7 +401,7 @@ export default function ImportPage() {
                 ) : (
                   <>
                     <Upload className="w-4 h-4" />
-                    Importar {previewData.length} Registros
+                    Importar {preview.totalRows} Registros
                   </>
                 )}
               </button>

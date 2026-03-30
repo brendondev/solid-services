@@ -40,6 +40,7 @@ import { AuditModule } from './modules/audit';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { UsersModule } from './modules/users/users.module';
 import { DigitalSignatureModule } from './modules/digital-signature/digital-signature.module';
+import { ImportModule } from './modules/import/import.module';
 
 // Interceptors
 import { TenantContextInterceptor } from './common/interceptors';
@@ -85,6 +86,7 @@ import { ChatModule } from './modules/chat/chat.module';
     UsersModule,
     DigitalSignatureModule,
     ChatModule,
+    ImportModule,
   ],
   providers: [
     // ORDEM CRÍTICA:
