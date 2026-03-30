@@ -21,7 +21,7 @@ export default function DashboardNotFound() {
         </div>
 
         {/* Mensagem */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
           Página não encontrada
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mb-8">
@@ -32,7 +32,7 @@ export default function DashboardNotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => router.back()}
-            className="flex items-center justify-center gap-2 px-6 py-3 text-gray-700 bg-muted rounded-lg hover:bg-muted/80 active:bg-muted/90 transition-colors font-medium min-h-[44px]"
+            className="flex items-center justify-center gap-2 px-6 py-3 text-foreground bg-muted rounded-lg hover:bg-muted/80 active:bg-muted/90 transition-colors font-medium min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar

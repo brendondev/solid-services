@@ -27,14 +27,14 @@ export default function DashboardError({
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-4">
-      <div className="max-w-lg w-full bg-white rounded-lg shadow-lg border border-border p-6 sm:p-8">
+      <div className="max-w-lg w-full bg-card rounded-lg shadow-lg border border-border p-6 sm:p-8">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-destructive/10 rounded-lg">
             <AlertTriangle className="w-6 h-6 text-destructive" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
               Erro no Dashboard
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -45,7 +45,7 @@ export default function DashboardError({
 
         {/* Mensagem */}
         <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-foreground">
             {getErrorMessage(error)}
           </p>
         </div>
@@ -53,28 +53,28 @@ export default function DashboardError({
         {/* Detalhes técnicos (apenas dev) */}
         {process.env.NODE_ENV === 'development' && (
           <details className="mb-6 p-4 bg-muted rounded-lg">
-            <summary className="text-sm font-medium cursor-pointer text-gray-700 hover:text-gray-900 mb-2">
+            <summary className="text-sm font-medium cursor-pointer text-foreground hover:text-foreground/80 mb-2">
               🔧 Detalhes técnicos
             </summary>
             <div className="mt-3 space-y-2">
               <div>
-                <p className="text-xs font-medium text-gray-600 mb-1">Mensagem:</p>
-                <pre className="text-xs text-destructive overflow-auto bg-white p-2 rounded border">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Mensagem:</p>
+                <pre className="text-xs text-destructive overflow-auto bg-card p-2 rounded border">
                   {error.message}
                 </pre>
               </div>
               {error.digest && (
                 <div>
-                  <p className="text-xs font-medium text-gray-600 mb-1">Digest:</p>
-                  <code className="text-xs text-gray-600 bg-white px-2 py-1 rounded border">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Digest:</p>
+                  <code className="text-xs text-muted-foreground bg-card px-2 py-1 rounded border">
                     {error.digest}
                   </code>
                 </div>
               )}
               {error.stack && (
                 <div>
-                  <p className="text-xs font-medium text-gray-600 mb-1">Stack trace:</p>
-                  <pre className="text-xs text-gray-600 overflow-auto bg-white p-2 rounded border max-h-48">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Stack trace:</p>
+                  <pre className="text-xs text-muted-foreground overflow-auto bg-card p-2 rounded border max-h-48">
                     {error.stack}
                   </pre>
                 </div>
@@ -95,7 +95,7 @@ export default function DashboardError({
             </button>
             <button
               onClick={() => router.push('/dashboard/main')}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-muted text-gray-700 rounded-lg hover:bg-muted/80 active:bg-muted/90 transition-colors font-medium min-h-[44px]"
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-muted text-foreground rounded-lg hover:bg-muted/80 active:bg-muted/90 transition-colors font-medium min-h-[44px]"
             >
               <Home className="w-4 h-4" />
               Dashboard inicial
@@ -104,7 +104,7 @@ export default function DashboardError({
 
           <button
             onClick={() => router.back()}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-gray-700 transition-colors min-h-[44px]"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar para página anterior

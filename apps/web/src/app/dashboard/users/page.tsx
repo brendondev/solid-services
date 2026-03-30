@@ -100,8 +100,8 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Usuários</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Usuários</h1>
+          <p className="text-muted-foreground mt-1">
             Gerencie os usuários e permissões do sistema
           </p>
         </div>
@@ -147,7 +147,7 @@ export default function UsersPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-card rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -168,7 +168,7 @@ export default function UsersPage() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-card divide-y divide-gray-200">
             {users.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
@@ -180,8 +180,8 @@ export default function UsersPage() {
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="font-medium text-gray-900">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+                      <div className="font-medium text-foreground">{user.name}</div>
+                      <div className="text-sm text-muted-foreground">{user.email}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -247,26 +247,26 @@ export default function UsersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-600">Total de Usuários</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1">
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className="text-sm text-muted-foreground">Total de Usuários</div>
+          <div className="text-2xl font-bold text-foreground mt-1">
             {users.length}
           </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-600">Ativos</div>
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className="text-sm text-muted-foreground">Ativos</div>
           <div className="text-2xl font-bold text-green-600 mt-1">
             {users.filter((u) => u.status === 'active').length}
           </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-600">Administradores</div>
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className="text-sm text-muted-foreground">Administradores</div>
           <div className="text-2xl font-bold text-red-600 mt-1">
             {users.filter((u) => u.roles.includes('admin')).length}
           </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-600">Técnicos</div>
+        <div className="bg-card p-4 rounded-lg shadow">
+          <div className="text-sm text-muted-foreground">Técnicos</div>
           <div className="text-2xl font-bold text-blue-600 mt-1">
             {users.filter((u) => u.roles.includes('technician')).length}
           </div>

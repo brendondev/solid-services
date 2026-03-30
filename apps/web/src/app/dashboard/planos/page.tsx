@@ -87,7 +87,7 @@ export default function PlanosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Crown className="w-8 h-8 text-amber-500" />
             Planos e Assinaturas
           </h1>
@@ -128,14 +128,14 @@ export default function PlanosPage() {
                 <h3 className="text-lg font-semibold">Plano Atual: {currentPlan.name}</h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                Status: <span className="font-medium text-gray-900 capitalize">{status.subscription.status}</span>
+                Status: <span className="font-medium text-foreground capitalize">{status.subscription.status}</span>
               </p>
               <p className="text-sm text-muted-foreground">
-                Renovação em: <span className="font-medium text-gray-900">{status.daysUntilRenewal} dias</span>
+                Renovação em: <span className="font-medium text-foreground">{status.daysUntilRenewal} dias</span>
               </p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-foreground">
                 R$ {isYearly && currentPlan.yearlyPrice ? currentPlan.yearlyPrice.toFixed(2) : currentPlan.price.toFixed(2)}
               </p>
               <p className="text-sm text-muted-foreground">
@@ -148,7 +148,7 @@ export default function PlanosPage() {
 
       {/* Usage Dashboard */}
       {status && (
-        <div className="bg-white rounded-lg border border-border p-6">
+        <div className="bg-card rounded-lg border border-border p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
             Uso Atual
@@ -200,7 +200,7 @@ export default function PlanosPage() {
           return (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-lg border-2 p-6 transition-all hover:shadow-lg ${
+              className={`relative bg-card rounded-lg border-2 p-6 transition-all hover:shadow-lg ${
                 isMostPopular
                   ? 'border-primary shadow-md'
                   : isCurrentPlan
@@ -231,7 +231,7 @@ export default function PlanosPage() {
                   plan.slug === 'pro' ? 'text-amber-500' :
                   'text-purple-500'
                 }`} />
-                <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
+                <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
               </div>
 
@@ -239,7 +239,7 @@ export default function PlanosPage() {
               <div className="text-center mb-6">
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-sm text-muted-foreground">R$</span>
-                  <span className="text-4xl font-bold text-gray-900">
+                  <span className="text-4xl font-bold text-foreground">
                     {plan.price.toFixed(2).split('.')[0]}
                   </span>
                   <span className="text-sm text-muted-foreground">
