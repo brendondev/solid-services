@@ -9,7 +9,9 @@ import { quotationsApi } from '@/lib/api/quotations';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { servicesApi, Service } from '@/lib/api/services';
 import { showToast } from '@/lib/toast';
-import { Loader2, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Loader2, Plus, Trash2, ArrowLeft, UserPlus, Wrench } from 'lucide-react';
+import { CreateCustomerModal } from '@/components/modals/CreateCustomerModal';
+import { CreateServiceModal } from '@/components/modals/CreateServiceModal';
 
 const quotationItemSchema = z.object({
   serviceId: z.string().min(1, 'Selecione um serviço'),
@@ -35,6 +37,8 @@ export default function NewQuotationPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const {
     register,
@@ -85,6 +89,33 @@ export default function NewQuotationPage() {
       showToast.error(errorMessage);
     } finally {
       setLoadingData(false);
+    }
+  };
+
+  const handleCustomerCreated = async (customerId: string) => {
+    // Recarregar lista de clientes
+    try {
+      const customersData = await customersApi.findActive();
+      setCustomers(Array.isArray(customersData) ? customersData : []);
+      // Selecionar automaticamente o cliente criado
+      setValue('customerId', customerId);
+    } catch (err) {
+      console.error('Erro ao recarregar clientes:', err);
+    }
+  };
+
+  const handleServiceCreated = async (serviceId: string) => {
+    // Recarregar lista de serviços
+    try {
+      const servicesData = await servicesApi.findActive();
+      setServices(Array.isArray(servicesData) ? servicesData : []);
+      // Se houver apenas 1 item, selecionar automaticamente o serviço criado
+      if (fields.length === 1) {
+        setValue('items.0.serviceId', serviceId);
+        handleServiceChange(0, serviceId);
+      }
+    } catch (err) {
+      console.error('Erro ao recarregar serviços:', err);
     }
   };
 
@@ -208,22 +239,37 @@ export default function NewQuotationPage() {
               >
                 Cliente *
               </label>
-              <select
-                {...register('customerId')}
-                id="customerId"
-                className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
-                  focus:outline-none focus:ring-2 focus:ring-primary
-                  disabled:bg-gray-50 disabled:cursor-not-allowed
-                  ${errors.customerId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
-                disabled={isLoading}
-              >
-                <option value="">Selecione um cliente</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  {...register('customerId')}
+                  id="customerId"
+                  className={`flex-1 px-4 py-3 text-base sm:text-sm border rounded-lg
+                    focus:outline-none focus:ring-2 focus:ring-primary
+                    disabled:bg-gray-50 disabled:cursor-not-allowed
+                    ${errors.customerId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                  disabled={isLoading}
+                >
+                  <option value="">Selecione um cliente</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3
+                    text-sm font-medium text-white bg-green-600 rounded-lg
+                    hover:bg-green-700 active:bg-green-800
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                  title="Novo Cliente"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Novo</span>
+                </button>
+              </div>
               {errors.customerId && (
                 <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
                   <span>⚠</span>
@@ -350,23 +396,38 @@ export default function NewQuotationPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Serviço *
                     </label>
-                    <select
-                      {...register(`items.${index}.serviceId`)}
-                      onChange={(e) =>
-                        handleServiceChange(index, e.target.value)
-                      }
-                      className={`w-full px-4 py-3 text-base sm:text-sm border rounded-lg
-                        focus:outline-none focus:ring-2 focus:ring-primary
-                        ${errors.items?.[index]?.serviceId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
-                      disabled={isLoading}
-                    >
-                      <option value="">Selecione um serviço</option>
-                      {services.map((service) => (
-                        <option key={service.id} value={service.id}>
-                          {service.name} - {formatCurrency(service.defaultPrice)}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        {...register(`items.${index}.serviceId`)}
+                        onChange={(e) =>
+                          handleServiceChange(index, e.target.value)
+                        }
+                        className={`flex-1 px-4 py-3 text-base sm:text-sm border rounded-lg
+                          focus:outline-none focus:ring-2 focus:ring-primary
+                          ${errors.items?.[index]?.serviceId ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                        disabled={isLoading}
+                      >
+                        <option value="">Selecione um serviço</option>
+                        {services.map((service) => (
+                          <option key={service.id} value={service.id}>
+                            {service.name} - {formatCurrency(service.defaultPrice)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setIsServiceModalOpen(true)}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-3
+                          text-sm font-medium text-white bg-purple-600 rounded-lg
+                          hover:bg-purple-700 active:bg-purple-800
+                          disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isLoading}
+                        title="Novo Serviço"
+                      >
+                        <Wrench className="w-4 h-4" />
+                        <span className="hidden sm:inline">Novo</span>
+                      </button>
+                    </div>
                     {errors.items?.[index]?.serviceId && (
                       <p className="mt-2 text-sm text-red-600 flex items-start gap-1">
                         <span>⚠</span>
@@ -513,6 +574,19 @@ export default function NewQuotationPage() {
           </button>
         </div>
       </form>
+
+      {/* Modals */}
+      <CreateCustomerModal
+        isOpen={isCustomerModalOpen}
+        onClose={() => setIsCustomerModalOpen(false)}
+        onSuccess={handleCustomerCreated}
+      />
+
+      <CreateServiceModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        onSuccess={handleServiceCreated}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, Check, CheckCheck, Info, AlertCircle, AlertTriangle, CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,11 +20,60 @@ import { cn } from '@/lib/utils';
 type NotificationFilter = 'all' | 'unread';
 
 export function NotificationsDropdown() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState<NotificationFilter>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
+
+  // Navegar para a página relacionada à notificação
+  const handleNotificationClick = useCallback((notification: NotificationItem) => {
+    const data = notification.data as any;
+
+    // Mapear tipo de notificação para rota
+    let route: string | null = null;
+
+    switch (notification.type) {
+      case 'quotation_created':
+      case 'quotation_approved':
+      case 'quotation_rejected':
+      case 'quotation_sent':
+        route = data?.quotationId ? `/dashboard/quotations/${data.quotationId}` : '/dashboard/quotations';
+        break;
+
+      case 'order_created':
+      case 'order_updated':
+      case 'order_completed':
+      case 'order_scheduled':
+        route = data?.orderId ? `/dashboard/orders/${data.orderId}` : '/dashboard/orders';
+        break;
+
+      case 'customer_created':
+      case 'customer_updated':
+        route = data?.customerId ? `/dashboard/customers/${data.customerId}` : '/dashboard/customers';
+        break;
+
+      case 'payment_received':
+      case 'receivable_overdue':
+        route = '/dashboard/financial';
+        break;
+
+      default:
+        // Se não houver mapeamento específico, tentar usar link direto do data
+        route = data?.link || null;
+    }
+
+    // Marcar como lida e navegar
+    if (!notification.read) {
+      handleMarkAsRead(notification.id);
+    }
+
+    if (route) {
+      setOpen(false);
+      router.push(route);
+    }
+  }, [router]);
 
   // Carrega notificações
   const loadNotifications = useCallback(async () => {
@@ -213,10 +263,11 @@ export function NotificationsDropdown() {
               <DropdownMenuItem
                 key={notification.id}
                 className={cn(
-                  "flex flex-col items-start gap-2 p-4 cursor-pointer",
+                  "flex flex-col items-start gap-2 p-4 cursor-pointer hover:bg-accent",
                   !notification.read && "bg-muted/50"
                 )}
                 onSelect={(e) => e.preventDefault()}
+                onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex w-full items-start gap-3">
                   <div className="mt-0.5">
