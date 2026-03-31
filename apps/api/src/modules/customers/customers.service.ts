@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '@core/database';
 import { TenantContextService } from '@core/tenant';
 import { CreateCustomerDto, UpdateCustomerDto } from './dto';
@@ -29,6 +29,55 @@ export class CustomersService {
   async create(createCustomerDto: CreateCustomerDto) {
     const { contacts = [], addresses = [], ...customerData } = createCustomerDto;
     const tenantId = this.tenantContext.getTenantId();
+
+    // Verificar se há email nos contatos e se já existe
+    if (contacts && contacts.length > 0) {
+      const emailsToCheck = contacts
+        .map(c => c.email)
+        .filter((email): email is string => !!email && email.trim() !== '');
+
+      if (emailsToCheck.length > 0) {
+        // Buscar clientes que já têm esses emails
+        const existingCustomers = await this.prisma.customer.findMany({
+          where: {
+            tenantId,
+            contacts: {
+              some: {
+                email: {
+                  in: emailsToCheck,
+                },
+              },
+            },
+          },
+          include: {
+            contacts: {
+              where: {
+                email: {
+                  in: emailsToCheck,
+                },
+              },
+            },
+          },
+        });
+
+        if (existingCustomers.length > 0) {
+          // Retornar erro com dados do cliente existente
+          const existingCustomer = existingCustomers[0];
+          const duplicateEmail = existingCustomer.contacts?.[0]?.email || emailsToCheck[0];
+
+          throw new ConflictException({
+            message: 'Email já cadastrado',
+            duplicateEmail,
+            existingCustomer: {
+              id: existingCustomer.id,
+              name: existingCustomer.name,
+              type: existingCustomer.type,
+              document: existingCustomer.document,
+            },
+          });
+        }
+      }
+    }
 
     return this.prisma.customer.create({
       data: {

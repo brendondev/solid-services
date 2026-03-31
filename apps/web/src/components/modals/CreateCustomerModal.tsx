@@ -30,6 +30,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
   const [isLoading, setIsLoading] = useState(false);
   const [confirmDuplicateEmail, setConfirmDuplicateEmail] = useState(false);
   const [pendingData, setPendingData] = useState<CustomerFormData | null>(null);
+  const [existingCustomer, setExistingCustomer] = useState<any>(null);
 
   const {
     register,
@@ -139,6 +140,13 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
       // Se for email duplicado e não confirmou ainda, pede confirmação
       if (isDuplicateEmail && !forceDuplicateEmail) {
         setPendingData(data);
+
+        // Tenta pegar dados do cliente existente do erro
+        const existingCustomerData = errorData?.existingCustomer;
+        if (existingCustomerData) {
+          setExistingCustomer(existingCustomerData);
+        }
+
         setConfirmDuplicateEmail(true);
         showToast.error('⚠️ Email já cadastrado. Deseja criar mesmo assim?');
         return;
@@ -164,6 +172,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
   const handleCancelDuplicate = () => {
     setConfirmDuplicateEmail(false);
     setPendingData(null);
+    setExistingCustomer(null);
     setIsLoading(false);
   };
 
@@ -299,13 +308,41 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
         {/* Confirmação de email duplicado */}
         {confirmDuplicateEmail && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center p-4 rounded-lg">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-sm w-full">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                Email já cadastrado
+                ⚠️ Email já cadastrado
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Este email já está sendo usado por outro cliente. Deseja criar o cliente mesmo assim?
+              <p className="text-sm text-muted-foreground mb-3">
+                Este email já está sendo usado por outro cliente:
               </p>
+
+              {existingCustomer && (
+                <div className="bg-muted/50 border border-border rounded-lg p-4 mb-4">
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-xs text-muted-foreground">Cliente existente:</span>
+                      <p className="font-semibold text-foreground">{existingCustomer.name}</p>
+                    </div>
+                    {existingCustomer.document && (
+                      <div>
+                        <span className="text-xs text-muted-foreground">CPF/CNPJ:</span>
+                        <p className="text-sm text-foreground">{existingCustomer.document}</p>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-xs text-muted-foreground">Tipo:</span>
+                      <p className="text-sm text-foreground">
+                        {existingCustomer.type === 'individual' ? 'Pessoa Física' : 'Empresa'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-sm text-muted-foreground mb-4">
+                Deseja criar um novo cliente com o mesmo email mesmo assim?
+              </p>
+
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -319,7 +356,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
                   onClick={handleConfirmDuplicate}
                   className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
                 >
-                  Continuar
+                  Criar Mesmo Assim
                 </button>
               </div>
             </div>
