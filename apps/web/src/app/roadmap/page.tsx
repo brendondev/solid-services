@@ -21,7 +21,12 @@ import {
   Calendar,
   CreditCard,
   Zap,
-  Globe
+  Globe,
+  MessageSquare,
+  CloudDownload,
+  LockKeyhole,
+  FileSearch,
+  Settings
 } from 'lucide-react';
 
 const fadeIn = {
@@ -35,7 +40,6 @@ interface Feature {
   description: string;
   icon: any;
   status: 'completed' | 'in-progress' | 'planned';
-  date?: string;
 }
 
 const features: Feature[] = [
@@ -44,117 +48,143 @@ const features: Feature[] = [
     title: 'Gestão de Clientes',
     description: 'Cadastro completo de clientes com contatos, endereços e histórico detalhado.',
     icon: Users,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Orçamentos',
     description: 'Criação e envio de orçamentos profissionais com aprovação de clientes.',
     icon: FileText,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Ordens de Serviço',
     description: 'Controle completo de execução com timeline, checklist e agendamento.',
     icon: ClipboardList,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Gestão Financeira',
     description: 'Controle de recebíveis, pagamentos e fluxo de caixa detalhado.',
     icon: DollarSign,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Dashboard Analytics',
     description: 'Métricas operacionais e financeiras em tempo real com gráficos interativos.',
     icon: BarChart3,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Notificações',
     description: 'Sistema de notificações em tempo real para eventos importantes.',
     icon: Bell,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Multi-tenant',
     description: 'Isolamento completo de dados por empresa com segurança avançada.',
     icon: Shield,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
   {
     title: 'Portal do Cliente',
     description: 'Área exclusiva para clientes acompanharem orçamentos e ordens.',
     icon: Globe,
-    status: 'completed',
-    date: 'Mar 2026'
+    status: 'completed'
   },
 
   // In Progress
   {
+    title: 'Importação e Migração de Dados',
+    description: 'Importe dados de planilhas Excel e outros sistemas para facilitar a transição para o Solid Service.',
+    icon: CloudDownload,
+    status: 'in-progress'
+  },
+  {
     title: 'Assinatura Digital',
     description: 'Assinatura eletrônica de ordens de serviço e contratos diretamente na plataforma.',
     icon: FileSignature,
-    status: 'in-progress',
-    date: 'Abr 2026'
+    status: 'in-progress'
   },
   {
     title: 'Integração WhatsApp',
     description: 'Envio de orçamentos e notificações via WhatsApp Business API.',
     icon: Mail,
-    status: 'in-progress',
-    date: 'Abr 2026'
-  },
-  {
-    title: 'Aplicativo Mobile',
-    description: 'App nativo para iOS e Android para gestão em campo.',
-    icon: Smartphone,
-    status: 'in-progress',
-    date: 'Mai 2026'
+    status: 'in-progress'
   },
 
   // Planned
   {
+    title: 'Aplicativo Mobile',
+    description: 'App nativo para iOS e Android para gestão em campo.',
+    icon: Smartphone,
+    status: 'planned'
+  },
+  {
+    title: 'Chat Integrado',
+    description: 'Comunicação em tempo real entre equipe e clientes diretamente na plataforma.',
+    icon: MessageSquare,
+    status: 'planned'
+  },
+  {
+    title: 'Calendário Visual',
+    description: 'Visualização de agendamentos, prazos e compromissos em calendário interativo.',
+    icon: Calendar,
+    status: 'planned'
+  },
+  {
+    title: 'Notificações Personalizáveis',
+    description: 'Configure alertas customizados por email, push ou SMS para eventos importantes.',
+    icon: Bell,
+    status: 'planned'
+  },
+  {
+    title: 'Integrações Externas',
+    description: 'Conecte com contabilidade, bancos, e-mail marketing e outras ferramentas essenciais.',
+    icon: Settings,
+    status: 'planned'
+  },
+  {
+    title: 'Backup Automático',
+    description: 'Cópias de segurança diárias com recuperação de dados em poucos cliques.',
+    icon: CloudDownload,
+    status: 'planned'
+  },
+  {
+    title: 'Autenticação em Duas Etapas (2FA)',
+    description: 'Camada extra de segurança com código de verificação via SMS ou autenticador.',
+    icon: LockKeyhole,
+    status: 'planned'
+  },
+  {
+    title: 'Logs de Auditoria',
+    description: 'Rastreamento completo de ações dos usuários para conformidade e segurança.',
+    icon: FileSearch,
+    status: 'planned'
+  },
+  {
     title: 'Emissão de NFe/NFSe',
     description: 'Emissão automática de notas fiscais integrada ao sistema.',
     icon: FileText,
-    status: 'planned',
-    date: 'Jun 2026'
-  },
-  {
-    title: 'Agendamento Inteligente',
-    description: 'Sistema de agendamento com otimização de rotas e agenda dos técnicos.',
-    icon: Calendar,
-    status: 'planned',
-    date: 'Jul 2026'
+    status: 'planned'
   },
   {
     title: 'Gateway de Pagamento',
     description: 'Integração com Stripe, PagSeguro e Mercado Pago para pagamentos online.',
     icon: CreditCard,
-    status: 'planned',
-    date: 'Ago 2026'
+    status: 'planned'
   },
   {
     title: 'Automações',
     description: 'Workflows automatizados para agilizar processos repetitivos.',
     icon: Zap,
-    status: 'planned',
-    date: 'Set 2026'
+    status: 'planned'
   },
   {
     title: 'Relatórios Avançados',
     description: 'Relatórios personalizáveis com exportação em PDF e Excel.',
     icon: BarChart3,
-    status: 'planned',
-    date: 'Out 2026'
+    status: 'planned'
   },
 ];
 
@@ -295,12 +325,7 @@ export default function RoadmapPage() {
                             <FeatureIcon className="w-6 h-6" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <h3 className="text-lg font-semibold">{feature.title}</h3>
-                              {feature.date && (
-                                <span className="text-xs text-gray-500 whitespace-nowrap">{feature.date}</span>
-                              )}
-                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                             <p className="text-sm text-gray-400 leading-relaxed">
                               {feature.description}
                             </p>
