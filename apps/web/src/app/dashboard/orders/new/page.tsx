@@ -5,10 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { UserPlus, Wrench } from 'lucide-react';
 import { ordersApi } from '@/lib/api/orders';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { servicesApi, Service } from '@/lib/api/services';
 import { showToast } from '@/lib/toast';
+import { CreateCustomerModal } from '@/components/modals/CreateCustomerModal';
+import { CreateServiceModal } from '@/components/modals/CreateServiceModal';
 
 const orderItemSchema = z.object({
   serviceId: z.string().min(1, 'Selecione um serviço'),
@@ -36,6 +39,8 @@ export default function NewOrderPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const {
     register,
@@ -92,6 +97,32 @@ export default function NewOrderPage() {
     if (service) {
       setValue(`items.${index}.description`, service.name);
       setValue(`items.${index}.unitPrice`, service.defaultPrice);
+    }
+  };
+
+  const handleCustomerCreated = async (customerId: string) => {
+    try {
+      const customersData = await customersApi.findActive();
+      setCustomers(Array.isArray(customersData) ? customersData : []);
+      setValue('customerId', customerId);
+      showToast.success('Cliente criado e selecionado!');
+    } catch (err) {
+      console.error('Erro ao recarregar clientes:', err);
+    }
+  };
+
+  const handleServiceCreated = async (serviceId: string) => {
+    try {
+      const servicesData = await servicesApi.findActive();
+      setServices(Array.isArray(servicesData) ? servicesData : []);
+      // Se houver apenas 1 item, seleciona automaticamente
+      if (fields.length === 1) {
+        setValue('items.0.serviceId', serviceId);
+        handleServiceChange(0, serviceId);
+      }
+      showToast.success('Serviço criado e selecionado!');
+    } catch (err) {
+      console.error('Erro ao recarregar serviços:', err);
     }
   };
 
@@ -189,19 +220,31 @@ export default function NewOrderPage() {
               >
                 Cliente *
               </label>
-              <select
-                {...register('customerId')}
-                id="customerId"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-              >
-                <option value="">Selecione um cliente</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  {...register('customerId')}
+                  id="customerId"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
+                >
+                  <option value="">Selecione um cliente</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerModalOpen(true)}
+                  className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium whitespace-nowrap"
+                  disabled={isLoading}
+                  title="Novo Cliente"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Novo</span>
+                </button>
+              </div>
               {errors.customerId && (
                 <p className="mt-1 text-sm text-red-600">
                   {errors.customerId.message}
@@ -295,19 +338,31 @@ export default function NewOrderPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Serviço *
                     </label>
-                    <select
-                      {...register(`items.${index}.serviceId`)}
-                      onChange={(e) => handleServiceChange(index, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      disabled={isLoading}
-                    >
-                      <option value="">Selecione um serviço</option>
-                      {services.map((service) => (
-                        <option key={service.id} value={service.id}>
-                          {service.name} - {formatCurrency(service.defaultPrice)}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        {...register(`items.${index}.serviceId`)}
+                        onChange={(e) => handleServiceChange(index, e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={isLoading}
+                      >
+                        <option value="">Selecione um serviço</option>
+                        {services.map((service) => (
+                          <option key={service.id} value={service.id}>
+                            {service.name} - {formatCurrency(service.defaultPrice)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setIsServiceModalOpen(true)}
+                        className="flex items-center gap-1 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-medium whitespace-nowrap"
+                        disabled={isLoading}
+                        title="Novo Serviço"
+                      >
+                        <Wrench className="w-4 h-4" />
+                        <span className="hidden sm:inline">Novo</span>
+                      </button>
+                    </div>
                     {errors.items?.[index]?.serviceId && (
                       <p className="mt-1 text-sm text-red-600">
                         {errors.items[index]?.serviceId?.message}
@@ -422,6 +477,19 @@ export default function NewOrderPage() {
           </button>
         </div>
       </form>
+
+      {/* Modais de criação rápida */}
+      <CreateCustomerModal
+        isOpen={isCustomerModalOpen}
+        onClose={() => setIsCustomerModalOpen(false)}
+        onSuccess={handleCustomerCreated}
+      />
+
+      <CreateServiceModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        onSuccess={handleServiceCreated}
+      />
     </div>
   );
 }

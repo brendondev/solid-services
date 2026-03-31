@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,9 @@ import { showToast } from '@/lib/toast';
 
 const customerSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
-  type: z.enum(['individual', 'company']),
+  type: z.enum(['individual', 'company'], {
+    errorMap: () => ({ message: 'Tipo de cliente é obrigatório' }),
+  }),
   document: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   phone: z.string().optional(),
@@ -39,11 +41,24 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
     },
   });
 
+  // Reseta o form com valores padrão quando o modal abre
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        name: '',
+        type: 'individual',
+        document: '',
+        email: '',
+        phone: '',
+      });
+    }
+  }, [isOpen, reset]);
+
   const onSubmit = async (data: CustomerFormData) => {
     setIsLoading(true);
 
     try {
-      const customer = await customersApi.create({
+      const payload = {
         name: data.name,
         type: data.type,
         document: data.document || undefined,
@@ -53,15 +68,21 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
           phone: data.phone || undefined,
           isPrimary: true,
         }] : undefined,
-      });
+      };
+
+      console.log('Enviando payload:', payload);
+
+      const customer = await customersApi.create(payload);
 
       showToast.success('Cliente criado com sucesso!');
       reset();
       onSuccess(customer.id);
       onClose();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Erro ao criar cliente';
-      showToast.error(errorMessage);
+      console.error('Erro ao criar cliente:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Erro ao criar cliente';
+      const errorDetails = err.response?.data?.error || '';
+      showToast.error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`);
     } finally {
       setIsLoading(false);
     }

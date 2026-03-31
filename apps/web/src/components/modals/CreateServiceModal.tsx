@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,24 +35,42 @@ export function CreateServiceModal({ isOpen, onClose, onSuccess }: CreateService
     resolver: zodResolver(serviceSchema),
   });
 
+  // Reseta o form com valores padrão quando o modal abre
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        name: '',
+        description: '',
+        price: '',
+        estimatedDuration: '' as any,
+      });
+    }
+  }, [isOpen, reset]);
+
   const onSubmit = async (data: ServiceFormData) => {
     setIsLoading(true);
 
     try {
-      const service = await servicesApi.create({
+      const payload = {
         name: data.name,
         description: data.description || undefined,
         defaultPrice: parseFloat(data.price),
         estimatedDuration: typeof data.estimatedDuration === 'number' ? data.estimatedDuration : undefined,
-      });
+      };
+
+      console.log('Enviando payload:', payload);
+
+      const service = await servicesApi.create(payload);
 
       showToast.success('Serviço criado com sucesso!');
       reset();
       onSuccess(service.id);
       onClose();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Erro ao criar serviço';
-      showToast.error(errorMessage);
+      console.error('Erro ao criar serviço:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Erro ao criar serviço';
+      const errorDetails = err.response?.data?.error || '';
+      showToast.error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`);
     } finally {
       setIsLoading(false);
     }
