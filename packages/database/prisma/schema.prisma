@@ -268,6 +268,7 @@ model Service {
   quotationItems QuotationItem[]
   orderItems     OrderItem[]
 
+  @@unique([tenantId, name])
   @@index([tenantId])
   @@index([tenantId, status])
   @@map("services")

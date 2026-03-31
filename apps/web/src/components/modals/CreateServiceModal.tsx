@@ -67,27 +67,53 @@ export function CreateServiceModal({ isOpen, onClose, onSuccess }: CreateService
       onSuccess(service.id);
       onClose();
     } catch (err: any) {
-      console.error('Erro ao criar serviço:', err);
+      console.error('❌ ERRO COMPLETO:', err);
+      console.error('📦 ERRO RESPONSE:', err.response);
+      console.error('📋 ERRO DATA:', err.response?.data);
 
-      // Captura mensagem de erro detalhada
+      // Tenta capturar a mensagem de erro de diferentes estruturas
       const errorData = err.response?.data;
-      let errorMessage = errorData?.message || err.message || 'Erro ao criar serviço';
+      let errorMessage = 'Erro ao criar serviço';
 
-      // Se houver array de erros de validação
-      if (errorData?.message && Array.isArray(errorData.message)) {
-        errorMessage = errorData.message.join(', ');
+      // Tenta pegar a mensagem de diferentes formas
+      if (errorData) {
+        // Se a mensagem for um array
+        if (Array.isArray(errorData.message)) {
+          errorMessage = errorData.message.join(', ');
+        }
+        // Se a mensagem for uma string
+        else if (typeof errorData.message === 'string') {
+          errorMessage = errorData.message;
+        }
+        // Se tiver error como string
+        else if (typeof errorData.error === 'string') {
+          errorMessage = errorData.error;
+        }
+        // Se tiver details
+        else if (errorData.details) {
+          errorMessage = errorData.details;
+        }
       }
 
+      // Se ainda for internal server error, tenta pegar do err.message
+      if (errorMessage.toLowerCase().includes('internal server error')) {
+        errorMessage = err.message || errorMessage;
+      }
+
+      console.log('💬 MENSAGEM FINAL:', errorMessage);
+
       // Verifica erros específicos
-      const isDuplicateName = errorMessage.toLowerCase().includes('nome') ||
-                               errorMessage.toLowerCase().includes('name') ||
-                               errorMessage.toLowerCase().includes('já existe') ||
-                               errorMessage.toLowerCase().includes('duplicado');
+      const errorLower = errorMessage.toLowerCase();
+      const isDuplicateName = errorLower.includes('nome') ||
+                               errorLower.includes('name') ||
+                               errorLower.includes('já existe') ||
+                               errorLower.includes('duplicado') ||
+                               errorLower.includes('duplicate');
 
       if (isDuplicateName) {
         showToast.error('❌ Já existe um serviço com este nome!');
       } else {
-        showToast.error(`Erro ao criar serviço: ${errorMessage}`);
+        showToast.error(errorMessage);
       }
     } finally {
       setIsLoading(false);

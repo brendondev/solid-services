@@ -83,23 +83,55 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
       onSuccess(customer.id);
       onClose();
     } catch (err: any) {
-      console.error('Erro ao criar cliente:', err);
+      console.error('❌ ERRO COMPLETO:', err);
+      console.error('📦 ERRO RESPONSE:', err.response);
+      console.error('📋 ERRO DATA:', err.response?.data);
 
-      // Captura mensagem de erro detalhada
+      // Tenta capturar a mensagem de erro de diferentes estruturas
       const errorData = err.response?.data;
-      const errorMessage = errorData?.message || err.message || 'Erro ao criar cliente';
+      let errorMessage = 'Erro ao criar cliente';
+
+      // Tenta pegar a mensagem de diferentes formas
+      if (errorData) {
+        // Se a mensagem for um array
+        if (Array.isArray(errorData.message)) {
+          errorMessage = errorData.message.join(', ');
+        }
+        // Se a mensagem for uma string
+        else if (typeof errorData.message === 'string') {
+          errorMessage = errorData.message;
+        }
+        // Se tiver error como string
+        else if (typeof errorData.error === 'string') {
+          errorMessage = errorData.error;
+        }
+        // Se tiver details
+        else if (errorData.details) {
+          errorMessage = errorData.details;
+        }
+      }
+
+      // Se ainda for internal server error, tenta pegar do err.message
+      if (errorMessage.toLowerCase().includes('internal server error')) {
+        errorMessage = err.message || errorMessage;
+      }
+
+      console.log('💬 MENSAGEM FINAL:', errorMessage);
 
       // Verifica se é erro de duplicação
-      const isDuplicateDocument = errorMessage.toLowerCase().includes('cpf') ||
-                                   errorMessage.toLowerCase().includes('cnpj') ||
-                                   errorMessage.toLowerCase().includes('documento') ||
-                                   errorMessage.toLowerCase().includes('document');
+      const errorLower = errorMessage.toLowerCase();
+      const isDuplicateDocument = errorLower.includes('cpf') ||
+                                   errorLower.includes('cnpj') ||
+                                   errorLower.includes('documento') ||
+                                   errorLower.includes('document') ||
+                                   errorLower.includes('já cadastrado') ||
+                                   errorLower.includes('duplicate');
 
-      const isDuplicateEmail = errorMessage.toLowerCase().includes('email') ||
-                               errorMessage.toLowerCase().includes('e-mail');
+      const isDuplicateEmail = errorLower.includes('email') ||
+                               errorLower.includes('e-mail');
 
       // Se for CPF/CNPJ duplicado, mostra erro direto
-      if (isDuplicateDocument) {
+      if (isDuplicateDocument && !isDuplicateEmail) {
         showToast.error('❌ CPF/CNPJ já cadastrado! Verifique se o cliente já existe.');
         return;
       }
@@ -113,14 +145,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
       }
 
       // Outros erros - mostra detalhes completos
-      let detailedError = errorMessage;
-
-      // Se houver array de erros de validação
-      if (errorData?.message && Array.isArray(errorData.message)) {
-        detailedError = errorData.message.join(', ');
-      }
-
-      showToast.error(`Erro: ${detailedError}`);
+      showToast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
