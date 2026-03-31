@@ -100,7 +100,7 @@ export default function LandingPage() {
               className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed"
             >
               ERP completo e moderno para empresas de serviços. Gerencie clientes, orçamentos,
-              ordens de serviço e financeiro com inteligência artificial.
+              ordens de serviço e financeiro em uma única plataforma.
             </motion.p>
 
             <motion.div
@@ -245,33 +245,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { label: 'Empresas', value: '100+', suffix: '' },
-              { label: 'Ordens/mês', value: '10k+', suffix: '' },
-              { label: 'Uptime', value: '99.9', suffix: '%' },
-              { label: 'Satisfação', value: '4.9', suffix: '/5' },
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl"
-              >
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-                  {stat.value}{stat.suffix}
-                </div>
-                <div className="text-gray-400">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 px-6">
@@ -313,10 +286,13 @@ export default function LandingPage() {
               <span className="text-xl font-bold">Solid Service</span>
             </div>
             <div className="flex items-center gap-8 text-sm text-gray-400">
+              <Link href="/roadmap" className="hover:text-white transition-colors">
+                Roadmap
+              </Link>
               <Link href="/auth/login" className="hover:text-white transition-colors">
                 Acessar
               </Link>
-              <span>© 2024 Solid Service</span>
+              <span>© 2026 Solid Service</span>
             </div>
           </div>
         </div>
