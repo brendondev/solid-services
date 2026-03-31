@@ -68,9 +68,27 @@ export function CreateServiceModal({ isOpen, onClose, onSuccess }: CreateService
       onClose();
     } catch (err: any) {
       console.error('Erro ao criar serviço:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Erro ao criar serviço';
-      const errorDetails = err.response?.data?.error || '';
-      showToast.error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`);
+
+      // Captura mensagem de erro detalhada
+      const errorData = err.response?.data;
+      let errorMessage = errorData?.message || err.message || 'Erro ao criar serviço';
+
+      // Se houver array de erros de validação
+      if (errorData?.message && Array.isArray(errorData.message)) {
+        errorMessage = errorData.message.join(', ');
+      }
+
+      // Verifica erros específicos
+      const isDuplicateName = errorMessage.toLowerCase().includes('nome') ||
+                               errorMessage.toLowerCase().includes('name') ||
+                               errorMessage.toLowerCase().includes('já existe') ||
+                               errorMessage.toLowerCase().includes('duplicado');
+
+      if (isDuplicateName) {
+        showToast.error('❌ Já existe um serviço com este nome!');
+      } else {
+        showToast.error(`Erro ao criar serviço: ${errorMessage}`);
+      }
     } finally {
       setIsLoading(false);
     }

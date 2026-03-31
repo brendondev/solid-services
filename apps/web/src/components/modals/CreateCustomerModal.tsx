@@ -28,6 +28,8 @@ interface CreateCustomerModalProps {
 
 export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustomerModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmDuplicateEmail, setConfirmDuplicateEmail] = useState(false);
+  const [pendingData, setPendingData] = useState<CustomerFormData | null>(null);
 
   const {
     register,
@@ -54,7 +56,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
     }
   }, [isOpen, reset]);
 
-  const onSubmit = async (data: CustomerFormData) => {
+  const handleCreateCustomer = async (data: CustomerFormData, forceDuplicateEmail = false) => {
     setIsLoading(true);
 
     try {
@@ -76,16 +78,68 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
 
       showToast.success('Cliente criado com sucesso!');
       reset();
+      setConfirmDuplicateEmail(false);
+      setPendingData(null);
       onSuccess(customer.id);
       onClose();
     } catch (err: any) {
       console.error('Erro ao criar cliente:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Erro ao criar cliente';
-      const errorDetails = err.response?.data?.error || '';
-      showToast.error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`);
+
+      // Captura mensagem de erro detalhada
+      const errorData = err.response?.data;
+      const errorMessage = errorData?.message || err.message || 'Erro ao criar cliente';
+
+      // Verifica se é erro de duplicação
+      const isDuplicateDocument = errorMessage.toLowerCase().includes('cpf') ||
+                                   errorMessage.toLowerCase().includes('cnpj') ||
+                                   errorMessage.toLowerCase().includes('documento') ||
+                                   errorMessage.toLowerCase().includes('document');
+
+      const isDuplicateEmail = errorMessage.toLowerCase().includes('email') ||
+                               errorMessage.toLowerCase().includes('e-mail');
+
+      // Se for CPF/CNPJ duplicado, mostra erro direto
+      if (isDuplicateDocument) {
+        showToast.error('❌ CPF/CNPJ já cadastrado! Verifique se o cliente já existe.');
+        return;
+      }
+
+      // Se for email duplicado e não confirmou ainda, pede confirmação
+      if (isDuplicateEmail && !forceDuplicateEmail) {
+        setPendingData(data);
+        setConfirmDuplicateEmail(true);
+        showToast.error('⚠️ Email já cadastrado. Deseja criar mesmo assim?');
+        return;
+      }
+
+      // Outros erros - mostra detalhes completos
+      let detailedError = errorMessage;
+
+      // Se houver array de erros de validação
+      if (errorData?.message && Array.isArray(errorData.message)) {
+        detailedError = errorData.message.join(', ');
+      }
+
+      showToast.error(`Erro: ${detailedError}`);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const onSubmit = async (data: CustomerFormData) => {
+    await handleCreateCustomer(data, false);
+  };
+
+  const handleConfirmDuplicate = async () => {
+    if (pendingData) {
+      await handleCreateCustomer(pendingData, true);
+    }
+  };
+
+  const handleCancelDuplicate = () => {
+    setConfirmDuplicateEmail(false);
+    setPendingData(null);
+    setIsLoading(false);
   };
 
   if (!isOpen) return null;
@@ -216,6 +270,36 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
             </button>
           </div>
         </form>
+
+        {/* Confirmação de email duplicado */}
+        {confirmDuplicateEmail && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center p-4 rounded-lg">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-sm w-full">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Email já cadastrado
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Este email já está sendo usado por outro cliente. Deseja criar o cliente mesmo assim?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancelDuplicate}
+                  className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDuplicate}
+                  className="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                >
+                  Continuar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
