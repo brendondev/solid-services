@@ -12,7 +12,7 @@ const serviceSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   description: z.string().optional(),
   price: z.string().min(1, 'Preço é obrigatório'),
-  estimatedDuration: z.string().optional(),
+  estimatedDuration: z.coerce.number().optional().or(z.literal('')),
 });
 
 type ServiceFormData = z.infer<typeof serviceSchema>;
@@ -42,8 +42,8 @@ export function CreateServiceModal({ isOpen, onClose, onSuccess }: CreateService
       const service = await servicesApi.create({
         name: data.name,
         description: data.description || undefined,
-        price: parseFloat(data.price),
-        estimatedDuration: data.estimatedDuration || undefined,
+        defaultPrice: parseFloat(data.price),
+        estimatedDuration: typeof data.estimatedDuration === 'number' ? data.estimatedDuration : undefined,
       });
 
       showToast.success('Serviço criado com sucesso!');
@@ -138,14 +138,16 @@ export function CreateServiceModal({ isOpen, onClose, onSuccess }: CreateService
           {/* Duração estimada */}
           <div>
             <label htmlFor="estimatedDuration" className="block text-sm font-medium text-foreground mb-1">
-              Duração Estimada
+              Duração Estimada (minutos)
             </label>
             <input
               {...register('estimatedDuration')}
-              type="text"
+              type="number"
+              min="0"
+              step="1"
               id="estimatedDuration"
               className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Ex: 2 horas"
+              placeholder="Ex: 120 (2 horas)"
               disabled={isLoading}
             />
           </div>
