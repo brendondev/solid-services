@@ -61,6 +61,37 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
     setIsLoading(true);
 
     try {
+      // Se não for forçado e tiver email, verificar duplicação primeiro
+      if (!forceDuplicateEmail && data.email && data.email.trim() !== '') {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/customers/check-email?email=${encodeURIComponent(data.email)}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const existingCustomer = await response.json();
+
+            if (existingCustomer) {
+              // Email duplicado encontrado
+              setPendingData(data);
+              setExistingCustomer(existingCustomer);
+              setConfirmDuplicateEmail(true);
+              setIsLoading(false);
+              showToast.error('⚠️ Email já cadastrado. Deseja criar mesmo assim?');
+              return;
+            }
+          }
+        } catch (checkError) {
+          console.warn('Erro ao verificar email duplicado:', checkError);
+          // Continua com a criação mesmo se a verificação falhar
+        }
+      }
+
       const payload = {
         name: data.name,
         type: data.type,
@@ -81,6 +112,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
       reset();
       setConfirmDuplicateEmail(false);
       setPendingData(null);
+      setExistingCustomer(null);
       onSuccess(customer.id);
       onClose();
     } catch (err: any) {
@@ -119,7 +151,7 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
 
       console.log('💬 MENSAGEM FINAL:', errorMessage);
 
-      // Verifica se é erro de duplicação
+      // Verifica se é erro de duplicação de CPF/CNPJ
       const errorLower = errorMessage.toLowerCase();
       const isDuplicateDocument = errorLower.includes('cpf') ||
                                    errorLower.includes('cnpj') ||
@@ -128,27 +160,9 @@ export function CreateCustomerModal({ isOpen, onClose, onSuccess }: CreateCustom
                                    errorLower.includes('já cadastrado') ||
                                    errorLower.includes('duplicate');
 
-      const isDuplicateEmail = errorLower.includes('email') ||
-                               errorLower.includes('e-mail');
-
       // Se for CPF/CNPJ duplicado, mostra erro direto
-      if (isDuplicateDocument && !isDuplicateEmail) {
+      if (isDuplicateDocument) {
         showToast.error('❌ CPF/CNPJ já cadastrado! Verifique se o cliente já existe.');
-        return;
-      }
-
-      // Se for email duplicado e não confirmou ainda, pede confirmação
-      if (isDuplicateEmail && !forceDuplicateEmail) {
-        setPendingData(data);
-
-        // Tenta pegar dados do cliente existente do erro
-        const existingCustomerData = errorData?.existingCustomer;
-        if (existingCustomerData) {
-          setExistingCustomer(existingCustomerData);
-        }
-
-        setConfirmDuplicateEmail(true);
-        showToast.error('⚠️ Email já cadastrado. Deseja criar mesmo assim?');
         return;
       }
 

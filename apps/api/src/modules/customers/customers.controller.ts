@@ -81,6 +81,17 @@ export class CustomersController {
     );
   }
 
+  @Get('check-email')
+  @ApiOperation({ summary: 'Verificar se email já está cadastrado' })
+  @ApiQuery({ name: 'email', required: true, type: String })
+  @ApiResponse({ status: 200, description: 'Retorna cliente existente ou null' })
+  async checkEmail(@Query('email') email: string) {
+    if (!email) {
+      return null;
+    }
+    return this.customersService.checkDuplicateEmail(email);
+  }
+
   @Get('active')
   @ApiOperation({ summary: 'Listar apenas clientes ativos' })
   @ApiResponse({ status: 200, description: 'Lista de clientes ativos' })
