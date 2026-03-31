@@ -104,7 +104,17 @@ export default function NewOrderPage() {
     try {
       const customersData = await customersApi.findActive();
       setCustomers(Array.isArray(customersData) ? customersData : []);
-      setValue('customerId', customerId);
+
+      // Aguardar um tick para garantir que o DOM foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      setValue('customerId', customerId, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true
+      });
+
+      console.log('✅ Cliente selecionado:', customerId);
       showToast.success('Cliente criado e selecionado!');
     } catch (err) {
       console.error('Erro ao recarregar clientes:', err);
@@ -115,11 +125,21 @@ export default function NewOrderPage() {
     try {
       const servicesData = await servicesApi.findActive();
       setServices(Array.isArray(servicesData) ? servicesData : []);
+
+      // Aguardar um tick para garantir que o DOM foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Se houver apenas 1 item, seleciona automaticamente
       if (fields.length === 1) {
-        setValue('items.0.serviceId', serviceId);
+        setValue('items.0.serviceId', serviceId, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true
+        });
         handleServiceChange(0, serviceId);
       }
+
+      console.log('✅ Serviço selecionado:', serviceId);
       showToast.success('Serviço criado e selecionado!');
     } catch (err) {
       console.error('Erro ao recarregar serviços:', err);

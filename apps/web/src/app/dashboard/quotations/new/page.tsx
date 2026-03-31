@@ -97,8 +97,18 @@ export default function NewQuotationPage() {
     try {
       const customersData = await customersApi.findActive();
       setCustomers(Array.isArray(customersData) ? customersData : []);
+
+      // Aguardar um tick para garantir que o DOM foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Selecionar automaticamente o cliente criado
-      setValue('customerId', customerId);
+      setValue('customerId', customerId, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true
+      });
+
+      console.log('✅ Cliente selecionado:', customerId);
     } catch (err) {
       console.error('Erro ao recarregar clientes:', err);
     }
@@ -109,11 +119,21 @@ export default function NewQuotationPage() {
     try {
       const servicesData = await servicesApi.findActive();
       setServices(Array.isArray(servicesData) ? servicesData : []);
+
+      // Aguardar um tick para garantir que o DOM foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Se houver apenas 1 item, selecionar automaticamente o serviço criado
       if (fields.length === 1) {
-        setValue('items.0.serviceId', serviceId);
+        setValue('items.0.serviceId', serviceId, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true
+        });
         handleServiceChange(0, serviceId);
       }
+
+      console.log('✅ Serviço selecionado:', serviceId);
     } catch (err) {
       console.error('Erro ao recarregar serviços:', err);
     }
