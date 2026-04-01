@@ -5,7 +5,7 @@ export enum ImportEntityType {
   CUSTOMERS = 'customers',
   SERVICES = 'services',
   SUPPLIERS = 'suppliers',
-  PRODUCTS = 'products',
+  ALL = 'all',
 }
 
 export class AnalyzeImportDto {

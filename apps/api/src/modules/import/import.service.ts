@@ -122,8 +122,8 @@ export class ImportService {
         case ImportEntityType.SUPPLIERS:
           result = await this.importSuppliers(data, tenantId);
           break;
-        case ImportEntityType.PRODUCTS:
-          result = await this.importProducts(data, tenantId);
+        case ImportEntityType.ALL:
+          result = await this.importAll(data, tenantId);
           break;
         default:
           throw new BadRequestException('Tipo de entidade não suportado');
@@ -173,7 +173,7 @@ export class ImportService {
       [ImportEntityType.CUSTOMERS]: ['nome', 'documento'],
       [ImportEntityType.SERVICES]: ['nome', 'preco'],
       [ImportEntityType.SUPPLIERS]: ['razao_social', 'cnpj'],
-      [ImportEntityType.PRODUCTS]: ['nome', 'codigo'],
+      [ImportEntityType.ALL]: ['tipo'], // tipo: customer, service ou supplier
     };
 
     return fieldsMap[entityType] || [];
@@ -529,46 +529,154 @@ export class ImportService {
   }
 
   /**
-   * Importa fornecedores (placeholder)
+   * Importa fornecedores
    */
   private async importSuppliers(
     data: any[],
-    _tenantId: string,
+    tenantId: string,
   ): Promise<ImportResultDto> {
-    // TODO: Implementar quando houver tabela de fornecedores
+    let success = 0;
+    let errors = 0;
+    const errorDetails: ImportErrorDetail[] = [];
+    const isDevMode = process.env.NODE_ENV !== 'production';
+
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const rowNumber = i + 2;
+
+      try {
+        // Validações
+        if (!row.razao_social || !row.cnpj) {
+          throw new Error('Razão social e CNPJ são obrigatórios');
+        }
+
+        if (isDevMode) {
+          console.log(`\n🏢 Importando Fornecedor Linha ${rowNumber}:`);
+          console.log(`  Nome:`, row.razao_social);
+          console.log(`  CNPJ RAW:`, row.cnpj);
+        }
+
+        // Limpar e validar CNPJ
+        const cnpjNumeros = this.cleanDocument(row.cnpj);
+
+        if (isDevMode) {
+          console.log(`  CNPJ LIMPO:`, cnpjNumeros);
+          console.log(`  Comprimento:`, cnpjNumeros.length);
+        }
+
+        if (cnpjNumeros.length !== 14) {
+          throw new Error(`CNPJ deve ter 14 dígitos. Recebido: ${cnpjNumeros.length} - Original: "${row.cnpj}" - Limpo: "${cnpjNumeros}"`);
+        }
+
+        if (!this.isValidCNPJ(cnpjNumeros)) {
+          throw new Error(`CNPJ inválido: ${cnpjNumeros}`);
+        }
+
+        // Verificar se já existe
+        const existingSupplier = await this.prisma.supplier.findFirst({
+          where: {
+            tenantId,
+            document: cnpjNumeros,
+          },
+        });
+
+        if (existingSupplier) {
+          throw new Error(`Fornecedor com CNPJ ${row.cnpj} já existe`);
+        }
+
+        // Criar fornecedor
+        await this.prisma.supplier.create({
+          data: {
+            tenantId,
+            name: row.razao_social,
+            document: cnpjNumeros,
+            email: row.email || null,
+            phone: row.telefone || null,
+            notes: row.notas || null,
+            status: 'active',
+          },
+        });
+
+        if (isDevMode) {
+          console.log(`  ✅ Fornecedor criado com sucesso!\n`);
+        }
+        success++;
+      } catch (error: any) {
+        if (isDevMode) {
+          console.log(`  ❌ ERRO:`, error.message);
+          console.log();
+        }
+        errors++;
+        errorDetails.push({
+          row: rowNumber,
+          error: error.message || 'Erro desconhecido',
+          data: { razao_social: row.razao_social, cnpj: row.cnpj },
+        });
+      }
+    }
+
     return {
-      success: 0,
-      errors: data.length,
+      success,
+      errors,
       warnings: 0,
       total: data.length,
-      errorDetails: [
-        {
-          row: 1,
-          error: 'Importação de fornecedores ainda não implementada',
-        },
-      ],
+      errorDetails,
     };
   }
 
   /**
    * Importa produtos (placeholder)
    */
-  private async importProducts(
+  /**
+   * Importa todos os tipos de uma vez (detecta automaticamente pelo campo "tipo")
+   */
+  private async importAll(
     data: any[],
-    _tenantId: string,
+    tenantId: string,
   ): Promise<ImportResultDto> {
-    // TODO: Implementar quando houver tabela de produtos
+    let totalSuccess = 0;
+    let totalErrors = 0;
+    let totalWarnings = 0;
+    const allErrorDetails: ImportErrorDetail[] = [];
+
+    // Separar por tipo
+    const customers = data.filter(row => row.tipo?.toLowerCase() === 'cliente' || row.tipo?.toLowerCase() === 'customer');
+    const services = data.filter(row => row.tipo?.toLowerCase() === 'serviço' || row.tipo?.toLowerCase() === 'service' || row.tipo?.toLowerCase() === 'servico');
+    const suppliers = data.filter(row => row.tipo?.toLowerCase() === 'fornecedor' || row.tipo?.toLowerCase() === 'supplier');
+
+    // Importar clientes
+    if (customers.length > 0) {
+      const result = await this.importCustomers(customers, tenantId);
+      totalSuccess += result.success;
+      totalErrors += result.errors;
+      totalWarnings += result.warnings;
+      allErrorDetails.push(...result.errorDetails);
+    }
+
+    // Importar serviços
+    if (services.length > 0) {
+      const result = await this.importServices(services, tenantId);
+      totalSuccess += result.success;
+      totalErrors += result.errors;
+      totalWarnings += result.warnings;
+      allErrorDetails.push(...result.errorDetails);
+    }
+
+    // Importar fornecedores
+    if (suppliers.length > 0) {
+      const result = await this.importSuppliers(suppliers, tenantId);
+      totalSuccess += result.success;
+      totalErrors += result.errors;
+      totalWarnings += result.warnings;
+      allErrorDetails.push(...result.errorDetails);
+    }
+
     return {
-      success: 0,
-      errors: data.length,
-      warnings: 0,
+      success: totalSuccess,
+      errors: totalErrors,
+      warnings: totalWarnings,
       total: data.length,
-      errorDetails: [
-        {
-          row: 1,
-          error: 'Importação de produtos ainda não implementada',
-        },
-      ],
+      errorDetails: allErrorDetails,
     };
   }
 }

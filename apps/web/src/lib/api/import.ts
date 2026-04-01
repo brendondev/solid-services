@@ -1,6 +1,6 @@
 import api from './client';
 
-export type EntityType = 'customers' | 'services' | 'suppliers' | 'products';
+export type EntityType = 'customers' | 'services' | 'suppliers' | 'all';
 
 export interface ImportPreview {
   data: any[];

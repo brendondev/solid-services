@@ -32,7 +32,7 @@ export default function ImportPage() {
       description: 'Importe sua base de clientes com contatos e endereços',
       icon: Users,
       color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30',
-      fields: ['nome', 'email', 'telefone', 'documento', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep'],
+      fields: ['nome', 'documento', 'email', 'telefone', 'nome_contato', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep'],
     },
     {
       type: 'services' as EntityTypeLocal,
@@ -48,15 +48,15 @@ export default function ImportPage() {
       description: 'Base de fornecedores e parceiros',
       icon: Building2,
       color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30',
-      fields: ['razao_social', 'nome_fantasia', 'cnpj', 'email', 'telefone', 'contato', 'endereco'],
+      fields: ['razao_social', 'cnpj', 'email', 'telefone', 'notas'],
     },
     {
-      type: 'products' as EntityTypeLocal,
-      name: 'Produtos',
-      description: 'Estoque e produtos para venda',
-      icon: FileText,
-      color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30',
-      fields: ['nome', 'codigo', 'preco_compra', 'preco_venda', 'estoque', 'fornecedor', 'categoria'],
+      type: 'all' as EntityTypeLocal,
+      name: 'Importar Tudo',
+      description: 'Importe clientes, serviços e fornecedores de uma só vez (requer coluna "tipo")',
+      icon: FileSpreadsheet,
+      color: 'bg-gradient-to-r from-blue-100 to-purple-100 text-purple-600 dark:from-blue-900/30 dark:to-purple-900/30',
+      fields: ['tipo', 'nome', 'documento', 'email', 'telefone', 'preco', 'descricao', 'razao_social', 'cnpj'],
     },
   ];
 
