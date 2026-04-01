@@ -556,7 +556,9 @@ export default function ImportPage() {
               )}
 
               {/* Import Results - aparece na mesma tela após importação */}
-              {importStats && (
+              {importStats && (() => {
+                const stats = importStats as ImportStats;
+                return (
                 <div className="mt-6 space-y-4">
                   <div className="border-t border-border pt-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -568,15 +570,15 @@ export default function ImportPage() {
                     <div className="grid grid-cols-3 gap-4 mb-4">
                       <div className="bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900/30 p-4 text-center">
                         <p className="text-sm text-muted-foreground mb-1">Importados</p>
-                        <p className="text-2xl font-bold text-green-600">{importStats.success}</p>
+                        <p className="text-2xl font-bold text-green-600">{stats.success}</p>
                       </div>
                       <div className="bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-900/30 p-4 text-center">
                         <p className="text-sm text-muted-foreground mb-1">Erros</p>
-                        <p className="text-2xl font-bold text-red-600">{importStats.errors}</p>
+                        <p className="text-2xl font-bold text-red-600">{stats.errors}</p>
                       </div>
                       <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-900/30 p-4 text-center">
                         <p className="text-sm text-muted-foreground mb-1">Avisos</p>
-                        <p className="text-2xl font-bold text-amber-600">{importStats.warnings}</p>
+                        <p className="text-2xl font-bold text-amber-600">{stats.warnings}</p>
                       </div>
                     </div>
 
@@ -601,7 +603,7 @@ export default function ImportPage() {
                     )}
 
                     {/* Success message */}
-                    {importStats.errors === 0 && importStats.success > 0 && (
+                    {stats.errors === 0 && stats.success > 0 && (
                       <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/30 rounded-lg p-4 text-center">
                         <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
                         <p className="text-green-900 dark:text-green-400 font-semibold">
@@ -623,7 +625,8 @@ export default function ImportPage() {
                     )}
                   </div>
                 </div>
-              )}
+                );
+              })()}
             </div>
           )}
         </div>
