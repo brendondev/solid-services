@@ -29,18 +29,24 @@ export class SchedulingService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    return this.prisma.serviceOrder.findMany({
-      where: {
-        tenantId,
-        assignedTo: technicianId,
-        scheduledFor: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-        status: {
-          in: ['scheduled', 'in_progress'],
-        },
+    // Só filtrar por assignedTo se technicianId não for vazio
+    const where: any = {
+      tenantId,
+      scheduledFor: {
+        gte: startOfDay,
+        lte: endOfDay,
       },
+      status: {
+        in: ['scheduled', 'in_progress'],
+      },
+    };
+
+    if (technicianId && technicianId !== '') {
+      where.assignedTo = technicianId;
+    }
+
+    return this.prisma.serviceOrder.findMany({
+      where,
       include: {
         customer: {
           select: {
@@ -64,18 +70,24 @@ export class SchedulingService {
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 7);
 
-    return this.prisma.serviceOrder.findMany({
-      where: {
-        tenantId,
-        assignedTo: technicianId,
-        scheduledFor: {
-          gte: startDate,
-          lt: endDate,
-        },
-        status: {
-          in: ['scheduled', 'in_progress'],
-        },
+    // Só filtrar por assignedTo se technicianId não for vazio
+    const where: any = {
+      tenantId,
+      scheduledFor: {
+        gte: startDate,
+        lt: endDate,
       },
+      status: {
+        in: ['scheduled', 'in_progress'],
+      },
+    };
+
+    if (technicianId && technicianId !== '') {
+      where.assignedTo = technicianId;
+    }
+
+    return this.prisma.serviceOrder.findMany({
+      where,
       include: {
         customer: {
           select: {

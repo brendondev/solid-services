@@ -66,7 +66,10 @@ export default function SchedulePage() {
     try {
       setLoading(true);
       const startDate = format(currentDate, 'yyyy-MM-dd');
-      const data = await schedulingApi.getWeekSchedule(filters.technicianId, startDate);
+
+      // Se filtro for 'all', buscar de todos os técnicos (passar string vazia)
+      const techId = filters.technicianId === 'all' ? '' : filters.technicianId;
+      const data = await schedulingApi.getWeekSchedule(techId, startDate);
 
       let filtered = Array.isArray(data) ? data : [];
       if (filters.status !== 'all') {
