@@ -184,7 +184,25 @@ export class ImportService {
    */
   private cleanDocument(documento: string): string {
     if (!documento) return '';
-    return documento.replace(/\D/g, '');
+
+    // Converter para string (caso venha como número do Excel)
+    let docString = String(documento);
+
+    // Remover todos os caracteres não-numéricos (incluindo espaços, pontos, traços, barras, tabs, etc)
+    let cleaned = docString.replace(/\D/g, '').trim();
+
+    // Se tiver menos de 11 dígitos, pode ser CPF com zeros à esquerda removidos pelo Excel
+    // Preencher com zeros à esquerda até 11 dígitos (CPF)
+    if (cleaned.length > 0 && cleaned.length < 11) {
+      cleaned = cleaned.padStart(11, '0');
+    }
+    // Se tiver entre 11 e 13 dígitos, pode ser CNPJ com zeros à esquerda removidos
+    // Preencher com zeros à esquerda até 14 dígitos (CNPJ)
+    else if (cleaned.length > 11 && cleaned.length < 14) {
+      cleaned = cleaned.padStart(14, '0');
+    }
+
+    return cleaned;
   }
 
   /**
@@ -299,6 +317,7 @@ export class ImportService {
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       const rowNumber = i + 2; // +2 porque linha 1 é cabeçalho e arrays começam em 0
+      const isDevMode = process.env.NODE_ENV !== 'production';
 
       try {
         // Validações
@@ -306,23 +325,52 @@ export class ImportService {
           throw new Error('Nome e documento são obrigatórios');
         }
 
+        // Debug em desenvolvimento
+        if (isDevMode) {
+          console.log(`\n🔍 DEBUG Linha ${rowNumber}:`);
+          console.log(`  📄 Documento RAW:`, row.documento);
+          console.log(`  📝 Tipo:`, typeof row.documento);
+        }
+
         // Limpar e normalizar documento
         const documentoNumeros = this.cleanDocument(row.documento);
 
+        // Debug após limpeza
+        if (isDevMode) {
+          console.log(`  ✨ Documento LIMPO:`, documentoNumeros);
+          console.log(`  📏 Comprimento:`, documentoNumeros.length);
+          console.log(`  🔢 Caracteres:`, documentoNumeros.split('').map((c, i) => `[${i}]=${c}(${c.charCodeAt(0)})`).join(' '));
+        }
+
         // Validar quantidade de dígitos
         if (documentoNumeros.length !== 11 && documentoNumeros.length !== 14) {
-          throw new Error(`Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos. Recebido: ${documentoNumeros.length}`);
+          throw new Error(`Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos. Recebido: ${documentoNumeros.length} - Original: "${row.documento}" - Limpo: "${documentoNumeros}"`);
         }
 
         // Detectar tipo automaticamente baseado no documento limpo
         const tipo = this.detectCustomerType(documentoNumeros);
+        if (isDevMode) {
+          console.log(`  👤 Tipo detectado:`, tipo === 'pessoa_fisica' ? 'CPF (Pessoa Física)' : 'CNPJ (Pessoa Jurídica)');
+        }
 
         // Validar documento
-        if (tipo === 'pessoa_fisica' && !this.isValidCPF(documentoNumeros)) {
-          throw new Error('CPF inválido');
+        if (tipo === 'pessoa_fisica') {
+          const isValid = this.isValidCPF(documentoNumeros);
+          if (isDevMode) {
+            console.log(`  ✅ Validação CPF:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
+          }
+          if (!isValid) {
+            throw new Error(`CPF inválido: ${documentoNumeros}`);
+          }
         }
-        if (tipo === 'pessoa_juridica' && !this.isValidCNPJ(documentoNumeros)) {
-          throw new Error('CNPJ inválido');
+        if (tipo === 'pessoa_juridica') {
+          const isValid = this.isValidCNPJ(documentoNumeros);
+          if (isDevMode) {
+            console.log(`  ✅ Validação CNPJ:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
+          }
+          if (!isValid) {
+            throw new Error(`CNPJ inválido: ${documentoNumeros}`);
+          }
         }
 
         // Verificar se já existe
@@ -382,8 +430,16 @@ export class ImportService {
           });
         }
 
+        if (isDevMode) {
+          console.log(`  ✅ Cliente criado com sucesso!\n`);
+        }
         success++;
       } catch (error: any) {
+        if (isDevMode) {
+          console.log(`  ❌ ERRO:`, error.message);
+          console.log(`  📋 Stack:`, error.stack?.split('\n').slice(0, 3).join('\n'));
+          console.log();
+        }
         errors++;
         errorDetails.push({
           row: rowNumber,
