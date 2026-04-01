@@ -3,6 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@solid-service/database'],
 
+  // Force environment variables to be available at build time
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
