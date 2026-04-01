@@ -73,7 +73,10 @@
       "Bash(npx nest:*)",
       "Bash(npx nest g service:*)",
       "Bash(xargs:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(git rm:*)",
+      "Bash(git -C \"C:\\\\Users\\\\blima\\\\Desktop\\\\Documentos\\\\solid-service\" log --oneline)",
+      "Bash(git -C \"C:\\\\Users\\\\blima\\\\Desktop\\\\Documentos\\\\solid-service\" ls-files)"
     ]
   }
 }

@@ -8,17 +8,14 @@
   ],
   "scripts": {
     "setup": "node scripts/setup.js",
-    "dev": "turbo run dev",
+    "dev:web": "cd apps/web && npm run dev",
     "dev:api": "cd apps/api && npm run dev",
-    "build": "turbo run build",
-    "test": "turbo run test",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "build:web": "cd apps/web && npm run build",
+    "build:api": "cd apps/api && npm run build",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
     "prettier": "^3.2.5",
-    "turbo": "^1.12.4",
     "typescript": "^5.3.3"
   },
   "engines": {
