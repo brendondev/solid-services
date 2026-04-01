@@ -29,7 +29,7 @@ export class SchedulingService {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Só filtrar por assignedTo se technicianId não for vazio
+    // Só filtrar por assignedTo se technicianId não for 'all' ou vazio
     const where: any = {
       tenantId,
       scheduledFor: {
@@ -41,7 +41,7 @@ export class SchedulingService {
       },
     };
 
-    if (technicianId && technicianId !== '') {
+    if (technicianId && technicianId !== '' && technicianId !== 'all') {
       where.assignedTo = technicianId;
     }
 
@@ -70,7 +70,7 @@ export class SchedulingService {
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + 7);
 
-    // Só filtrar por assignedTo se technicianId não for vazio
+    // Só filtrar por assignedTo se technicianId não for 'all' ou vazio
     const where: any = {
       tenantId,
       scheduledFor: {
@@ -82,7 +82,7 @@ export class SchedulingService {
       },
     };
 
-    if (technicianId && technicianId !== '') {
+    if (technicianId && technicianId !== '' && technicianId !== 'all') {
       where.assignedTo = technicianId;
     }
 
