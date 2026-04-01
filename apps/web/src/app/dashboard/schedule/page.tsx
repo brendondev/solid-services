@@ -1,88 +1,57 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar';
-import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addDays, startOfWeek, endOfWeek, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { schedulingApi, ScheduledOrder } from '@/lib/api/scheduling';
 import { ordersApi } from '@/lib/api/orders';
 import { usersApi, User } from '@/lib/api/users';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
-import { useIsMobile } from '@/hooks/useMediaQuery';
 import {
   Plus,
-  CalendarIcon,
-  Clock,
-  PlayCircle,
-  CheckCircle,
-  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  LayoutGrid,
+  LayoutList,
   Filter,
   X,
   Eye,
   Edit,
+  Clock,
   User as UserIcon,
-  MapPin,
-  Phone,
 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MobileCard, MobileCardList } from '@/components/responsive';
 
-const locales = {
-  'pt-BR': ptBR,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
-
-// Calendar com drag & drop
-const DnDCalendar = withDragAndDrop(Calendar);
+type ViewMode = 'month' | 'week' | 'day';
 
 export default function SchedulePage() {
   const router = useRouter();
-  const isMobile = useIsMobile();
 
   const [orders, setOrders] = useState<ScheduledOrder[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [view, setView] = useState<View>(isMobile ? 'agenda' : 'month');
-  const [date, setDate] = useState(new Date());
-
-  // Filtros
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [selectedOrder, setSelectedOrder] = useState<ScheduledOrder | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     technicianId: 'all' as string,
     status: 'all' as string,
   });
 
-  // Modal de detalhes
-  const [selectedOrder, setSelectedOrder] = useState<ScheduledOrder | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-
   useEffect(() => {
     loadUsers();
-  }, []);
-
-  useEffect(() => {
     loadOrders();
-  }, [date, view, filters]);
+  }, [currentDate, filters]);
 
   const loadUsers = async () => {
     try {
@@ -96,12 +65,9 @@ export default function SchedulePage() {
   const loadOrders = async () => {
     try {
       setLoading(true);
-      setError('');
-
-      const startDate = format(date, 'yyyy-MM-dd');
+      const startDate = format(currentDate, 'yyyy-MM-dd');
       const data = await schedulingApi.getWeekSchedule(filters.technicianId, startDate);
 
-      // Aplicar filtro de status
       let filtered = Array.isArray(data) ? data : [];
       if (filters.status !== 'all') {
         filtered = filtered.filter(o => o.status === filters.status);
@@ -109,82 +75,33 @@ export default function SchedulePage() {
 
       setOrders(filtered);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao carregar agenda');
+      showToast.error('Erro ao carregar agenda');
       setOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Converter ordens para eventos do calendário
-  const events = useMemo(() => {
-    return orders.map((order) => {
-      const start = new Date(order.scheduledFor);
-      const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hora padrão
+  const handlePrevMonth = () => setCurrentDate(prev => subMonths(prev, 1));
+  const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1));
+  const handleToday = () => setCurrentDate(new Date());
 
-      return {
-        id: order.id,
-        title: `${order.number} - ${order.customer.name}`,
-        start,
-        end,
-        resource: order,
-      };
+  const getOrdersForDate = (date: Date) => {
+    return orders.filter(order => {
+      const orderDate = parseISO(order.scheduledFor);
+      return isSameDay(orderDate, date);
     });
-  }, [orders]);
-
-  // Handle drag & drop - reagendar ordem
-  const handleEventDrop = useCallback(async ({ event, start, end }: any) => {
-    try {
-      // Atualizar ordem com nova data
-      await ordersApi.update(event.id, {
-        scheduledFor: start.toISOString(),
-      });
-
-      showToast.success('Ordem reagendada com sucesso!');
-      loadOrders(); // Recarregar
-    } catch (err: any) {
-      showToast.error(err.response?.data?.message || 'Erro ao reagendar ordem');
-    }
-  }, []);
-
-  // Handle resize - ajustar duração
-  const handleEventResize = useCallback(async ({ event, start, end }: any) => {
-    try {
-      await ordersApi.update(event.id, {
-        scheduledFor: start.toISOString(),
-      });
-
-      showToast.success('Duração atualizada!');
-      loadOrders();
-    } catch (err: any) {
-      showToast.error(err.response?.data?.message || 'Erro ao atualizar duração');
-    }
-  }, []);
-
-  const handleSelectEvent = (event: any) => {
-    setSelectedOrder(event.resource);
-    setShowDetailsModal(true);
-  };
-
-  const handleSelectSlot = (slotInfo: any) => {
-    // Navegar para criar nova ordem com data pré-selecionada
-    const scheduledDate = format(slotInfo.start, 'yyyy-MM-dd HH:mm');
-    router.push(`/dashboard/orders/new?scheduledFor=${scheduledDate}`);
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'scheduled':
-        return '#3b82f6'; // blue
-      case 'in_progress':
-        return '#f59e0b'; // orange
-      case 'completed':
-        return '#10b981'; // green
-      case 'open':
-        return '#6b7280'; // gray
-      default:
-        return '#6b7280';
-    }
+    const colors = {
+      open: 'bg-gray-500',
+      scheduled: 'bg-blue-500',
+      in_progress: 'bg-orange-500',
+      completed: 'bg-green-500',
+      cancelled: 'bg-red-500',
+    };
+    return colors[status as keyof typeof colors] || 'bg-gray-500';
   };
 
   const getStatusLabel = (status: string) => {
@@ -198,67 +115,200 @@ export default function SchedulePage() {
     return labels[status] || status;
   };
 
-  const eventStyleGetter = (event: any) => {
-    const status = event.resource?.status || 'scheduled';
-    return {
-      style: {
-        backgroundColor: getStatusColor(status),
-        borderRadius: '5px',
-        opacity: 0.9,
-        color: 'white',
-        border: '0px',
-        display: 'block',
-        fontSize: isMobile ? '11px' : '13px',
-        padding: isMobile ? '2px 4px' : '4px 8px',
-      },
-    };
-  };
+  // Renderizar visualização mensal
+  const renderMonthView = () => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const calendarStart = startOfWeek(monthStart, { locale: ptBR });
+    const calendarEnd = endOfWeek(monthEnd, { locale: ptBR });
+    const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
-
-  // Renderização mobile com cards
-  if (isMobile) {
     return (
-      <div className="space-y-4 p-4">
-        {/* Header Mobile */}
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
+        {/* Cabeçalho dos dias da semana */}
+        <div className="grid grid-cols-7 border-b border-border bg-muted/50">
+          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+            <div key={day} className="p-3 text-center text-sm font-semibold text-muted-foreground">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Grid de dias */}
+        <div className="grid grid-cols-7 auto-rows-fr min-h-[600px]">
+          {days.map((day, index) => {
+            const dayOrders = getOrdersForDate(day);
+            const isCurrentMonth = isSameMonth(day, currentDate);
+            const isDayToday = isToday(day);
+
+            return (
+              <div
+                key={index}
+                className={`min-h-[100px] p-2 border-r border-b border-border transition-colors ${
+                  !isCurrentMonth ? 'bg-muted/20' : 'bg-card hover:bg-muted/30'
+                } ${isDayToday ? 'bg-blue-50 dark:bg-blue-950/30' : ''}`}
+              >
+                {/* Número do dia */}
+                <div className="flex items-center justify-between mb-2">
+                  <span
+                    className={`text-sm font-medium ${
+                      !isCurrentMonth
+                        ? 'text-muted-foreground'
+                        : isDayToday
+                        ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs'
+                        : 'text-foreground'
+                    }`}
+                  >
+                    {format(day, 'd')}
+                  </span>
+                  {dayOrders.length > 0 && (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                      {dayOrders.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* Lista de ordens */}
+                <div className="space-y-1">
+                  {dayOrders.slice(0, 3).map((order) => (
+                    <button
+                      key={order.id}
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setShowDetailsModal(true);
+                      }}
+                      className={`w-full text-left px-2 py-1 rounded text-xs text-white truncate transition-all hover:scale-105 ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {format(parseISO(order.scheduledFor), 'HH:mm')} - {order.customer.name}
+                    </button>
+                  ))}
+                  {dayOrders.length > 3 && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      +{dayOrders.length - 3} mais
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Agenda</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {format(date, "MMMM 'de' yyyy", { locale: ptBR })}
+          <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie seus agendamentos e ordens de serviço
           </p>
         </div>
 
-        {/* Actions Mobile */}
-        <div className="flex gap-2">
+        <button
+          onClick={() => router.push('/dashboard/orders/new')}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+        >
+          <Plus className="w-4 h-4" />
+          Nova Ordem
+        </button>
+      </div>
+
+      {/* Controles */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* Navegação de data */}
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push('/dashboard/orders/new')}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium min-h-[44px]"
+            onClick={handlePrevMonth}
+            className="p-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Nova Ordem
+            <ChevronLeft className="w-5 h-5" />
           </button>
+
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold min-w-[200px] text-center">
+              {format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })}
+            </h2>
+            <button
+              onClick={handleToday}
+              className="px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-muted transition-colors"
+            >
+              Hoje
+            </button>
+          </div>
+
           <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-muted rounded-lg min-h-[44px]"
+            onClick={handleNextMonth}
+            className="p-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <Filter className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Filtros Mobile */}
-        {showFilters && (
-          <div className="bg-card p-4 rounded-lg border border-border space-y-3">
+        {/* Filtros e visualizações */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+          >
+            <Filter className="w-4 h-4" />
+            Filtros
+          </button>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => setViewMode('month')}
+              className={`p-2 rounded ${
+                viewMode === 'month' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
+              } transition-colors`}
+              title="Visualização Mensal"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('week')}
+              className={`p-2 rounded ${
+                viewMode === 'week' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
+              } transition-colors`}
+              title="Visualização Semanal"
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('day')}
+              className={`p-2 rounded ${
+                viewMode === 'day' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
+              } transition-colors`}
+              title="Visualização Diária"
+            >
+              <CalendarIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      {showFilters && (
+        <div className="p-4 bg-muted/50 rounded-lg border border-border space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">Filtros</h3>
+            <button onClick={() => setShowFilters(false)}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Técnico</label>
+              <label className="block text-sm font-medium mb-2">Técnico</label>
               <select
                 value={filters.technicianId}
                 onChange={(e) => setFilters({ ...filters, technicianId: e.target.value })}
-                className="w-full min-h-[44px] px-3 rounded-lg border border-border"
+                className="w-full px-3 py-2 border border-input bg-background rounded-lg"
               >
                 <option value="all">Todos</option>
                 {users.map((user) => (
@@ -268,12 +318,13 @@ export default function SchedulePage() {
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className="block text-sm font-medium mb-2">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full min-h-[44px] px-3 rounded-lg border border-border"
+                className="w-full px-3 py-2 border border-input bg-background rounded-lg"
               >
                 <option value="all">Todos</option>
                 <option value="scheduled">Agendada</option>
@@ -282,269 +333,101 @@ export default function SchedulePage() {
               </select>
             </div>
           </div>
-        )}
-
-        {/* Lista Mobile */}
-        <MobileCardList items={orders.map((order) => (
-          <MobileCard
-            key={order.id}
-            title={order.number}
-            subtitle={order.customer.name}
-            badge={{
-              label: getStatusLabel(order.status),
-              variant: order.status === 'completed' ? 'success' : order.status === 'in_progress' ? 'warning' : 'default',
-            }}
-            fields={[
-              {
-                label: 'Data/Hora',
-                value: format(new Date(order.scheduledFor), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }),
-                fullWidth: true,
-              },
-            ]}
-            actions={[
-              {
-                label: 'Ver Detalhes',
-                icon: <Eye className="w-4 h-4" />,
-                onClick: () => router.push(`/dashboard/orders/${order.id}`),
-              },
-              {
-                label: 'Editar',
-                icon: <Edit className="w-4 h-4" />,
-                onClick: () => router.push(`/dashboard/orders/${order.id}/edit`),
-              },
-            ]}
-            onClick={() => {
-              setSelectedOrder(order);
-              setShowDetailsModal(true);
-            }}
-          />
-        ))} loading={loading} />
-      </div>
-    );
-  }
-
-  // Renderização Desktop
-  if (loading && orders.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4 animate-fadeInUp p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Agenda</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Visualize e gerencie os agendamentos
-          </p>
-        </div>
-
-        <button
-          onClick={() => router.push('/dashboard/orders/new')}
-          className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm min-h-[44px]"
-        >
-          <Plus className="w-5 h-5" />
-          <span className="hidden sm:inline">Nova Ordem</span>
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
-          {error}
         </div>
       )}
 
-      {/* Filtros Desktop */}
-      <div className="bg-card p-4 rounded-lg shadow border border-border">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Técnico:</label>
-            <select
-              value={filters.technicianId}
-              onChange={(e) => setFilters({ ...filters, technicianId: e.target.value })}
-              className="px-3 py-1.5 border border-border rounded-lg text-sm min-h-[36px]"
-            >
-              <option value="all">Todos</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Status:</label>
-            <select
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="px-3 py-1.5 border border-border rounded-lg text-sm min-h-[36px]"
-            >
-              <option value="all">Todos</option>
-              <option value="scheduled">Agendada</option>
-              <option value="in_progress">Em Andamento</option>
-              <option value="completed">Concluída</option>
-            </select>
-          </div>
-
-          {(filters.technicianId !== 'all' || filters.status !== 'all') && (
-            <button
-              onClick={() => setFilters({ technicianId: 'all', status: 'all' })}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm text-muted-foreground hover:text-muted-foreground transition-colors"
-            >
-              <X className="w-3 h-3" />
-              Limpar filtros
-            </button>
-          )}
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </div>
+      )}
 
-      {/* Legenda */}
-      <div className="bg-card p-4 rounded-lg shadow border border-border">
-        <div className="flex items-center gap-6 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CalendarIcon className="w-4 h-4 text-blue-600" />
-            </div>
-            <span className="text-sm text-muted-foreground font-medium">Agendado</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-warning/10 rounded-lg">
-              <PlayCircle className="w-4 h-4 text-warning" />
-            </div>
-            <span className="text-sm text-muted-foreground font-medium">Em Andamento</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-success/10 rounded-lg">
-              <CheckCircle className="w-4 h-4 text-success" />
-            </div>
-            <span className="text-sm text-muted-foreground font-medium">Concluído</span>
-          </div>
-          <div className="ml-auto text-xs text-muted-foreground">
-            💡 Dica: Arraste eventos para reagendar
-          </div>
+      {/* Calendar View */}
+      {!loading && viewMode === 'month' && renderMonthView()}
+
+      {/* Placeholder para week e day views */}
+      {!loading && viewMode === 'week' && (
+        <div className="bg-card rounded-lg border border-border p-12 text-center">
+          <LayoutList className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Visualização semanal em desenvolvimento</p>
         </div>
-      </div>
+      )}
 
-      {/* Calendário com Drag & Drop */}
-      <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border" style={{ height: '700px' }}>
-        <DnDCalendar
-          localizer={localizer}
-          events={events}
-          startAccessor={(event: any) => event.start}
-          endAccessor={(event: any) => event.end}
-          style={{ height: '100%' }}
-          onSelectEvent={handleSelectEvent}
-          onSelectSlot={handleSelectSlot}
-          onEventDrop={handleEventDrop}
-          onEventResize={handleEventResize}
-          selectable
-          resizable
-          view={view}
-          onView={setView}
-          date={date}
-          onNavigate={setDate}
-          eventPropGetter={eventStyleGetter}
-          messages={{
-            next: 'Próximo',
-            previous: 'Anterior',
-            today: 'Hoje',
-            month: 'Mês',
-            week: 'Semana',
-            day: 'Dia',
-            agenda: 'Agenda',
-            date: 'Data',
-            time: 'Hora',
-            event: 'Evento',
-            noEventsInRange: 'Nenhum agendamento neste período',
-            showMore: (total) => `+ Ver mais (${total})`,
-          }}
-        />
-      </div>
+      {!loading && viewMode === 'day' && (
+        <div className="bg-card rounded-lg border border-border p-12 text-center">
+          <CalendarIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Visualização diária em desenvolvimento</p>
+        </div>
+      )}
 
-      {/* Modal de Detalhes Rápidos */}
+      {/* Modal de Detalhes */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detalhes da Ordem</DialogTitle>
-            <DialogDescription>
-              Informações rápidas da ordem de serviço
-            </DialogDescription>
+            <DialogTitle>Detalhes da Ordem #{selectedOrder?.number}</DialogTitle>
           </DialogHeader>
 
           {selectedOrder && (
-            <div className="space-y-4">
-              {/* Header */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">{selectedOrder.number}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(selectedOrder.scheduledFor), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                  </p>
-                </div>
-                <Badge
-                  variant={
-                    selectedOrder.status === 'completed'
-                      ? 'success'
-                      : selectedOrder.status === 'in_progress'
-                      ? 'warning'
-                      : 'default'
-                  }
-                >
+            <div className="space-y-6">
+              {/* Status e Data */}
+              <div className="flex items-center gap-4">
+                <Badge className={getStatusColor(selectedOrder.status)}>
                   {getStatusLabel(selectedOrder.status)}
                 </Badge>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  {format(parseISO(selectedOrder.scheduledFor), "dd/MM/yyyy 'às' HH:mm", {
+                    locale: ptBR,
+                  })}
+                </div>
               </div>
 
               {/* Cliente */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <UserIcon className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium">Cliente:</span>
-                  <span>{selectedOrder.customer.name}</span>
-                </div>
+              <div>
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <UserIcon className="w-4 h-4" />
+                  Cliente
+                </h4>
+                <p className="text-foreground font-medium">{selectedOrder.customer.name}</p>
               </div>
 
               {/* Items */}
               {selectedOrder.items && selectedOrder.items.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium mb-2">Serviços:</p>
+                  <h4 className="font-semibold mb-2">Serviços</h4>
                   <ul className="space-y-1">
-                    {selectedOrder.items.map((item, index) => (
-                      <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span className="w-1 h-1 bg-primary rounded-full"></span>
-                        {item.quantity}x {item.description}
+                    {selectedOrder.items.map((item, idx) => (
+                      <li key={idx} className="text-sm text-muted-foreground">
+                        • {item.description} (x{item.quantity})
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  onClick={() => router.push(`/dashboard/orders/${selectedOrder.id}`)}
-                  className="flex-1"
+              {/* Ações */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    router.push(`/dashboard/orders/${selectedOrder.id}`);
+                    setShowDetailsModal(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
                 >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Ver Completo
-                </Button>
-                <Button
-                  onClick={() => router.push(`/dashboard/orders/${selectedOrder.id}/edit`)}
-                  variant="outline"
-                  className="flex-1"
+                  <Eye className="w-4 h-4" />
+                  Ver Detalhes
+                </button>
+                <button
+                  onClick={() => {
+                    router.push(`/dashboard/orders/${selectedOrder.id}/edit`);
+                    setShowDetailsModal(false);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                 >
-                  <Edit className="w-4 h-4 mr-2" />
+                  <Edit className="w-4 h-4" />
                   Editar
-                </Button>
+                </button>
               </div>
             </div>
           )}
