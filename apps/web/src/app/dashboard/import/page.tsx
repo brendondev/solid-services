@@ -130,24 +130,39 @@ export default function ImportPage() {
     setEditedData(newData);
   };
 
-  // Tenta corrigir CPF/CNPJ automaticamente (apenas formato)
+  // Formata CPF: 12345678900 → 123.456.789-00
+  const formatCPF = (cpf: string): string => {
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  };
+
+  // Formata CNPJ: 12345678000190 → 12.345.678/0001-90
+  const formatCNPJ = (cnpj: string): string => {
+    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  };
+
+  // Tenta corrigir CPF/CNPJ automaticamente e formata visualmente
   const tryFixDocument = (value: string): string | null => {
     if (!value) return null;
 
     // Remove tudo que não é número
     const cleaned = value.replace(/\D/g, '');
 
-    // Se já tiver o tamanho certo, retorna
-    if (cleaned.length === 11 || cleaned.length === 14) {
-      return cleaned;
+    // Se já tiver o tamanho certo, formata e retorna
+    if (cleaned.length === 11) {
+      return formatCPF(cleaned);
+    }
+    if (cleaned.length === 14) {
+      return formatCNPJ(cleaned);
     }
 
-    // Se tiver menos dígitos, preenche com zeros à esquerda
+    // Se tiver menos dígitos, preenche com zeros à esquerda e formata
     if (cleaned.length > 0 && cleaned.length < 11) {
-      return cleaned.padStart(11, '0');
+      const padded = cleaned.padStart(11, '0');
+      return formatCPF(padded);
     }
     if (cleaned.length > 11 && cleaned.length < 14) {
-      return cleaned.padStart(14, '0');
+      const padded = cleaned.padStart(14, '0');
+      return formatCNPJ(padded);
     }
 
     // Não conseguiu corrigir
@@ -156,7 +171,7 @@ export default function ImportPage() {
 
   // Correção automática com "IA" - apenas formato, não gera documentos falsos
   const handleAIFix = async () => {
-    if (!preview) return;
+    if (!preview || !file || !selectedEntity) return;
 
     setAiFixing(true);
 
@@ -190,11 +205,42 @@ export default function ImportPage() {
     }
 
     setEditedData(newData);
-    setAiFixing(false);
 
+    // Re-analisar automaticamente para atualizar validações
     if (fixedCount > 0) {
-      toast.success(`✨ IA corrigiu ${fixedCount} documento(s)! Clique em "Analisar" novamente para validar.`);
+      toast.success(`✨ IA corrigiu ${fixedCount} documento(s)! Re-analisando...`);
+
+      // Criar arquivo com dados corrigidos (usar newData diretamente)
+      const headers = preview.columns.join(',');
+      const rows = newData.map(row =>
+        preview.columns.map(col => {
+          const value = row[col] || '';
+          // Escapar valores com vírgula ou aspas
+          if (value.toString().includes(',') || value.toString().includes('"')) {
+            return `"${value.toString().replace(/"/g, '""')}"`;
+          }
+          return value;
+        }).join(',')
+      );
+      const csv = [headers, ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const editedFile = new File([blob], file.name, { type: 'text/csv' });
+
+      try {
+        const result = await importApi.analyze(editedFile, selectedEntity);
+        setPreview(result);
+
+        if (result.validationErrors.length === 0) {
+          toast.success('🎉 Todos os documentos estão válidos agora!');
+        } else if (result.validationErrors.length < preview.validationErrors.length) {
+          toast.success(`✅ Validação atualizada! ${result.validationErrors.length} erro(s) restantes.`);
+        }
+      } catch (error: any) {
+        toast.error('Erro ao re-analisar arquivo');
+      }
     }
+
+    setAiFixing(false);
 
     // Se houver documentos que não puderam ser corrigidos, oferece remover
     if (unfixableRows.length > 0) {
