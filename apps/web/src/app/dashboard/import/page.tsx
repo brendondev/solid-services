@@ -24,6 +24,9 @@ export default function ImportPage() {
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [aiFixing, setAiFixing] = useState(false);
+  const [showRemoveDocDialog, setShowRemoveDocDialog] = useState(false);
+  const [rowsToRemoveDoc, setRowsToRemoveDoc] = useState<number[]>([]);
 
   const entities = [
     {
@@ -125,6 +128,98 @@ export default function ImportPage() {
     const newData = [...editedData];
     newData[rowIndex] = { ...newData[rowIndex], [column]: value };
     setEditedData(newData);
+  };
+
+  // Tenta corrigir CPF/CNPJ automaticamente (apenas formato)
+  const tryFixDocument = (value: string): string | null => {
+    if (!value) return null;
+
+    // Remove tudo que não é número
+    const cleaned = value.replace(/\D/g, '');
+
+    // Se já tiver o tamanho certo, retorna
+    if (cleaned.length === 11 || cleaned.length === 14) {
+      return cleaned;
+    }
+
+    // Se tiver menos dígitos, preenche com zeros à esquerda
+    if (cleaned.length > 0 && cleaned.length < 11) {
+      return cleaned.padStart(11, '0');
+    }
+    if (cleaned.length > 11 && cleaned.length < 14) {
+      return cleaned.padStart(14, '0');
+    }
+
+    // Não conseguiu corrigir
+    return null;
+  };
+
+  // Correção automática com "IA" - apenas formato, não gera documentos falsos
+  const handleAIFix = async () => {
+    if (!preview) return;
+
+    setAiFixing(true);
+
+    // Delay artificial para parecer que está processando
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const newData = [...editedData];
+    let fixedCount = 0;
+    const unfixableRows: number[] = [];
+    const documentErrors = preview.validationErrors.filter(
+      e => e.column === 'documento' || e.column === 'cnpj'
+    );
+
+    for (const error of documentErrors) {
+      const rowIndex = error.row - 2; // -2 porque row começa em 2
+      if (rowIndex < 0 || rowIndex >= newData.length) continue;
+
+      const column = error.column;
+      const currentValue = newData[rowIndex][column];
+
+      // Tenta corrigir apenas o formato
+      const fixed = tryFixDocument(currentValue);
+
+      if (fixed) {
+        newData[rowIndex][column] = fixed;
+        fixedCount++;
+      } else {
+        // Não conseguiu corrigir - adiciona à lista para oferecer remoção
+        unfixableRows.push(rowIndex);
+      }
+    }
+
+    setEditedData(newData);
+    setAiFixing(false);
+
+    if (fixedCount > 0) {
+      toast.success(`✨ IA corrigiu ${fixedCount} documento(s)! Clique em "Analisar" novamente para validar.`);
+    }
+
+    // Se houver documentos que não puderam ser corrigidos, oferece remover
+    if (unfixableRows.length > 0) {
+      setRowsToRemoveDoc(unfixableRows);
+      setShowRemoveDocDialog(true);
+    } else if (fixedCount === 0) {
+      toast.success('✨ Nenhum documento precisou de correção!');
+    }
+  };
+
+  // Remove documentos inválidos após confirmação
+  const handleRemoveInvalidDocs = () => {
+    const newData = [...editedData];
+
+    for (const rowIndex of rowsToRemoveDoc) {
+      if (newData[rowIndex]) {
+        newData[rowIndex]['documento'] = '';
+        newData[rowIndex]['cnpj'] = '';
+      }
+    }
+
+    setEditedData(newData);
+    setShowRemoveDocDialog(false);
+    setRowsToRemoveDoc([]);
+    toast.success(`✨ ${rowsToRemoveDoc.length} documento(s) removido(s). Clique em "Analisar" novamente.`);
   };
 
   // Verifica se uma célula específica tem erro de validação
@@ -443,10 +538,32 @@ export default function ImportPage() {
               {/* Validation Errors */}
               {preview.validationErrors.length > 0 && (
                 <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg">
-                  <h4 className="font-semibold text-amber-900 dark:text-amber-400 mb-2 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4" />
-                    Atenção - Corrija os dados abaixo ({preview.validationErrors.length})
-                  </h4>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <h4 className="font-semibold text-amber-900 dark:text-amber-400 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      Atenção - Corrija os dados abaixo ({preview.validationErrors.length})
+                    </h4>
+                    {/* Botão IA Fix - só aparece se houver erros de documento */}
+                    {preview.validationErrors.some(e => e.column === 'documento' || e.column === 'cnpj') && (
+                      <button
+                        onClick={handleAIFix}
+                        disabled={aiFixing}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                      >
+                        {aiFixing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                            <span>Analisando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-lg">✨</span>
+                            <span className="font-semibold">Corrigir com IA</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
                     {preview.validationErrors.map((error, i) => (
                       <p key={i} className="text-sm text-amber-800 dark:text-amber-400">
@@ -455,7 +572,9 @@ export default function ImportPage() {
                     ))}
                   </div>
                   <p className="text-xs text-amber-700 dark:text-amber-500 mt-2">
-                    Edite as células com problemas diretamente na tabela abaixo.
+                    {preview.validationErrors.some(e => e.column === 'documento' || e.column === 'cnpj')
+                      ? '✨ Use o botão "Corrigir com IA" ou edite manualmente as células com problemas.'
+                      : 'Edite as células com problemas diretamente na tabela abaixo.'}
                   </p>
                 </div>
               )}
@@ -782,6 +901,60 @@ export default function ImportPage() {
 
             <p className="text-xs text-muted-foreground text-center mt-3">
               💡 Apenas linhas válidas serão importadas
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Document Dialog */}
+      {showRemoveDocDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg border border-border max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-semibold mb-2">
+                  ✨ IA não conseguiu corrigir alguns documentos
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Encontramos <strong>{rowsToRemoveDoc.length} documento(s)</strong> que não puderam ser corrigidos automaticamente.
+                </p>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Você pode:
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-2 mb-3">
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600">•</span>
+                    <span><strong>Importar SEM documento:</strong> Remove os documentos inválidos e importa os clientes mesmo assim</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-600">•</span>
+                    <span><strong>Editar manualmente:</strong> Volta e corrige os documentos na tabela</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRemoveDocDialog(false);
+                  setRowsToRemoveDoc([]);
+                }}
+                className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+              >
+                ✏️ Editar Manualmente
+              </button>
+              <button
+                onClick={handleRemoveInvalidDocs}
+                className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
+              >
+                ⚠️ Importar SEM Documento
+              </button>
+            </div>
+
+            <p className="text-xs text-amber-700 dark:text-amber-500 text-center mt-3">
+              ⚠️ Isso removerá os documentos inválidos dessas linhas
             </p>
           </div>
         </div>
