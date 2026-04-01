@@ -325,20 +325,18 @@ export class ImportService {
           throw new Error('Nome e documento são obrigatórios');
         }
 
-        // Debug em desenvolvimento
-        if (isDevMode) {
-          console.log(`\n🔍 DEBUG Linha ${rowNumber}:`);
-          console.log(`  📄 Documento RAW:`, row.documento);
-          console.log(`  📝 Tipo:`, typeof row.documento);
-        }
+        // Debug logs (sempre ativos para troubleshooting)
+        console.log(`\n🔍 IMPORTAÇÃO Linha ${rowNumber}:`);
+        console.log(`  📄 Documento RAW:`, row.documento);
+        console.log(`  📝 Tipo do dado:`, typeof row.documento);
 
         // Limpar e normalizar documento
         const documentoNumeros = this.cleanDocument(row.documento);
 
         // Debug após limpeza
+        console.log(`  ✨ Documento LIMPO:`, documentoNumeros);
+        console.log(`  📏 Comprimento:`, documentoNumeros.length);
         if (isDevMode) {
-          console.log(`  ✨ Documento LIMPO:`, documentoNumeros);
-          console.log(`  📏 Comprimento:`, documentoNumeros.length);
           console.log(`  🔢 Caracteres:`, documentoNumeros.split('').map((c, i) => `[${i}]=${c}(${c.charCodeAt(0)})`).join(' '));
         }
 
@@ -349,27 +347,33 @@ export class ImportService {
 
         // Detectar tipo automaticamente baseado no documento limpo
         const tipo = this.detectCustomerType(documentoNumeros);
-        if (isDevMode) {
-          console.log(`  👤 Tipo detectado:`, tipo === 'pessoa_fisica' ? 'CPF (Pessoa Física)' : 'CNPJ (Pessoa Jurídica)');
-        }
+        console.log(`  👤 Tipo detectado:`, tipo === 'pessoa_fisica' ? 'CPF (Pessoa Física)' : 'CNPJ (Pessoa Jurídica)');
 
         // Validar documento
+        const skipValidation = process.env.SKIP_DOCUMENT_VALIDATION === 'true';
+
         if (tipo === 'pessoa_fisica') {
           const isValid = this.isValidCPF(documentoNumeros);
-          if (isDevMode) {
-            console.log(`  ✅ Validação CPF:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
-          }
+          console.log(`  ✅ Validação CPF:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
+
           if (!isValid) {
-            throw new Error(`CPF inválido: ${documentoNumeros}`);
+            if (skipValidation) {
+              console.log(`  ⚠️ CPF INVÁLIDO MAS IMPORTAÇÃO PERMITIDA (SKIP_DOCUMENT_VALIDATION=true)`);
+            } else {
+              throw new Error(`CPF inválido: ${documentoNumeros}. Para importar CPFs de teste, use SKIP_DOCUMENT_VALIDATION=true`);
+            }
           }
         }
         if (tipo === 'pessoa_juridica') {
           const isValid = this.isValidCNPJ(documentoNumeros);
-          if (isDevMode) {
-            console.log(`  ✅ Validação CNPJ:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
-          }
+          console.log(`  ✅ Validação CNPJ:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
+
           if (!isValid) {
-            throw new Error(`CNPJ inválido: ${documentoNumeros}`);
+            if (skipValidation) {
+              console.log(`  ⚠️ CNPJ INVÁLIDO MAS IMPORTAÇÃO PERMITIDA (SKIP_DOCUMENT_VALIDATION=true)`);
+            } else {
+              throw new Error(`CNPJ inválido: ${documentoNumeros}. Para importar CNPJs de teste, use SKIP_DOCUMENT_VALIDATION=true`);
+            }
           }
         }
 
@@ -430,16 +434,14 @@ export class ImportService {
           });
         }
 
-        if (isDevMode) {
-          console.log(`  ✅ Cliente criado com sucesso!\n`);
-        }
+        console.log(`  ✅ Cliente criado com sucesso!\n`);
         success++;
       } catch (error: any) {
+        console.log(`  ❌ ERRO:`, error.message);
         if (isDevMode) {
-          console.log(`  ❌ ERRO:`, error.message);
           console.log(`  📋 Stack:`, error.stack?.split('\n').slice(0, 3).join('\n'));
-          console.log();
         }
+        console.log();
         errors++;
         errorDetails.push({
           row: rowNumber,
@@ -538,7 +540,6 @@ export class ImportService {
     let success = 0;
     let errors = 0;
     const errorDetails: ImportErrorDetail[] = [];
-    const isDevMode = process.env.NODE_ENV !== 'production';
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
@@ -550,26 +551,30 @@ export class ImportService {
           throw new Error('Razão social e CNPJ são obrigatórios');
         }
 
-        if (isDevMode) {
-          console.log(`\n🏢 Importando Fornecedor Linha ${rowNumber}:`);
-          console.log(`  Nome:`, row.razao_social);
-          console.log(`  CNPJ RAW:`, row.cnpj);
-        }
+        console.log(`\n🏢 IMPORTAÇÃO Fornecedor Linha ${rowNumber}:`);
+        console.log(`  Nome:`, row.razao_social);
+        console.log(`  CNPJ RAW:`, row.cnpj);
 
         // Limpar e validar CNPJ
         const cnpjNumeros = this.cleanDocument(row.cnpj);
 
-        if (isDevMode) {
-          console.log(`  CNPJ LIMPO:`, cnpjNumeros);
-          console.log(`  Comprimento:`, cnpjNumeros.length);
-        }
+        console.log(`  CNPJ LIMPO:`, cnpjNumeros);
+        console.log(`  Comprimento:`, cnpjNumeros.length);
 
         if (cnpjNumeros.length !== 14) {
           throw new Error(`CNPJ deve ter 14 dígitos. Recebido: ${cnpjNumeros.length} - Original: "${row.cnpj}" - Limpo: "${cnpjNumeros}"`);
         }
 
-        if (!this.isValidCNPJ(cnpjNumeros)) {
-          throw new Error(`CNPJ inválido: ${cnpjNumeros}`);
+        const skipValidation = process.env.SKIP_DOCUMENT_VALIDATION === 'true';
+        const isValidCNPJ = this.isValidCNPJ(cnpjNumeros);
+        console.log(`  ✅ Validação CNPJ:`, isValidCNPJ ? 'VÁLIDO' : 'INVÁLIDO');
+
+        if (!isValidCNPJ) {
+          if (skipValidation) {
+            console.log(`  ⚠️ CNPJ INVÁLIDO MAS IMPORTAÇÃO PERMITIDA (SKIP_DOCUMENT_VALIDATION=true)`);
+          } else {
+            throw new Error(`CNPJ inválido: ${cnpjNumeros}. Para importar CNPJs de teste, use SKIP_DOCUMENT_VALIDATION=true`);
+          }
         }
 
         // Verificar se já existe
@@ -597,15 +602,11 @@ export class ImportService {
           },
         });
 
-        if (isDevMode) {
-          console.log(`  ✅ Fornecedor criado com sucesso!\n`);
-        }
+        console.log(`  ✅ Fornecedor criado com sucesso!\n`);
         success++;
       } catch (error: any) {
-        if (isDevMode) {
-          console.log(`  ❌ ERRO:`, error.message);
-          console.log();
-        }
+        console.log(`  ❌ ERRO:`, error.message);
+        console.log();
         errors++;
         errorDetails.push({
           row: rowNumber,
