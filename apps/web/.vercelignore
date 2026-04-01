@@ -1,6 +1,2 @@
-node_modules
-.next
-.env*.local
-.DS_Store
-*.log
-.turbo
+# Disable Turbo detection
+../../turbo.json
