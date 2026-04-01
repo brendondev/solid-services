@@ -127,6 +127,33 @@ export default function ImportPage() {
     setEditedData(newData);
   };
 
+  // Verifica se uma célula específica tem erro de validação
+  const getCellError = (rowIndex: number, column: string) => {
+    if (!preview) return null;
+    const rowNumber = rowIndex + 2; // +2 porque linha 1 é cabeçalho
+    return preview.validationErrors.find(
+      e => e.row === rowNumber && e.column === column
+    );
+  };
+
+  // Retorna classes CSS para a célula baseado no status de validação
+  const getCellClassName = (rowIndex: number, column: string) => {
+    const error = getCellError(rowIndex, column);
+    const baseClasses = "w-full px-2 py-1 text-sm rounded border transition-all";
+
+    if (error) {
+      return `${baseClasses} border-red-500 bg-red-50 dark:bg-red-950/30 focus:ring-red-500 focus:border-red-500`;
+    }
+
+    // Verificar se é um campo validável e se está válido
+    const isValidatable = ['documento', 'cpf', 'cnpj', 'preco'].includes(column);
+    if (isValidatable && editedData[rowIndex][column]) {
+      return `${baseClasses} border-green-500 bg-green-50 dark:bg-green-950/30 focus:ring-green-500 focus:border-green-500`;
+    }
+
+    return `${baseClasses} border-input bg-background hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent`;
+  };
+
   const createFileFromEditedData = (): File => {
     // Criar CSV a partir dos dados editados
     const headers = preview!.columns.join(',');
@@ -165,12 +192,25 @@ export default function ImportPage() {
         warnings: result.warnings,
       });
 
-      setErrors(result.errorDetails.map(e => `Linha ${e.row}: ${e.error}`));
+      const errorMessages = result.errorDetails.map(e => `Linha ${e.row}: ${e.error}`);
+      setErrors(errorMessages);
 
       if (result.success > 0) {
-        toast.success(`${result.success} registro(s) importado(s) com sucesso!`);
+        if (result.errors > 0) {
+          toast.success(`${result.success} registro(s) importado(s) com sucesso! ${result.errors} com erro.`);
+        } else {
+          toast.success(`${result.success} registro(s) importado(s) com sucesso!`);
+        }
       } else {
-        toast.error('Nenhum registro foi importado');
+        toast.error('Nenhum registro foi importado. Verifique os erros abaixo.');
+      }
+
+      // Se houver erros, não limpar a preview para permitir correção
+      if (result.errors === 0) {
+        // Limpar tudo se sucesso total
+        setFile(null);
+        setPreview(null);
+        setEditedData([]);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Erro ao importar dados');
@@ -436,17 +476,28 @@ export default function ImportPage() {
                     {editedData.map((row, i) => (
                       <tr key={i} className="border-b border-border/50 hover:bg-muted/30">
                         <td className="p-2 text-muted-foreground font-medium sticky left-0 bg-card">{i + 1}</td>
-                        {preview.columns.map((col) => (
-                          <td key={col} className="p-1">
-                            <input
-                              type="text"
-                              value={row[col] || ''}
-                              onChange={(e) => handleCellEdit(i, col, e.target.value)}
-                              className="w-full px-2 py-1 text-sm rounded border border-input bg-background hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
-                              placeholder={`Digite ${col}...`}
-                            />
-                          </td>
-                        ))}
+                        {preview.columns.map((col) => {
+                          const cellError = getCellError(i, col);
+                          return (
+                            <td key={col} className="p-1 relative">
+                              <div>
+                                <input
+                                  type="text"
+                                  value={row[col] || ''}
+                                  onChange={(e) => handleCellEdit(i, col, e.target.value)}
+                                  className={getCellClassName(i, col)}
+                                  placeholder={`Digite ${col}...`}
+                                  title={cellError ? cellError.error : ''}
+                                />
+                                {cellError && (
+                                  <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 px-1">
+                                    {cellError.error}
+                                  </p>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>
@@ -502,6 +553,76 @@ export default function ImportPage() {
                 <p className="text-sm text-amber-600 dark:text-amber-400 mt-2 text-center">
                   ℹ️ Há avisos de validação - você poderá escolher importar mesmo assim
                 </p>
+              )}
+
+              {/* Import Results - aparece na mesma tela após importação */}
+              {importStats && (
+                <div className="mt-6 space-y-4">
+                  <div className="border-t border-border pt-6">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      Resultado da Importação
+                    </h3>
+
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900/30 p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-1">Importados</p>
+                        <p className="text-2xl font-bold text-green-600">{importStats.success}</p>
+                      </div>
+                      <div className="bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-900/30 p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-1">Erros</p>
+                        <p className="text-2xl font-bold text-red-600">{importStats.errors}</p>
+                      </div>
+                      <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-900/30 p-4 text-center">
+                        <p className="text-sm text-muted-foreground mb-1">Avisos</p>
+                        <p className="text-2xl font-bold text-amber-600">{importStats.warnings}</p>
+                      </div>
+                    </div>
+
+                    {/* Errors List */}
+                    {errors.length > 0 && (
+                      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 rounded-lg p-4">
+                        <h4 className="font-semibold text-red-900 dark:text-red-400 mb-3 flex items-center gap-2">
+                          <XCircle className="w-4 h-4" />
+                          Erros Encontrados ({errors.length})
+                        </h4>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                          {errors.map((error, i) => (
+                            <p key={i} className="text-sm text-red-800 dark:text-red-400 py-1 px-2 bg-white/50 dark:bg-black/20 rounded">
+                              • {error}
+                            </p>
+                          ))}
+                        </div>
+                        <p className="text-xs text-red-700 dark:text-red-500 mt-3">
+                          💡 Corrija os dados acima e tente importar novamente!
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Success message */}
+                    {importStats.errors === 0 && importStats.success > 0 && (
+                      <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/30 rounded-lg p-4 text-center">
+                        <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
+                        <p className="text-green-900 dark:text-green-400 font-semibold">
+                          🎉 Importação concluída com sucesso!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setFile(null);
+                            setPreview(null);
+                            setEditedData([]);
+                            setImportStats(null);
+                            setErrors([]);
+                          }}
+                          className="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Nova Importação
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           )}

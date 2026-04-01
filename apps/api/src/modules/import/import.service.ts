@@ -143,7 +143,7 @@ export class ImportService {
    * Valida estrutura do arquivo
    */
   private validateStructure(
-    _data: any[],
+    data: any[],
     columns: string[],
     entityType: ImportEntityType,
   ): ImportValidationError[] {
@@ -159,6 +159,76 @@ export class ImportService {
           value: null,
           error: `Coluna obrigatória "${field}" não encontrada`,
         });
+      }
+    });
+
+    // Validar dados de cada linha
+    data.forEach((row, index) => {
+      const rowNumber = index + 2; // +2 porque linha 1 é cabeçalho
+
+      // Validações específicas por tipo
+      if (entityType === ImportEntityType.CUSTOMERS) {
+        // Validar documento
+        if (row.documento) {
+          const documentoLimpo = this.cleanDocument(row.documento);
+
+          if (documentoLimpo.length !== 11 && documentoLimpo.length !== 14) {
+            errors.push({
+              row: rowNumber,
+              column: 'documento',
+              value: row.documento,
+              error: `Deve ter 11 (CPF) ou 14 (CNPJ) dígitos. Atual: ${documentoLimpo.length}`,
+            });
+          } else {
+            // Validar CPF ou CNPJ
+            const isValid = documentoLimpo.length === 11
+              ? this.isValidCPF(documentoLimpo)
+              : this.isValidCNPJ(documentoLimpo);
+
+            if (!isValid) {
+              errors.push({
+                row: rowNumber,
+                column: 'documento',
+                value: row.documento,
+                error: documentoLimpo.length === 11 ? 'CPF inválido' : 'CNPJ inválido',
+              });
+            }
+          }
+        }
+      } else if (entityType === ImportEntityType.SERVICES) {
+        // Validar preço
+        if (row.preco) {
+          const preco = parseFloat(row.preco.toString().replace(',', '.'));
+          if (isNaN(preco) || preco <= 0) {
+            errors.push({
+              row: rowNumber,
+              column: 'preco',
+              value: row.preco,
+              error: 'Preço inválido (deve ser maior que zero)',
+            });
+          }
+        }
+      } else if (entityType === ImportEntityType.SUPPLIERS) {
+        // Validar CNPJ
+        if (row.cnpj) {
+          const cnpjLimpo = this.cleanDocument(row.cnpj);
+
+          if (cnpjLimpo.length !== 14) {
+            errors.push({
+              row: rowNumber,
+              column: 'cnpj',
+              value: row.cnpj,
+              error: `CNPJ deve ter 14 dígitos. Atual: ${cnpjLimpo.length}`,
+            });
+          } else if (!this.isValidCNPJ(cnpjLimpo)) {
+            errors.push({
+              row: rowNumber,
+              column: 'cnpj',
+              value: row.cnpj,
+              error: 'CNPJ inválido',
+            });
+          }
+        }
       }
     });
 
