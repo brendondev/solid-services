@@ -7,11 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ordersApi, ServiceOrder } from '@/lib/api/orders';
 import { customersApi, Customer } from '@/lib/api/customers';
+import { usersApi, User } from '@/lib/api/users';
 import { ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import { showToast } from '@/lib/toast';
 
 const editOrderSchema = z.object({
   customerId: z.string().min(1, 'Selecione um cliente'),
+  assignedTo: z.string().optional(),
   scheduledFor: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -25,6 +27,7 @@ export default function EditOrderPage() {
 
   const [order, setOrder] = useState<ServiceOrder | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -47,9 +50,10 @@ export default function EditOrderPage() {
       setLoading(true);
       setError('');
 
-      const [orderData, customersData] = await Promise.all([
+      const [orderData, customersData, usersData] = await Promise.all([
         ordersApi.findOne(orderId),
         customersApi.findActive(),
+        usersApi.findAll(),
       ]);
 
       // Verificar se pode editar
@@ -62,10 +66,12 @@ export default function EditOrderPage() {
 
       setOrder(orderData);
       setCustomers(Array.isArray(customersData) ? customersData : []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
 
       // Preencher formulário com dados existentes
       reset({
         customerId: orderData.customerId,
+        assignedTo: orderData.assignedTo || '',
         scheduledFor: orderData.scheduledFor
           ? new Date(orderData.scheduledFor).toISOString().slice(0, 16)
           : '',
@@ -89,6 +95,7 @@ export default function EditOrderPage() {
 
       await ordersApi.update(orderId, {
         customerId: data.customerId,
+        assignedTo: data.assignedTo || undefined,
         scheduledFor: data.scheduledFor || undefined,
         notes: data.notes || undefined,
       });
@@ -249,6 +256,28 @@ export default function EditOrderPage() {
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 Data e hora prevista para execução
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-2">
+                Técnico Responsável
+              </label>
+              <select
+                {...register('assignedTo')}
+                id="assignedTo"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={submitting}
+              >
+                <option value="">Selecione um técnico (opcional)</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Usuário que executará o serviço
               </p>
             </div>
 

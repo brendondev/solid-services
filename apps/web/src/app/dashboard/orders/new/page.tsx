@@ -9,6 +9,7 @@ import { UserPlus, Wrench } from 'lucide-react';
 import { ordersApi } from '@/lib/api/orders';
 import { customersApi, Customer } from '@/lib/api/customers';
 import { servicesApi, Service } from '@/lib/api/services';
+import { usersApi, User } from '@/lib/api/users';
 import { showToast } from '@/lib/toast';
 import { CreateCustomerModal } from '@/components/modals/CreateCustomerModal';
 import { CreateServiceModal } from '@/components/modals/CreateServiceModal';
@@ -22,6 +23,7 @@ const orderItemSchema = z.object({
 
 const orderSchema = z.object({
   customerId: z.string().min(1, 'Selecione um cliente'),
+  assignedTo: z.string().optional(),
   scheduledFor: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(orderItemSchema).min(1, 'Adicione pelo menos um item'),
@@ -38,6 +40,7 @@ export default function NewOrderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -77,12 +80,14 @@ export default function NewOrderPage() {
   const loadInitialData = async () => {
     try {
       setLoadingData(true);
-      const [customersData, servicesData] = await Promise.all([
+      const [customersData, servicesData, usersData] = await Promise.all([
         customersApi.findActive(),
         servicesApi.findActive(),
+        usersApi.findAll(),
       ]);
       setCustomers(Array.isArray(customersData) ? customersData : []);
       setServices(Array.isArray(servicesData) ? servicesData : []);
+      setUsers(Array.isArray(usersData) ? usersData : []);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Erro ao carregar dados iniciais';
       setError(errorMessage);
@@ -173,6 +178,7 @@ export default function NewOrderPage() {
     try {
       const order = await ordersApi.create({
         customerId: data.customerId,
+        assignedTo: data.assignedTo || undefined,
         quotationId: quotationId || undefined,
         scheduledFor: data.scheduledFor || undefined,
         notes: data.notes || undefined,
@@ -288,6 +294,31 @@ export default function NewOrderPage() {
               />
               <p className="mt-1 text-xs text-gray-500">
                 Data e hora prevista para execução
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="assignedTo"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Técnico Responsável
+              </label>
+              <select
+                {...register('assignedTo')}
+                id="assignedTo"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
+              >
+                <option value="">Selecione um técnico (opcional)</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Usuário que executará o serviço
               </p>
             </div>
 
