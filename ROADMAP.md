@@ -1,7 +1,7 @@
 # 🗺️ Roadmap de Desenvolvimento - Solid Service
-**Última atualização**: 2026-03-23
-**Status do Backend**: ✅ 100% Completo (96 endpoints)
-**Foco Atual**: 🎨 Frontend MVP
+**Última atualização**: 2026-04-07
+**Status do Backend**: ✅ 100% Completo (104 endpoints + SSE)
+**Foco Atual**: 💬 Chat em Tempo Real
 
 ---
 
@@ -22,7 +22,17 @@
 
 ---
 
-## ✅ Concluído (Backend)
+## ✅ Concluído (Backend + Frontend)
+
+### 2026-04-07 - Sistema de Importação Completo
+- [x] **Importação de Dados** - CSV/Excel com validações inteligentes
+  - [x] Encoding UTF-8 (suporte a Ã, Ç, caracteres especiais)
+  - [x] Validações detalhadas de CPF/CNPJ com mensagens específicas
+  - [x] Correção automática com IA (formatação apenas, não inventa valores)
+  - [x] Templates prontos com exemplos (clientes, serviços, fornecedores)
+  - [x] Interface mobile-first com explicações claras
+  - [x] Análise e pré-visualização antes de importar
+  - [x] Edição inline de dados inválidos
 
 ### 2026-03-23 - Correções Críticas
 - [x] **Fix: Tenant Context** - Migração para Request-scoped service
@@ -50,7 +60,73 @@
 
 ## 🚀 Em Andamento
 
-### Sprint 1: Mobile-First Fixes & Polish (1 semana) ⚡ REDEFINIDA
+### Sprint 4: Chat em Tempo Real (em progresso) 💬
+**Início**: 2026-04-07
+**Objetivo**: Interface de chat interno para comunicação tenant-cliente
+
+**Backend**: ✅ 100% Completo (9 endpoints + SSE stream)
+**Frontend**: 🔨 A implementar
+
+#### Funcionalidades Backend Disponíveis
+- [x] Criar conversas por cliente
+- [x] Listar todas as conversas (filtrar por status)
+- [x] Enviar mensagens (com senderId e senderType)
+- [x] Anexar arquivos (ChatAttachment)
+- [x] Marcar mensagens como lidas
+- [x] Contador de mensagens não lidas
+- [x] Stream em tempo real via SSE (Server-Sent Events)
+- [x] Status de conversa (open, closed, archived)
+
+#### Tarefas Frontend
+- [ ] **4.1 Listagem de Conversas** (`/dashboard/chat`)
+  - [ ] Lista de conversas com último preview de mensagem
+  - [ ] Badge de mensagens não lidas
+  - [ ] Filtro por status (abertas, fechadas, arquivadas)
+  - [ ] Busca por cliente
+  - [ ] Botão "Nova Conversa"
+  - [ ] Indicador de conversa ativa
+  - [ ] Empty state (sem conversas)
+
+- [ ] **4.2 Interface de Chat**
+  - [ ] Janela de chat (layout split: lista + mensagens)
+  - [ ] Área de mensagens com scroll automático
+  - [ ] Diferenciação visual: mensagens enviadas vs recebidas
+  - [ ] Timestamp nas mensagens
+  - [ ] Avatar e nome do remetente
+  - [ ] Indicador "digitando..." (opcional)
+  - [ ] Indicador de mensagem lida/não lida
+
+- [ ] **4.3 Envio de Mensagens**
+  - [ ] Input de texto com auto-resize
+  - [ ] Botão de envio
+  - [ ] Atalho Enter para enviar (Shift+Enter para nova linha)
+  - [ ] Upload de anexos (arrastar e soltar)
+  - [ ] Preview de anexos antes de enviar
+  - [ ] Loading state durante envio
+  - [ ] Retry em caso de erro
+
+- [ ] **4.4 Tempo Real com SSE**
+  - [ ] Conectar ao endpoint /chat/stream
+  - [ ] Atualizar lista de mensagens automaticamente
+  - [ ] Notificação sonora para novas mensagens (opcional)
+  - [ ] Atualizar contador de não lidas
+  - [ ] Reconexão automática em caso de desconexão
+
+- [ ] **4.5 Ações Adicionais**
+  - [ ] Fechar conversa
+  - [ ] Arquivar conversa
+  - [ ] Reabrir conversa fechada
+  - [ ] Visualizar informações do cliente
+  - [ ] Link rápido para OS/orçamentos do cliente
+
+- [ ] **4.6 Mobile-First**
+  - [ ] Layout responsivo (coluna única em mobile)
+  - [ ] Touch-friendly (min-height 44px)
+  - [ ] Botão voltar (mobile) da conversa para lista
+  - [ ] Input com font-size >= 16px (evitar zoom iOS)
+  - [ ] Scroll suave e otimizado
+
+### Sprint 1: Mobile-First Fixes & Polish ✅ CONCLUÍDA
 **Início**: 2026-03-23
 **Objetivo**: Corrigir responsividade mobile + melhorar UX
 
@@ -458,8 +534,8 @@ Para marcar uma tarefa como concluída, ela deve:
 ## 📈 Métricas de Progresso
 
 ### Backend (Concluído)
-- **Módulos**: 15/15 ✅
-- **Endpoints**: 96/96 ✅
+- **Módulos**: 16/16 ✅ (+ Chat)
+- **Endpoints**: 104/104 ✅ (+ SSE)
 - **Testes**: Manual ✅
 - **Deploy**: Railway ✅
 
@@ -476,6 +552,8 @@ Para marcar uma tarefa como concluída, ela deve:
 - **Módulo Ordens**: 1/1 ✅ (Mobile-first)
 - **Módulo Financeiro**: 1/1 ✅ (Recebíveis mobile-first)
 - **Módulo Pagáveis**: 1/1 ✅ (Mobile-first)
+- **Módulo Importação**: 1/1 ✅ (CSV/Excel com IA)
+- **Módulo Chat**: 0/6 🔨 (EM ANDAMENTO)
 
 ---
 
