@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { customerPortalApi, CustomerData } from '@/lib/api/customer-portal';
+import { PortalChatWidget } from '@/components/chat';
 
 /**
  * Layout do Portal do Cliente
@@ -133,6 +134,14 @@ export default function CustomerPortalLayout({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      {/* Chat Widget */}
+      {customer && (
+        <PortalChatWidget
+          customerId={customer.id}
+          customerName={customer.name}
+        />
+      )}
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
