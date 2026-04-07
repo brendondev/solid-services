@@ -629,6 +629,7 @@ export default function ImportPage() {
                       <button
                         onClick={handleAIFix}
                         disabled={aiFixing}
+                        title="Corrige apenas formatação: adiciona pontos, traços e zeros à esquerda. NÃO modifica valores reais dos documentos."
                         className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
                       >
                         {aiFixing ? (
@@ -652,11 +653,23 @@ export default function ImportPage() {
                       </p>
                     ))}
                   </div>
-                  <p className="text-xs text-amber-700 dark:text-amber-500 mt-2">
-                    {preview.validationErrors.some(e => e.column === 'documento' || e.column === 'cnpj')
-                      ? '✨ Use o botão "Corrigir com IA" ou edite manualmente as células com problemas.'
-                      : 'Edite as células com problemas diretamente na tabela abaixo.'}
-                  </p>
+                  {preview.validationErrors.some(e => e.column === 'documento' || e.column === 'cnpj') ? (
+                    <div className="mt-3 p-3 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/30 rounded">
+                      <p className="text-xs text-purple-900 dark:text-purple-300 font-medium mb-1">
+                        ✨ Sobre a Correção com IA:
+                      </p>
+                      <ul className="text-xs text-purple-800 dark:text-purple-400 space-y-0.5 ml-4 list-disc">
+                        <li>Corrige apenas <strong>formatação</strong>: adiciona pontos, traços e zeros à esquerda</li>
+                        <li><strong>NÃO inventa</strong> ou modifica valores reais dos documentos</li>
+                        <li>Exemplo: "1234567890" vira "012.345.678-90" (apenas formata dados existentes)</li>
+                        <li>Se o documento estiver matematicamente inválido, você precisará editá-lo manualmente</li>
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-amber-700 dark:text-amber-500 mt-2">
+                      Edite as células com problemas diretamente na tabela abaixo.
+                    </p>
+                  )}
                 </div>
               )}
 

@@ -21,15 +21,19 @@ export class ImportService {
     entityType: ImportEntityType,
   ): Promise<ImportPreviewDto> {
     try {
-      // Parse do arquivo
-      const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+      // Parse do arquivo com suporte a UTF-8
+      const workbook = XLSX.read(file.buffer, {
+        type: 'buffer',
+        codepage: 65001, // UTF-8
+      });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
-      // Converter para JSON
+      // Converter para JSON preservando caracteres especiais
       const rawData = XLSX.utils.sheet_to_json(worksheet, {
         raw: false,
         defval: '',
+        blankrows: false, // Ignorar linhas vazias
       });
 
       if (!rawData || rawData.length === 0) {
@@ -84,14 +88,18 @@ export class ImportService {
     tenantId: string,
   ): Promise<ImportResultDto> {
     try {
-      // Parse do arquivo
-      const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+      // Parse do arquivo com suporte a UTF-8
+      const workbook = XLSX.read(file.buffer, {
+        type: 'buffer',
+        codepage: 65001, // UTF-8
+      });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
       const rawData = XLSX.utils.sheet_to_json(worksheet, {
         raw: false,
         defval: '',
+        blankrows: false, // Ignorar linhas vazias
       });
 
       // Normalizar colunas
@@ -177,20 +185,20 @@ export class ImportService {
               row: rowNumber,
               column: 'documento',
               value: row.documento,
-              error: `Deve ter 11 (CPF) ou 14 (CNPJ) dígitos. Atual: ${documentoLimpo.length}`,
+              error: `Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos. Atual: ${documentoLimpo.length}`,
             });
           } else {
-            // Validar CPF ou CNPJ
-            const isValid = documentoLimpo.length === 11
-              ? this.isValidCPF(documentoLimpo)
-              : this.isValidCNPJ(documentoLimpo);
+            // Validar CPF ou CNPJ com mensagens detalhadas
+            const validation = documentoLimpo.length === 11
+              ? this.validateCPFWithMessage(documentoLimpo)
+              : this.validateCNPJWithMessage(documentoLimpo);
 
-            if (!isValid) {
+            if (!validation.valid) {
               errors.push({
                 row: rowNumber,
                 column: 'documento',
                 value: row.documento,
-                error: documentoLimpo.length === 11 ? 'CPF inválido' : 'CNPJ inválido',
+                error: validation.error || 'Documento inválido',
               });
             }
           }
@@ -198,34 +206,36 @@ export class ImportService {
       } else if (entityType === ImportEntityType.SERVICES) {
         // Validar preço
         if (row.preco) {
-          const preco = parseFloat(row.preco.toString().replace(',', '.'));
-          if (isNaN(preco) || preco <= 0) {
+          const precoStr = row.preco.toString().replace(',', '.');
+          const preco = parseFloat(precoStr);
+
+          if (isNaN(preco)) {
             errors.push({
               row: rowNumber,
               column: 'preco',
               value: row.preco,
-              error: 'Preço inválido (deve ser maior que zero)',
+              error: `Preço inválido: "${row.preco}" não é um número. Use formato: 99.90 ou 99,90`,
+            });
+          } else if (preco <= 0) {
+            errors.push({
+              row: rowNumber,
+              column: 'preco',
+              value: row.preco,
+              error: `Preço deve ser maior que zero (atual: R$ ${preco.toFixed(2)})`,
             });
           }
         }
       } else if (entityType === ImportEntityType.SUPPLIERS) {
-        // Validar CNPJ
+        // Validar CNPJ com mensagem detalhada
         if (row.cnpj) {
-          const cnpjLimpo = this.cleanDocument(row.cnpj);
+          const validation = this.validateCNPJWithMessage(row.cnpj);
 
-          if (cnpjLimpo.length !== 14) {
+          if (!validation.valid) {
             errors.push({
               row: rowNumber,
               column: 'cnpj',
               value: row.cnpj,
-              error: `CNPJ deve ter 14 dígitos. Atual: ${cnpjLimpo.length}`,
-            });
-          } else if (!this.isValidCNPJ(cnpjLimpo)) {
-            errors.push({
-              row: rowNumber,
-              column: 'cnpj',
-              value: row.cnpj,
-              error: 'CNPJ inválido',
+              error: validation.error || 'CNPJ inválido',
             });
           }
         }
@@ -371,6 +381,127 @@ export class ImportService {
     if (resultado !== parseInt(digitos.charAt(1))) return false;
 
     return true;
+  }
+
+  /**
+   * Valida CPF e retorna mensagem detalhada de erro
+   */
+  private validateCPFWithMessage(cpf: string): { valid: boolean; error?: string } {
+    const numeros = this.cleanDocument(cpf);
+
+    if (!numeros || numeros.length === 0) {
+      return { valid: false, error: 'CPF vazio ou inválido' };
+    }
+
+    if (numeros.length !== 11) {
+      return {
+        valid: false,
+        error: `CPF deve ter 11 dígitos (atual: ${numeros.length}). Formato: 000.000.000-00`,
+      };
+    }
+
+    // Validação básica (todos os dígitos iguais)
+    if (/^(\d)\1{10}$/.test(numeros)) {
+      return {
+        valid: false,
+        error: `CPF inválido: sequência com todos dígitos iguais (${numeros.charAt(0).repeat(3)}.${numeros.charAt(0).repeat(3)}.${numeros.charAt(0).repeat(3)}-${numeros.charAt(0).repeat(2)})`,
+      };
+    }
+
+    // Validação dos dígitos verificadores
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+      soma += parseInt(numeros.charAt(i)) * (10 - i);
+    }
+    let resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(numeros.charAt(9))) {
+      return {
+        valid: false,
+        error: 'CPF inválido: dígitos verificadores incorretos',
+      };
+    }
+
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+      soma += parseInt(numeros.charAt(i)) * (11 - i);
+    }
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(numeros.charAt(10))) {
+      return {
+        valid: false,
+        error: 'CPF inválido: dígitos verificadores incorretos',
+      };
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Valida CNPJ e retorna mensagem detalhada de erro
+   */
+  private validateCNPJWithMessage(cnpj: string): { valid: boolean; error?: string } {
+    const numeros = this.cleanDocument(cnpj);
+
+    if (!numeros || numeros.length === 0) {
+      return { valid: false, error: 'CNPJ vazio ou inválido' };
+    }
+
+    if (numeros.length !== 14) {
+      return {
+        valid: false,
+        error: `CNPJ deve ter 14 dígitos (atual: ${numeros.length}). Formato: 00.000.000/0000-00`,
+      };
+    }
+
+    // Validação básica (todos os dígitos iguais)
+    if (/^(\d)\1{13}$/.test(numeros)) {
+      return {
+        valid: false,
+        error: `CNPJ inválido: sequência com todos dígitos iguais (${numeros.charAt(0).repeat(2)}.${numeros.charAt(0).repeat(3)}.${numeros.charAt(0).repeat(3)}/${numeros.charAt(0).repeat(4)}-${numeros.charAt(0).repeat(2)})`,
+      };
+    }
+
+    // Validação dos dígitos verificadores
+    let tamanho = numeros.length - 2;
+    let numeros_validacao = numeros.substring(0, tamanho);
+    const digitos = numeros.substring(tamanho);
+    let soma = 0;
+    let pos = tamanho - 7;
+
+    for (let i = tamanho; i >= 1; i--) {
+      soma += parseInt(numeros_validacao.charAt(tamanho - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+
+    let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+    if (resultado !== parseInt(digitos.charAt(0))) {
+      return {
+        valid: false,
+        error: 'CNPJ inválido: dígitos verificadores incorretos',
+      };
+    }
+
+    tamanho = tamanho + 1;
+    numeros_validacao = numeros.substring(0, tamanho);
+    soma = 0;
+    pos = tamanho - 7;
+
+    for (let i = tamanho; i >= 1; i--) {
+      soma += parseInt(numeros_validacao.charAt(tamanho - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+
+    resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+    if (resultado !== parseInt(digitos.charAt(1))) {
+      return {
+        valid: false,
+        error: 'CNPJ inválido: dígitos verificadores incorretos',
+      };
+    }
+
+    return { valid: true };
   }
 
   /**
