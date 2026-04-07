@@ -1,7 +1,7 @@
 # 🗺️ Roadmap de Desenvolvimento - Solid Service
 **Última atualização**: 2026-04-07
 **Status do Backend**: ✅ 100% Completo (104 endpoints + SSE)
-**Foco Atual**: 💬 Chat em Tempo Real
+**Foco Atual**: 💬 Chat + 🤖 Automações
 
 ---
 
@@ -58,14 +58,14 @@
 
 ---
 
-## 🚀 Em Andamento
+## 🚀 Em Desenvolvimento
 
-### Sprint 4: Chat em Tempo Real (em progresso) 💬
+### Sprint 4: Chat em Tempo Real (em desenvolvimento) 💬
 **Início**: 2026-04-07
 **Objetivo**: Interface de chat interno para comunicação tenant-cliente
 
 **Backend**: ✅ 100% Completo (9 endpoints + SSE stream)
-**Frontend**: 🔨 A implementar
+**Frontend**: 🔨 Em desenvolvimento (70% completo)
 
 #### Funcionalidades Backend Disponíveis
 - [x] Criar conversas por cliente
@@ -78,53 +78,93 @@
 - [x] Status de conversa (open, closed, archived)
 
 #### Tarefas Frontend
-- [ ] **4.1 Listagem de Conversas** (`/dashboard/chat`)
-  - [ ] Lista de conversas com último preview de mensagem
-  - [ ] Badge de mensagens não lidas
-  - [ ] Filtro por status (abertas, fechadas, arquivadas)
-  - [ ] Busca por cliente
-  - [ ] Botão "Nova Conversa"
-  - [ ] Indicador de conversa ativa
-  - [ ] Empty state (sem conversas)
+- [x] **4.1 Listagem de Conversas** (`/dashboard/chat`)
+  - [x] Lista de conversas com último preview de mensagem
+  - [x] Badge de mensagens não lidas
+  - [x] Filtro por status (abertas, fechadas, arquivadas)
+  - [x] Busca por cliente
+  - [x] Botão "Nova Conversa"
+  - [x] Indicador de conversa ativa
+  - [x] Empty state (sem conversas)
 
-- [ ] **4.2 Interface de Chat**
-  - [ ] Janela de chat (layout split: lista + mensagens)
-  - [ ] Área de mensagens com scroll automático
-  - [ ] Diferenciação visual: mensagens enviadas vs recebidas
-  - [ ] Timestamp nas mensagens
-  - [ ] Avatar e nome do remetente
+- [x] **4.2 Interface de Chat**
+  - [x] Janela de chat (layout split: lista + mensagens)
+  - [x] Área de mensagens com scroll automático
+  - [x] Diferenciação visual: mensagens enviadas vs recebidas
+  - [x] Timestamp nas mensagens
+  - [x] Avatar e nome do remetente
   - [ ] Indicador "digitando..." (opcional)
-  - [ ] Indicador de mensagem lida/não lida
+  - [x] Indicador de mensagem lida/não lida
 
-- [ ] **4.3 Envio de Mensagens**
-  - [ ] Input de texto com auto-resize
-  - [ ] Botão de envio
-  - [ ] Atalho Enter para enviar (Shift+Enter para nova linha)
+- [x] **4.3 Envio de Mensagens**
+  - [x] Input de texto com auto-resize
+  - [x] Botão de envio
+  - [x] Atalho Enter para enviar (Shift+Enter para nova linha)
   - [ ] Upload de anexos (arrastar e soltar)
   - [ ] Preview de anexos antes de enviar
-  - [ ] Loading state durante envio
+  - [x] Loading state durante envio
   - [ ] Retry em caso de erro
 
-- [ ] **4.4 Tempo Real com SSE**
-  - [ ] Conectar ao endpoint /chat/stream
-  - [ ] Atualizar lista de mensagens automaticamente
-  - [ ] Notificação sonora para novas mensagens (opcional)
-  - [ ] Atualizar contador de não lidas
-  - [ ] Reconexão automática em caso de desconexão
+- [x] **4.4 Tempo Real (Polling 3s)**
+  - [x] Polling automático a cada 3 segundos
+  - [x] Atualizar lista de mensagens automaticamente
+  - [x] Notificação sonora para novas mensagens (opcional)
+  - [x] Atualizar contador de não lidas
+  - [x] Mensagem automática de boas-vindas
+  - [ ] Conectar SSE (futuro)
 
-- [ ] **4.5 Ações Adicionais**
-  - [ ] Fechar conversa
-  - [ ] Arquivar conversa
-  - [ ] Reabrir conversa fechada
-  - [ ] Visualizar informações do cliente
+- [x] **4.5 Ações Adicionais**
+  - [x] Fechar conversa
+  - [x] Arquivar conversa
+  - [x] Reabrir conversa fechada
+  - [x] Visualizar informações do cliente
   - [ ] Link rápido para OS/orçamentos do cliente
 
-- [ ] **4.6 Mobile-First**
-  - [ ] Layout responsivo (coluna única em mobile)
-  - [ ] Touch-friendly (min-height 44px)
-  - [ ] Botão voltar (mobile) da conversa para lista
-  - [ ] Input com font-size >= 16px (evitar zoom iOS)
-  - [ ] Scroll suave e otimizado
+- [x] **4.6 Mobile-First**
+  - [x] Layout responsivo (coluna única em mobile)
+  - [x] Touch-friendly (min-height 44px)
+  - [x] Botão voltar (mobile) da conversa para lista
+  - [x] Input com font-size >= 16px (evitar zoom iOS)
+  - [x] Scroll suave e otimizado
+
+- [x] **4.7 Portal do Cliente**
+  - [x] Widget flutuante em todas páginas do portal
+  - [x] Chat integrado com mesmo backend
+  - [x] Polling automático a cada 3 segundos
+  - [x] Interface minimizável e responsiva
+  - [x] Contador de mensagens não lidas
+
+### Sprint 5: Automações (em desenvolvimento) 🤖
+**Início**: 2026-04-07
+**Objetivo**: Sistema de automações para workflows
+
+**Status**: 🔨 Planejamento inicial
+
+#### Funcionalidades Planejadas
+- [ ] **5.1 Triggers (Gatilhos)**
+  - [ ] Novo cliente cadastrado
+  - [ ] Orçamento enviado
+  - [ ] Orçamento aprovado
+  - [ ] OS criada
+  - [ ] OS concluída
+  - [ ] Pagamento recebido
+  - [ ] Vencimento próximo
+
+- [ ] **5.2 Ações**
+  - [ ] Enviar email
+  - [ ] Enviar WhatsApp (via API)
+  - [ ] Criar notificação
+  - [ ] Atualizar status
+  - [ ] Webhook HTTP
+  - [ ] Executar função customizada
+
+- [ ] **5.3 Interface de Configuração**
+  - [ ] Lista de automações ativas
+  - [ ] Builder visual drag-and-drop
+  - [ ] Templates prontos
+  - [ ] Histórico de execuções
+  - [ ] Ativar/desativar automações
+  - [ ] Logs e debugging
 
 ### Sprint 1: Mobile-First Fixes & Polish ✅ CONCLUÍDA
 **Início**: 2026-03-23
@@ -496,9 +536,17 @@ Agora vamos focar em **mobile-first** e **completar funcionalidades**.
 
 ## 📦 Backlog (Pós-MVP)
 
+### Melhorias Planejadas
+- [ ] **Integração WhatsApp** 📱
+  - [ ] API oficial WhatsApp Business
+  - [ ] Envio de mensagens
+  - [ ] Recebimento de mensagens
+  - [ ] Templates aprovados
+  - [ ] Integração com chat interno
+  - [ ] Automações via WhatsApp
+
 ### Melhorias Futuras
 - [ ] Sistema de notificações push
-- [ ] Integração com WhatsApp
 - [ ] Relatórios avançados (PDF/Excel)
 - [ ] Configurações do tenant
 - [ ] Temas customizáveis
@@ -513,7 +561,6 @@ Agora vamos focar em **mobile-first** e **completar funcionalidades**.
 - [ ] Contratos recorrentes
 - [ ] Comissões e gamificação
 - [ ] Analytics avançado
-- [ ] Automações (n8n/Zapier)
 
 ---
 
@@ -553,7 +600,8 @@ Para marcar uma tarefa como concluída, ela deve:
 - **Módulo Financeiro**: 1/1 ✅ (Recebíveis mobile-first)
 - **Módulo Pagáveis**: 1/1 ✅ (Mobile-first)
 - **Módulo Importação**: 1/1 ✅ (CSV/Excel com IA)
-- **Módulo Chat**: 0/6 🔨 (EM ANDAMENTO)
+- **Módulo Chat**: 6/7 🔨 (70% - Dashboard + Portal integrados)
+- **Automações**: 0/3 🔨 (Planejamento inicial)
 
 ---
 
