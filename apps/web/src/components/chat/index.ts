@@ -1,1 +1,5 @@
-export { ChatWidget } from './chat-widget';
+export { MessageBubble } from './message-bubble';
+export { ChatInput } from './chat-input';
+export { ConversationItem } from './conversation-item';
+export { ChatWindow } from './chat-window';
+export { ConversationList } from './conversation-list';

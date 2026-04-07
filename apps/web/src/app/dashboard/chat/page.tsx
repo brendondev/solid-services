@@ -1,290 +1,269 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { MessageCircle, Search, Archive } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { chatAPI, type Conversation, type ChatMessage } from '@/lib/api/chat';
+import { useState, useEffect, useCallback } from 'react';
+import { Conversation } from '@/types/chat';
+import { chatApi } from '@/services/chat';
+import { ConversationList, ChatWindow } from '@/components/chat';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { customersApi } from '@/services/customers';
+import { Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingConversation, setLoadingConversation] = useState(false);
+  const [showNewConversationDialog, setShowNewConversationDialog] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [creatingConversation, setCreatingConversation] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentUserId, setCurrentUserId] = useState('');
 
-  // Carrega conversas
+  // Obter ID do usuário atual (do token)
   useEffect(() => {
-    loadConversations();
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUserId(payload.id || payload.sub);
+      }
+    } catch (error) {
+      console.error('Erro ao obter ID do usuário:', error);
+    }
   }, []);
 
-  // Carrega mensagens quando seleciona conversa
-  useEffect(() => {
-    if (selectedConversation) {
-      loadMessages(selectedConversation.id);
-    }
-  }, [selectedConversation]);
-
-  const loadConversations = async () => {
+  // Carregar conversas
+  const loadConversations = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const data = await chatAPI.getConversations();
+      setLoading(true);
+      const filters = statusFilter !== 'all' ? { status: statusFilter as any } : undefined;
+      const data = await chatApi.getConversations(filters);
       setConversations(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar conversas:', error);
       toast.error('Erro ao carregar conversas');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
+
+  // Carregar conversa específica com mensagens
+  const loadConversation = async (conversationId: string) => {
+    try {
+      setLoadingConversation(true);
+      const data = await chatApi.getConversationById(conversationId);
+      setActiveConversation(data);
+
+      // Marcar como lida
+      await chatApi.markAsRead(conversationId);
+
+      // Atualizar lista
+      loadConversations();
+    } catch (error: any) {
+      console.error('Erro ao carregar conversa:', error);
+      toast.error('Erro ao carregar conversa');
+    } finally {
+      setLoadingConversation(false);
     }
   };
 
-  const loadMessages = async (conversationId: string) => {
-    try {
-      const conversation = await chatAPI.getConversation(conversationId);
-      setMessages(conversation.messages || []);
-
-      // Marca como lida
-      await chatAPI.markAsRead(conversationId);
-    } catch (error) {
-      console.error('Erro ao carregar mensagens:', error);
-      toast.error('Erro ao carregar mensagens');
-    }
+  // Selecionar conversa
+  const handleSelectConversation = (conversation: Conversation) => {
+    loadConversation(conversation.id);
   };
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
-
-    const content = newMessage.trim();
-    setNewMessage('');
+  // Enviar mensagem
+  const handleSendMessage = async (content: string) => {
+    if (!activeConversation) return;
 
     try {
-      const message = await chatAPI.sendMessage(
-        selectedConversation.id,
+      await chatApi.sendMessage({
+        conversationId: activeConversation.id,
         content,
-        'employee'
-      );
+        senderType: 'employee',
+      });
 
-      setMessages((prev) => [...prev, message]);
-    } catch (error) {
+      // Recarregar conversa para mostrar nova mensagem
+      await loadConversation(activeConversation.id);
+    } catch (error: any) {
       console.error('Erro ao enviar mensagem:', error);
       toast.error('Erro ao enviar mensagem');
-      setNewMessage(content);
+      throw error;
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleArchiveConversation = async (conversationId: string) => {
+  // Nova conversa - carregar clientes
+  const handleNewConversation = async () => {
     try {
-      await chatAPI.updateConversation(conversationId, { status: 'archived' });
+      const customersData = await customersApi.getCustomers();
+      setCustomers(customersData);
+      setShowNewConversationDialog(true);
+    } catch (error: any) {
+      console.error('Erro ao carregar clientes:', error);
+      toast.error('Erro ao carregar clientes');
+    }
+  };
+
+  // Criar nova conversa
+  const handleCreateConversation = async () => {
+    if (!selectedCustomerId) {
+      toast.error('Selecione um cliente');
+      return;
+    }
+
+    try {
+      setCreatingConversation(true);
+      const conversation = await chatApi.createConversation({
+        customerId: selectedCustomerId,
+      });
+
+      toast.success('Conversa criada com sucesso!');
+      setShowNewConversationDialog(false);
+      setSelectedCustomerId('');
+
+      // Recarregar lista e selecionar nova conversa
       await loadConversations();
-      if (selectedConversation?.id === conversationId) {
-        setSelectedConversation(null);
-        setMessages([]);
-      }
+      loadConversation(conversation.id);
+    } catch (error: any) {
+      console.error('Erro ao criar conversa:', error);
+      toast.error('Erro ao criar conversa');
+    } finally {
+      setCreatingConversation(false);
+    }
+  };
+
+  // Arquivar conversa
+  const handleArchive = async () => {
+    if (!activeConversation) return;
+
+    try {
+      await chatApi.updateConversation(activeConversation.id, { status: 'archived' });
       toast.success('Conversa arquivada');
-    } catch (error) {
+      setActiveConversation(null);
+      loadConversations();
+    } catch (error: any) {
       console.error('Erro ao arquivar conversa:', error);
       toast.error('Erro ao arquivar conversa');
     }
   };
 
-  const filteredConversations = conversations.filter((conv) =>
-    conv.customer.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fechar conversa
+  const handleCloseConversation = async () => {
+    if (!activeConversation) return;
+
+    try {
+      await chatApi.updateConversation(activeConversation.id, { status: 'closed' });
+      toast.success('Conversa fechada');
+      loadConversation(activeConversation.id);
+      loadConversations();
+    } catch (error: any) {
+      console.error('Erro ao fechar conversa:', error);
+      toast.error('Erro ao fechar conversa');
+    }
+  };
+
+  // Reabrir conversa
+  const handleReopenConversation = async () => {
+    if (!activeConversation) return;
+
+    try {
+      await chatApi.updateConversation(activeConversation.id, { status: 'open' });
+      toast.success('Conversa reaberta');
+      loadConversation(activeConversation.id);
+      loadConversations();
+    } catch (error: any) {
+      console.error('Erro ao reabrir conversa:', error);
+      toast.error('Erro ao reabrir conversa');
+    }
+  };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-12rem)]">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Chat</h1>
-        <p className="text-muted-foreground">
-          Gerencie conversas com clientes
-        </p>
+    <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row">
+      {/* Lista de conversas - oculta em mobile quando há conversa ativa */}
+      <div className={`w-full lg:w-80 xl:w-96 ${activeConversation ? 'hidden lg:block' : 'block'}`}>
+        <ConversationList
+          conversations={conversations}
+          activeConversationId={activeConversation?.id || null}
+          onSelectConversation={handleSelectConversation}
+          onNewConversation={handleNewConversation}
+          loading={loading}
+          onStatusFilter={(status) => setStatusFilter(status)}
+        />
       </div>
 
-      <div className="flex-1 grid grid-cols-12 gap-4 border border-border rounded-lg overflow-hidden">
-        {/* Lista de conversas */}
-        <div className="col-span-4 border-r border-border bg-muted/30">
-          <div className="p-4 border-b border-border">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar conversas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
+      {/* Área de chat - oculta em mobile quando não há conversa ativa */}
+      <div className={`flex-1 ${!activeConversation ? 'hidden lg:flex' : 'flex'}`}>
+        <ChatWindow
+          conversation={activeConversation}
+          currentUserId={currentUserId}
+          onSendMessage={handleSendMessage}
+          onClose={() => setActiveConversation(null)}
+          onArchive={handleArchive}
+          onCloseConversation={handleCloseConversation}
+          onReopenConversation={handleReopenConversation}
+          loading={loadingConversation}
+        />
+      </div>
+
+      {/* Dialog para nova conversa */}
+      <Dialog open={showNewConversationDialog} onOpenChange={setShowNewConversationDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova Conversa</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="customer">Cliente</Label>
+              <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
+                <SelectTrigger id="customer" className="mt-1.5">
+                  <SelectValue placeholder="Selecione um cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {customers.map((customer) => (
+                    <SelectItem key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowNewConversationDialog(false)}
+                className="flex-1"
+                disabled={creatingConversation}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleCreateConversation}
+                className="flex-1"
+                disabled={!selectedCustomerId || creatingConversation}
+              >
+                {creatingConversation && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Criar Conversa
+              </Button>
             </div>
           </div>
-
-          <ScrollArea className="h-[calc(100%-5rem)]">
-            {isLoading ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                Carregando...
-              </div>
-            ) : filteredConversations.length === 0 ? (
-              <div className="p-8 text-center">
-                <MessageCircle className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma conversa encontrada
-                </p>
-              </div>
-            ) : (
-              <div className="p-2 space-y-1">
-                {filteredConversations.map((conversation) => {
-                  const lastMessage = conversation.messages?.[0];
-                  const isSelected = selectedConversation?.id === conversation.id;
-
-                  return (
-                    <button
-                      key={conversation.id}
-                      onClick={() => setSelectedConversation(conversation)}
-                      className={cn(
-                        'w-full p-3 rounded-lg text-left transition-colors hover:bg-accent',
-                        isSelected && 'bg-accent'
-                      )}
-                    >
-                      <div className="flex items-start justify-between mb-1">
-                        <p className="font-medium truncate">
-                          {conversation.customer.name}
-                        </p>
-                        {conversation._count && conversation._count.messages > 0 && (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                            {conversation._count.messages}
-                          </span>
-                        )}
-                      </div>
-                      {lastMessage && (
-                        <>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {lastMessage.content}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(lastMessage.createdAt).toLocaleDateString('pt-BR')}
-                          </p>
-                        </>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
-        </div>
-
-        {/* Área de mensagens */}
-        <div className="col-span-8 flex flex-col">
-          {selectedConversation ? (
-            <>
-              {/* Header */}
-              <div className="p-4 border-b border-border flex items-center justify-between">
-                <div>
-                  <h2 className="font-semibold">
-                    {selectedConversation.customer.name}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedConversation.title || 'Chat de Suporte'}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleArchiveConversation(selectedConversation.id)}
-                >
-                  <Archive className="h-4 w-4 mr-2" />
-                  Arquivar
-                </Button>
-              </div>
-
-              {/* Mensagens */}
-              <ScrollArea className="flex-1 p-4">
-                {messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <MessageCircle className="h-12 w-12 text-muted-foreground/50 mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Nenhuma mensagem ainda
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={cn(
-                          'flex',
-                          message.senderType === 'employee'
-                            ? 'justify-end'
-                            : 'justify-start'
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'max-w-[70%] rounded-lg px-4 py-2',
-                            message.senderType === 'employee'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
-                          )}
-                        >
-                          <p className="text-sm whitespace-pre-wrap">
-                            {message.content}
-                          </p>
-                          <p
-                            className={cn(
-                              'text-xs mt-1',
-                              message.senderType === 'employee'
-                                ? 'text-primary-foreground/70'
-                                : 'text-muted-foreground'
-                            )}
-                          >
-                            {new Date(message.createdAt).toLocaleString('pt-BR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-
-              {/* Input */}
-              <div className="p-4 border-t border-border">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Digite sua mensagem..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                  />
-                  <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                    Enviar
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full">
-              <MessageCircle className="h-16 w-16 text-muted-foreground/50 mb-4" />
-              <p className="text-lg font-medium mb-1">Selecione uma conversa</p>
-              <p className="text-sm text-muted-foreground">
-                Escolha uma conversa na lista para ver as mensagens
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
