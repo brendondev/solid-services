@@ -144,8 +144,31 @@ export function PortalChatWidget({ customerId, customerName }: PortalChatWidgetP
 
   return (
     <>
-      {/* Botão flutuante */}
-      {!isOpen && (
+      {/* DEBUG: Botão de teste simples */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          backgroundColor: '#8b5cf6',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          zIndex: 9999,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+        }}
+        onClick={toggleOpen}
+      >
+        💬
+      </div>
+
+      {/* Botão flutuante original */}
+      {!isOpen && false && (
         <Button
           onClick={toggleOpen}
           size="lg"
