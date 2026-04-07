@@ -4,19 +4,24 @@ import { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, FileText, Package, History, HelpCircle } from 'lucide-react';
+import { PortalChatWidget } from '@/components/chat';
 
 interface PortalLayoutProps {
   children: ReactNode;
   customerName?: string;
+  customerId?: string;
   token: string;
 }
 
 export default function PortalLayout({
   children,
   customerName,
+  customerId,
   token,
 }: PortalLayoutProps) {
   const pathname = usePathname();
+
+  console.log('[PortalLayout] Renderizando com:', { customerName, customerId, hasChat: !!customerId });
 
   const navigation = [
     {
@@ -145,6 +150,14 @@ export default function PortalLayout({
           </p>
         </div>
       </footer>
+
+      {/* Chat Widget */}
+      {customerId && customerName && (
+        <PortalChatWidget
+          customerId={customerId}
+          customerName={customerName}
+        />
+      )}
     </div>
   );
 }

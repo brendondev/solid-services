@@ -124,7 +124,7 @@ export default function PortalHomePage() {
 
   if (loading) {
     return (
-      <PortalLayout customerName="" token={token}>
+      <PortalLayout customerName="" customerId="" token={token}>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -137,7 +137,7 @@ export default function PortalHomePage() {
 
   if (error) {
     return (
-      <PortalLayout customerName="" token={token}>
+      <PortalLayout customerName="" customerId="" token={token}>
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <h3 className="text-lg font-semibold text-red-900 mb-2">
             Acesso Negado
@@ -158,7 +158,7 @@ export default function PortalHomePage() {
   const completedOrders = orders.filter((o) => o.status === 'completed');
 
   return (
-    <PortalLayout customerName={customer?.name} token={token}>
+    <PortalLayout customerName={customer?.name} customerId={customer?.id} token={token}>
       <div className="space-y-4 sm:space-y-6 animate-fadeInUp">
         {/* Welcome Message */}
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
