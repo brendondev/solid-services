@@ -137,11 +137,19 @@ export default function CustomerPortalLayout({
 
       {/* Chat Widget */}
       {customer && (
-        <PortalChatWidget
-          customerId={customer.id}
-          customerName={customer.name}
-        />
+        <>
+          {console.log('[Portal Layout] Renderizando PortalChatWidget:', {
+            customerId: customer.id,
+            customerName: customer.name,
+            hasComponent: !!PortalChatWidget
+          })}
+          <PortalChatWidget
+            customerId={customer.id}
+            customerName={customer.name}
+          />
+        </>
       )}
+      {!customer && console.log('[Portal Layout] Customer não carregado ainda')}
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">

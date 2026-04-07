@@ -26,6 +26,14 @@ export function PortalChatWidget({ customerId, customerName }: PortalChatWidgetP
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Debug log
+  console.log('[PortalChatWidget] Component mounted/updated:', {
+    customerId,
+    customerName,
+    isOpen,
+    hasConversation: !!conversation
+  });
+
   // Carregar ou criar conversa
   useEffect(() => {
     if (isOpen && !conversation) {
