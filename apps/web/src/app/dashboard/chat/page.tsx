@@ -63,24 +63,35 @@ export default function ChatPage() {
   }, [loadConversations]);
 
   // Carregar conversa específica com mensagens
-  const loadConversation = async (conversationId: string) => {
+  const loadConversation = async (conversationId: string, silent = false) => {
     try {
-      setLoadingConversation(true);
+      if (!silent) setLoadingConversation(true);
       const data = await chatApi.getConversationById(conversationId);
       setActiveConversation(data);
 
       // Marcar como lida
       await chatApi.markAsRead(conversationId);
 
-      // Atualizar lista
-      loadConversations();
+      // Atualizar lista (silenciosamente)
+      if (!silent) loadConversations();
     } catch (error: any) {
       console.error('Erro ao carregar conversa:', error);
-      toast.error('Erro ao carregar conversa');
+      if (!silent) toast.error('Erro ao carregar conversa');
     } finally {
-      setLoadingConversation(false);
+      if (!silent) setLoadingConversation(false);
     }
   };
+
+  // Polling para atualizar conversa ativa (a cada 3 segundos)
+  useEffect(() => {
+    if (!activeConversation) return;
+
+    const interval = setInterval(() => {
+      loadConversation(activeConversation.id, true);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [activeConversation?.id]);
 
   // Selecionar conversa
   const handleSelectConversation = (conversation: Conversation) => {

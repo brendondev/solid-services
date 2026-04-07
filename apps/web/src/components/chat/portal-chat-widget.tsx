@@ -48,13 +48,13 @@ export function PortalChatWidget({ customerId, customerName }: PortalChatWidgetP
     }
   }, [conversation?.messages, isOpen]);
 
-  // Polling para novas mensagens (a cada 10 segundos)
+  // Polling para novas mensagens (a cada 3 segundos)
   useEffect(() => {
     if (!isOpen || !conversation) return;
 
     const interval = setInterval(() => {
       loadConversation(true);
-    }, 10000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [isOpen, conversation?.id]);

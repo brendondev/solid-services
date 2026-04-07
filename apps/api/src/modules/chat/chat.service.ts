@@ -195,6 +195,13 @@ export class ChatService {
         id: dto.conversationId,
         tenantId,
       },
+      include: {
+        messages: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+      },
     });
 
     if (!conversation) {
@@ -218,6 +225,43 @@ export class ChatService {
         lastMessageAt: new Date(),
       },
     });
+
+    // Verifica se é a primeira mensagem do cliente
+    // Envia mensagem automática de boas-vindas
+    const isFirstCustomerMessage =
+      dto.senderType === 'customer' &&
+      conversation.messages.filter(m => m.senderType === 'customer').length === 0;
+
+    if (isFirstCustomerMessage) {
+      // Aguarda 1 segundo para parecer mais natural
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Envia mensagem automática do sistema
+      await this.prisma.chatMessage.create({
+        data: {
+          conversationId: dto.conversationId,
+          senderId: 'system',
+          senderType: 'employee',
+          content: `Olá! 👋
+
+Recebemos sua mensagem e em breve nossa equipe irá responder.
+
+Para agilizar o atendimento, por favor informe:
+• Assunto do contato
+• Código da Ordem de Serviço ou Orçamento (se houver)
+
+Aguarde que em breve um técnico responsável entrará em contato! ⏱️`,
+        },
+      });
+
+      // Atualiza novamente o lastMessageAt
+      await this.prisma.conversation.update({
+        where: { id: dto.conversationId },
+        data: {
+          lastMessageAt: new Date(),
+        },
+      });
+    }
 
     return message;
   }
