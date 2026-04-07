@@ -1,196 +1,389 @@
-# Guia de Importação de Dados
+# 📊 Guia Completo de Importação de Dados
 
-## 📋 Tipos de Importação Disponíveis
+> **Versão:** 2.0 | **Última atualização:** 2026-04-07
 
-### 1. Clientes (Customers)
-Importe sua base de clientes com todos os dados de contato e endereço.
+## 📋 Visão Geral
 
-**Campos Obrigatórios:**
-- `nome` - Nome ou razão social do cliente
-- `documento` - CPF (11 dígitos) ou CNPJ (14 dígitos)
+Sistema completo para importar dados de planilhas Excel ou CSV, facilitando a migração de sistemas legados, ERPs antigos ou planilhas locais para o Solid Service.
 
-**Campos Opcionais:**
-- `email` - Email do contato
-- `telefone` - Telefone do contato
-- `nome_contato` - Nome da pessoa de contato (se diferente do nome do cliente)
-- `endereco` - Logradouro (rua, avenida, etc)
-- `numero` - Número do imóvel
-- `complemento` - Complemento (apto, sala, bloco, etc)
-- `bairro` - Bairro
-- `cidade` - Cidade
-- `estado` - UF (2 letras)
-- `cep` - CEP (8 dígitos)
+### Acesso
 
-**Exemplo CSV:**
-```csv
-nome,documento,email,telefone,endereco,numero,bairro,cidade,estado,cep
-João Silva,12345678900,joao@email.com,(11) 98765-4321,Rua das Flores,123,Centro,São Paulo,SP,01234-567
-```
+- **URL:** `/dashboard/import`
+- **Menu:** Sidebar → "Importar Dados"
+- **Requisitos:** Usuário autenticado com permissões de criação
 
 ---
 
-### 2. Serviços (Services)
-Catálogo de serviços oferecidos pela empresa.
+## 🎯 Tipos de Importação Disponíveis
 
-**Campos Obrigatórios:**
+### 1. **Clientes** 👥
+
+Importe sua base completa de clientes com informações de contato e endereço.
+
+#### Campos Obrigatórios
+- `nome` - Nome completo (pessoa física) ou Razão Social (pessoa jurídica)
+- `documento` - CPF (11 dígitos) ou CNPJ (14 dígitos)
+
+#### Campos Opcionais
+- **Contato:**
+  - `email` - Email principal
+  - `telefone` - Telefone de contato
+  - `nome_contato` - Nome da pessoa de contato (se diferente do nome do cliente)
+
+- **Endereço:**
+  - `endereco` - Logradouro (rua, avenida, etc)
+  - `numero` - Número do imóvel
+  - `complemento` - Complemento (apto, sala, bloco, etc)
+  - `bairro` - Bairro
+  - `cidade` - Cidade
+  - `estado` - UF (2 letras: SP, RJ, MG, etc)
+  - `cep` - CEP (8 dígitos, com ou sem formatação)
+
+#### Exemplo CSV
+```csv
+nome,documento,email,telefone,nome_contato,endereco,numero,complemento,bairro,cidade,estado,cep
+João Silva,12345678900,joao@email.com,(11) 98765-4321,João Silva,Rua das Flores,123,Apto 45,Centro,São Paulo,SP,01310-100
+Empresa XYZ Ltda,12345678000190,contato@xyz.com,(11) 3333-4444,Maria Santos,Av Paulista,1000,12º andar,Bela Vista,São Paulo,SP,01310-200
+```
+
+#### Validações Automáticas
+- ✅ CPF/CNPJ matematicamente válido
+- ✅ Tipo detectado automaticamente (individual = CPF, company = CNPJ)
+- ✅ Documento único por tenant
+- ✅ Zeros à esquerda adicionados automaticamente
+- ✅ Formatação removida automaticamente
+
+---
+
+### 2. **Serviços** 🔧
+
+Catálogo de serviços oferecidos pela sua empresa.
+
+#### Campos Obrigatórios
 - `nome` - Nome do serviço
 - `preco` - Preço padrão (use ponto ou vírgula como separador decimal)
 
-**Campos Opcionais:**
+#### Campos Opcionais
 - `descricao` - Descrição detalhada do serviço
-- `unidade` - Unidade de medida (hora, dia, unidade, etc)
-- `categoria` - Categoria do serviço
-- `tempo_estimado` - Tempo estimado em minutos
-- `garantia` - Período de garantia
+- `tempo_estimado` - Tempo estimado de execução em **minutos**
 
-**Exemplo CSV:**
+#### Exemplo CSV
 ```csv
-nome,descricao,preco,unidade,tempo_estimado
-Instalação Elétrica,Instalação completa de sistema elétrico,250.00,hora,120
-Manutenção Preventiva,Revisão geral dos sistemas,150.50,hora,90
+nome,descricao,preco,tempo_estimado
+Instalação Elétrica,Instalação completa de sistema elétrico residencial,250.00,120
+Manutenção Preventiva,Revisão geral dos sistemas,150.50,90
+Troca de Tomadas,Substituição de tomadas antigas,80.00,30
 ```
+
+#### Validações Automáticas
+- ✅ Preço maior que zero
+- ✅ Nome único por tenant
+- ✅ Tempo estimado em minutos (número inteiro)
 
 ---
 
-### 3. Fornecedores (Suppliers)
+### 3. **Fornecedores** 🏢
+
 Base de fornecedores e parceiros comerciais.
 
-**Campos Obrigatórios:**
+#### Campos Obrigatórios
 - `razao_social` - Razão social do fornecedor
 - `cnpj` - CNPJ (14 dígitos)
 
-**Campos Opcionais:**
+#### Campos Opcionais
 - `email` - Email de contato
 - `telefone` - Telefone de contato
-- `notas` - Observações gerais
+- `notas` - Observações gerais sobre o fornecedor
 
-**Exemplo CSV:**
+#### Exemplo CSV
 ```csv
 razao_social,cnpj,email,telefone,notas
-Fornecedor ABC Ltda,12345678000190,contato@fornecedorabc.com,(11) 3333-4444,Fornecedor principal de peças
+Fornecedor ABC Ltda,12345678000190,contato@fornecedorabc.com,(11) 3333-4444,Fornecedor principal de peças elétricas
+Materiais XYZ S/A,98765432000111,vendas@xyz.com,(11) 2222-3333,Entrega expressa disponível
 ```
+
+#### Validações Automáticas
+- ✅ CNPJ matematicamente válido
+- ✅ CNPJ único por tenant
+- ✅ Zeros à esquerda adicionados automaticamente
+- ✅ Formatação removida automaticamente
 
 ---
 
-### 4. Importar Tudo (ALL)
+### 4. **Importar Tudo** 📦
+
 Importe clientes, serviços e fornecedores em uma única planilha.
 
-**Campo Adicional Obrigatório:**
-- `tipo` - Valores aceitos:
-  - `cliente` ou `customer` para clientes
-  - `serviço`, `servico` ou `service` para serviços
-  - `fornecedor` ou `supplier` para fornecedores
+#### Campo Adicional Obrigatório
+- `tipo` - Define qual entidade será criada:
+  - `cliente` ou `customer` → Cria um cliente
+  - `serviço`, `servico` ou `service` → Cria um serviço
+  - `fornecedor` ou `supplier` → Cria um fornecedor
 
-**Exemplo CSV:**
+#### Exemplo CSV
 ```csv
-tipo,nome,documento,email,preco,razao_social,cnpj
-cliente,João Silva,12345678900,joao@email.com,,,
-servico,Instalação Elétrica,,,,250.00,,
-fornecedor,,,,,Fornecedor ABC,12345678000190
+tipo,nome,documento,email,telefone,preco,descricao,tempo_estimado,razao_social,cnpj,notas
+cliente,João Silva,12345678900,joao@email.com,(11) 98765-4321,,,,,
+servico,Instalação Elétrica,,,,,Instalação completa de sistema elétrico,250.00,120,,
+fornecedor,,,,,,,Fornecedor ABC Ltda,12345678000190,contato@fornecedorabc.com,(11) 3333-4444,Fornecedor principal
 ```
+
+#### Dica
+Use este modo quando tiver dados mistos na mesma planilha ou quando estiver migrando de um sistema que exporta tudo junto.
 
 ---
 
-## ✅ Validações Automáticas
+## ✅ Validações e Processamento Automático
 
 ### CPF/CNPJ
-- **Aceita qualquer formato:**
-  - Com formatação: `123.456.789-00` ou `12.345.678/0001-90`
-  - Sem formatação: `12345678900` ou `12345678000190`
-  - Com espaços ou outros caracteres: `123 456 789 00`
-- **Preenche zeros à esquerda automaticamente:**
-  - Se o Excel remover zeros, o sistema os adiciona automaticamente
-- **Valida matematicamente:**
-  - Verifica os dígitos verificadores do CPF/CNPJ
-  - Rejeita sequências repetidas (111.111.111-11, etc)
+
+O sistema aceita documentos em **qualquer formato** e faz normalização automática:
+
+#### Formatos Aceitos
+- ✅ Com formatação: `123.456.789-00` ou `12.345.678/0001-90`
+- ✅ Sem formatação: `12345678900` ou `12345678000190`
+- ✅ Com espaços: `123 456 789 00`
+- ✅ Parcialmente formatado: `123.456.78900`
+
+#### Correção Automática
+- **Zeros à esquerda:** Se o Excel remover zeros, o sistema os adiciona automaticamente
+  - Exemplo: `1234567890` → `01234567890` (CPF)
+  - Exemplo: `12345678000` → `00012345678000` (CNPJ)
+
+#### Validação Matemática
+- ✅ Verifica dígitos verificadores (algoritmo oficial)
+- ❌ Rejeita sequências repetidas (`111.111.111-11`, `000.000.000-00`)
+- ❌ Rejeita documentos com comprimento inválido
+
+#### Detecção Automática de Tipo
+- **11 dígitos** → Cliente tipo `individual` (Pessoa Física)
+- **14 dígitos** → Cliente tipo `company` (Pessoa Jurídica)
 
 ### CEP
+
 - Remove formatação automaticamente
 - Aceita com ou sem hífen: `12345-678` ou `12345678`
+- Valida comprimento (8 dígitos)
 
 ### Preços
+
 - Aceita ponto ou vírgula como separador decimal
 - Exemplos válidos: `250.50`, `250,50`, `250.5`, `250,5`
+- Valida valor maior que zero
+
+### Tempo Estimado
+
+- Valor em **minutos** (número inteiro)
+- Exemplos: `30`, `60`, `120`, `240`
 
 ---
 
 ## 📊 Formato do Arquivo
 
 ### Formatos Aceitos
-- Excel: `.xlsx` ou `.xls`
-- CSV: `.csv`
+
+- **Excel:** `.xlsx` ou `.xls`
+- **CSV:** `.csv` (UTF-8 com BOM para compatibilidade com Excel)
 
 ### Estrutura
-- **Primeira linha:** Nomes das colunas (cabeçalho)
-- **Demais linhas:** Dados
-- **Normalização automática:** O sistema remove acentos, converte para minúsculas e substitui espaços por underscores
 
-**Exemplos de nomes de colunas aceitos:**
-- `Nome`, `NOME`, `nome` → `nome`
-- `Razão Social`, `razao social`, `RAZAO_SOCIAL` → `razao_social`
-- `CPF/CNPJ`, `Documento`, `documento` → `documento`
+1. **Primeira linha:** Nomes das colunas (cabeçalho)
+2. **Demais linhas:** Dados (uma entidade por linha)
+3. **Máximo:** 10 MB por arquivo
+4. **Recomendado:** Até 5.000 registros por importação
+
+### Normalização Automática de Colunas
+
+O sistema normaliza automaticamente os nomes das colunas:
+- Remove acentos
+- Converte para minúsculas
+- Substitui espaços por underscores
+
+**Exemplos:**
+- `Nome`, `NOME`, `nome` → `nome` ✅
+- `Razão Social`, `razao social`, `RAZAO_SOCIAL` → `razao_social` ✅
+- `CPF/CNPJ`, `Documento`, `documento` → `documento` ✅
 
 ---
 
-## 🔍 Preview e Validação
+## 🔍 Processo de Importação
 
-Antes da importação:
-1. O sistema analisa o arquivo
-2. Mostra preview das primeiras 10 linhas
-3. Valida a estrutura (colunas obrigatórias)
-4. Permite edição dos dados antes de confirmar
+### Passo 1: Escolher Entidade
+
+Selecione o tipo de dado que deseja importar:
+- Clientes
+- Serviços
+- Fornecedores
+- Importar Tudo
+
+### Passo 2: Baixar Template
+
+1. Clique em "Baixar Template"
+2. Abrirá um arquivo CSV com:
+   - ✅ Cabeçalhos corretos
+   - ✅ Linha de exemplo com dados reais
+3. Preencha os dados seguindo o formato do exemplo
+
+### Passo 3: Preparar Planilha
+
+**Dicas importantes:**
+- ✅ Mantenha os nomes das colunas exatamente como no template
+- ✅ Não deixe linhas em branco no meio dos dados
+- ✅ Use o formato correto para cada campo (veja seção "Validações")
+- ✅ Salve como CSV UTF-8 para melhor compatibilidade
+
+**Excel removendo zeros:**
+- Se o Excel remover zeros de CPFs (ex: `01234567890` vira `1234567890`)
+- **Solução 1:** Formate a coluna como "Texto" antes de colar
+- **Solução 2:** Deixe assim! O sistema adiciona os zeros automaticamente ✨
+
+### Passo 4: Upload e Análise
+
+1. Arraste e solte ou clique para selecionar o arquivo
+2. Clique em "Analisar Arquivo"
+3. Aguarde a análise (poucos segundos)
+4. Veja a prévia dos dados e possíveis erros
+
+### Passo 5: Pré-visualização e Edição
+
+**Recursos disponíveis:**
+- 📋 Visualização das primeiras 10 linhas
+- ✏️ Edição direta na tabela
+- ✨ Correção automática com IA (para documentos)
+- ⚠️ Lista detalhada de erros de validação
+- 🔄 Restaurar dados originais
+
+**Correção com IA:**
+- Detecta documentos com formatação problemática
+- Tenta corrigir automaticamente
+- Oferece opções caso não consiga corrigir
+
+### Passo 6: Importação
+
+1. Revise os dados (edite se necessário)
+2. Clique em "Importar"
+3. Acompanhe o progresso
+4. Veja relatório final:
+   - ✅ Quantidade de sucessos
+   - ❌ Quantidade de erros
+   - 📋 Detalhes de cada erro
 
 ---
 
 ## ⚠️ Tratamento de Erros
 
-### Erros por Linha
-- Se uma linha tiver erro, as demais continuam sendo processadas
-- O relatório final mostra:
-  - ✅ Quantidade de sucessos
-  - ❌ Quantidade de erros
-  - 📋 Detalhes de cada erro (número da linha + motivo)
+### Durante a Importação
 
-### Erros Comuns
-1. **"Nome e documento são obrigatórios"**
-   - Certifique-se de que todas as linhas têm esses campos preenchidos
+O sistema processa **linha por linha**:
+- ✅ Linhas válidas são importadas
+- ❌ Linhas com erro são ignoradas e reportadas
+- 📊 Relatório final mostra o resultado de cada linha
 
-2. **"CPF/CNPJ inválido"**
-   - Verifique se o documento tem o formato correto
-   - O sistema valida matematicamente os dígitos
+### Erros Comuns e Soluções
 
-3. **"Cliente/Serviço/Fornecedor já existe"**
-   - Não é possível importar registros duplicados
-   - Verifique se o CPF/CNPJ ou nome já estão cadastrados
+#### 1. "Nome e documento são obrigatórios"
+- **Causa:** Campos obrigatórios vazios
+- **Solução:** Preencha todos os campos obrigatórios
 
-4. **"Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos"**
-   - Certifique-se de que o CPF tem 11 dígitos e o CNPJ tem 14
+#### 2. "CPF/CNPJ inválido"
+- **Causa:** Documento com dígitos verificadores incorretos
+- **Solução:**
+  - Use a correção com IA ✨
+  - Ou corrija manualmente
+  - Ou use `SKIP_DOCUMENT_VALIDATION=true` para dados de teste
+
+#### 3. "Cliente/Serviço/Fornecedor já existe"
+- **Causa:** Documento ou nome já cadastrado
+- **Solução:** Verifique duplicatas na base ou na planilha
+
+#### 4. "Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos"
+- **Causa:** Quantidade de dígitos incorreta
+- **Solução:** Verifique o documento original
+
+#### 5. "Preço inválido (deve ser maior que zero)"
+- **Causa:** Preço zero, negativo ou não numérico
+- **Solução:** Corrija o preço na planilha
+
+### Relatório de Erros
+
+Ao final da importação, você receberá:
+- **✅ Importados:** Registros criados com sucesso
+- **❌ Erros:** Lista detalhada com:
+  - Número da linha
+  - Motivo do erro
+  - Dados que causaram o erro
+- **⚠️ Avisos:** Possíveis problemas não bloqueantes
 
 ---
 
-## 💡 Dicas
+## 💡 Boas Práticas
 
-1. **Teste com poucos registros primeiro:**
+### ✅ Recomendado
+
+1. **Teste com poucos registros primeiro**
    - Importe 2-3 linhas para validar o formato
-   - Depois importe o restante
+   - Depois importe o restante em lotes maiores
 
-2. **Use o template:**
-   - Baixe o template na interface de importação
-   - Preencha seguindo o exemplo
+2. **Use os templates fornecidos**
+   - Baixe o template na interface
+   - Preencha seguindo os exemplos
+   - Não altere os nomes das colunas
 
-3. **Excel removendo zeros:**
-   - Se o Excel remover zeros à esquerda de CPFs
-   - Formate a coluna como "Texto" antes de colar os dados
-   - Ou deixe assim - o sistema adiciona os zeros automaticamente!
+3. **Mantenha backup**
+   - Sempre mantenha uma cópia do arquivo original
+   - Facilita correções se necessário
 
-4. **Formatação de documentos:**
-   - Não precisa se preocupar com pontos, traços ou barras
-   - O sistema limpa e valida automaticamente
+4. **Valide dados antes de importar**
+   - Use a pré-visualização
+   - Corrija erros na interface
+   - Ou edite o arquivo e faça novo upload
 
-5. **Importar Tudo:**
-   - Use quando tiver dados mistos na mesma planilha
-   - Lembre-se de adicionar a coluna `tipo`
-   - Valores aceitos: cliente/customer, serviço/servico/service, fornecedor/supplier
+5. **Divida arquivos grandes**
+   - Se tiver mais de 5.000 registros
+   - Divida em múltiplos arquivos menores
+   - Importe em lotes
+
+### ❌ Evitar
+
+1. **Arquivos muito grandes** (> 10 MB)
+2. **Caracteres especiais nos nomes de colunas**
+3. **Linhas em branco** no meio dos dados
+4. **Formatos de data inconsistentes**
+5. **Duplicar dados já existentes**
+6. **Modificar template** (adicionar/remover colunas sem necessidade)
+
+---
+
+## 🚀 Recursos Avançados
+
+### Correção Automática com IA ✨
+
+Quando houver erros de documento (CPF/CNPJ):
+1. Clique em "Corrigir com IA"
+2. O sistema tenta corrigir automaticamente:
+   - Adiciona zeros à esquerda
+   - Remove formatação problemática
+   - Valida dígitos verificadores
+3. Re-analisa o arquivo com as correções
+4. Mostra novos resultados
+
+**Se não conseguir corrigir:**
+- Oferece opção de importar sem documento
+- Ou permite edição manual
+
+### Edição Direta na Tabela
+
+- Clique em qualquer célula para editar
+- Células com erro ficam destacadas em vermelho
+- Células válidas ficam em verde
+- Ao editar, veja a mensagem de erro abaixo da célula
+
+### Validação em Tempo Real
+
+- Cores indicam status:
+  - 🔴 Vermelho: Erro de validação
+  - 🟢 Verde: Campo válido
+  - ⚪ Cinza: Não validado ainda
 
 ---
 
@@ -199,19 +392,98 @@ Antes da importação:
 ### Template Clientes
 ```csv
 nome,documento,email,telefone,nome_contato,endereco,numero,complemento,bairro,cidade,estado,cep
+João Silva,12345678900,joao@email.com,(11) 98765-4321,João Silva,Rua das Flores,123,Apto 45,Centro,São Paulo,SP,01310-100
 ```
 
 ### Template Serviços
 ```csv
-nome,descricao,preco,unidade,categoria,tempo_estimado,garantia
+nome,descricao,preco,tempo_estimado
+Instalação Elétrica,Instalação completa de sistema elétrico residencial,250.00,120
 ```
 
 ### Template Fornecedores
 ```csv
 razao_social,cnpj,email,telefone,notas
+Fornecedor ABC Ltda,12345678000190,contato@fornecedorabc.com,(11) 3333-4444,Fornecedor principal de peças elétricas
 ```
 
 ### Template Tudo
 ```csv
-tipo,nome,documento,email,telefone,preco,descricao,razao_social,cnpj,notas
+tipo,nome,documento,email,telefone,preco,descricao,tempo_estimado,razao_social,cnpj,notas
+cliente,João Silva,12345678900,joao@email.com,(11) 98765-4321,,,,,,
+servico,Instalação Elétrica,,,,250.00,Instalação completa de sistema elétrico,120,,,
+fornecedor,,,,,,,,,Fornecedor ABC Ltda,12345678000190,contato@fornecedorabc.com
 ```
+
+---
+
+## 🔒 Segurança e Isolamento
+
+- ✅ Todos os dados são isolados por **tenant** (multi-tenant)
+- ✅ Validações matemáticas de CPF/CNPJ
+- ✅ Documentos únicos por tenant
+- ✅ Limite de 10 MB por arquivo
+- ✅ Sanitização de dados na importação
+
+---
+
+## ⚙️ Variáveis de Ambiente
+
+### SKIP_DOCUMENT_VALIDATION
+
+Para ambientes de desenvolvimento/teste, você pode pular a validação de CPF/CNPJ:
+
+```bash
+SKIP_DOCUMENT_VALIDATION=true
+```
+
+**⚠️ IMPORTANTE:** Nunca use em produção!
+
+---
+
+## 🆘 Suporte
+
+### Problemas durante a importação?
+
+1. **Verifique o formato do arquivo**
+   - Confira se está em .xlsx, .xls ou .csv
+   - Verifique o tamanho (máx 10 MB)
+
+2. **Consulte os erros detalhados**
+   - Veja o relatório final
+   - Corrija linha por linha
+
+3. **Use a documentação**
+   - Verifique os exemplos
+   - Siga as boas práticas
+
+4. **Entre em contato**
+   - Se o problema persistir
+   - Envie o arquivo de exemplo
+
+---
+
+## 📊 Limitações
+
+- **Tamanho:** Máximo 10 MB por arquivo
+- **Registros:** Recomendado até 5.000 por importação
+- **Timeout:** Importações muito longas podem exceder tempo limite (2 minutos)
+- **Relações:** Importações não criam relacionamentos complexos automaticamente
+- **Anexos:** Não é possível importar arquivos anexos
+
+---
+
+## 🎯 Próximos Passos
+
+Após importação bem-sucedida:
+1. ✅ Verifique os dados importados nas respectivas páginas
+2. ✅ Configure relacionamentos adicionais se necessário
+3. ✅ Ajuste campos que precisam de edição
+4. ✅ Exclua registros duplicados se houver
+5. ✅ Configure preferências de notificação
+
+---
+
+**Versão:** 2.0
+**Última atualização:** 2026-04-07
+**Compatível com:** Solid Service API v1.0+

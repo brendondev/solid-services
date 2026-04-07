@@ -36,6 +36,7 @@ export default function ImportPage() {
       icon: Users,
       color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30',
       fields: ['nome', 'documento', 'email', 'telefone', 'nome_contato', 'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep'],
+      exampleRow: ['João Silva', '12345678900', 'joao@email.com', '(11) 98765-4321', 'João Silva', 'Rua das Flores', '123', 'Apto 45', 'Centro', 'São Paulo', 'SP', '01310-100'],
     },
     {
       type: 'services' as EntityTypeLocal,
@@ -43,7 +44,8 @@ export default function ImportPage() {
       description: 'Catálogo de serviços e preços',
       icon: Wrench,
       color: 'bg-green-100 text-green-600 dark:bg-green-900/30',
-      fields: ['nome', 'descricao', 'preco', 'unidade', 'categoria', 'tempo_estimado', 'garantia'],
+      fields: ['nome', 'descricao', 'preco', 'tempo_estimado'],
+      exampleRow: ['Instalação Elétrica', 'Instalação completa de sistema elétrico residencial', '250.00', '120'],
     },
     {
       type: 'suppliers' as EntityTypeLocal,
@@ -52,6 +54,7 @@ export default function ImportPage() {
       icon: Building2,
       color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30',
       fields: ['razao_social', 'cnpj', 'email', 'telefone', 'notas'],
+      exampleRow: ['Fornecedor ABC Ltda', '12345678000190', 'contato@fornecedorabc.com', '(11) 3333-4444', 'Fornecedor principal de peças elétricas'],
     },
     {
       type: 'all' as EntityTypeLocal,
@@ -59,7 +62,8 @@ export default function ImportPage() {
       description: 'Importe clientes, serviços e fornecedores de uma só vez (requer coluna "tipo")',
       icon: FileSpreadsheet,
       color: 'bg-gradient-to-r from-blue-100 to-purple-100 text-purple-600 dark:from-blue-900/30 dark:to-purple-900/30',
-      fields: ['tipo', 'nome', 'documento', 'email', 'telefone', 'preco', 'descricao', 'razao_social', 'cnpj'],
+      fields: ['tipo', 'nome', 'documento', 'email', 'telefone', 'preco', 'descricao', 'tempo_estimado', 'razao_social', 'cnpj', 'notas'],
+      exampleRow: ['cliente', 'João Silva', '12345678900', 'joao@email.com', '(11) 98765-4321', '', '', '', '', '', ''],
     },
   ];
 
@@ -67,19 +71,28 @@ export default function ImportPage() {
     const entity = entities.find(e => e.type === type);
     if (!entity) return;
 
-    // Criar CSV com cabeçalhos
+    // Criar CSV com cabeçalhos e linha de exemplo
     const headers = entity.fields.join(',');
-    const exampleRow = entity.fields.map(() => '').join(',');
+    const exampleRow = entity.exampleRow?.map(val => {
+      // Escapar valores com vírgula ou aspas
+      const strVal = String(val);
+      if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
+        return `"${strVal.replace(/"/g, '""')}"`;
+      }
+      return strVal;
+    }).join(',') || entity.fields.map(() => '').join(',');
+
     const csv = `${headers}\n${exampleRow}`;
 
-    // Download
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    // Download com BOM UTF-8 para compatibilidade com Excel
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `template_${type}.csv`;
     link.click();
 
-    toast.success(`Template de ${entity.name} baixado!`);
+    toast.success(`Template de ${entity.name} baixado com exemplo!`);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -482,20 +495,42 @@ export default function ImportPage() {
               <h2 className="text-xl font-semibold">Baixe o template</h2>
             </div>
 
-            <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg">
-              <FileSpreadsheet className="w-8 h-8 text-green-600 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="font-medium mb-2">Template de Importação</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Baixe nossa planilha modelo e preencha com seus dados. Mantenha os nomes das colunas.
-                </p>
-                <button
-                  onClick={() => handleDownloadTemplate(selectedEntity)}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Baixar Template
-                </button>
+            <div className="space-y-3">
+              {/* Template gerado dinamicamente */}
+              <div className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <FileSpreadsheet className="w-8 h-8 text-green-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium mb-1">Template Dinâmico (Gerado)</p>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Gera uma planilha CSV com campos específicos e exemplo de dados.
+                  </p>
+                  <button
+                    onClick={() => handleDownloadTemplate(selectedEntity)}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Baixar Template Gerado
+                  </button>
+                </div>
+              </div>
+
+              {/* Template pronto (arquivo estático) */}
+              <div className="flex items-start gap-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-900/30">
+                <FileText className="w-8 h-8 text-blue-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium mb-1 text-blue-900 dark:text-blue-400">Template Pronto (Recomendado)</p>
+                  <p className="text-sm text-blue-800 dark:text-blue-400/80 mb-3">
+                    Arquivo CSV completo com múltiplos exemplos de dados reais já formatados.
+                  </p>
+                  <a
+                    href={`/templates/${selectedEntity === 'all' ? 'importar-tudo' : selectedEntity === 'customers' ? 'clientes' : selectedEntity === 'services' ? 'servicos' : 'fornecedores'}.csv`}
+                    download
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Baixar Template Completo
+                  </a>
+                </div>
               </div>
             </div>
           </div>

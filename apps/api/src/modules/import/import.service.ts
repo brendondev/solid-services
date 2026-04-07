@@ -286,18 +286,18 @@ export class ImportService {
   /**
    * Detecta automaticamente o tipo baseado no documento (CPF ou CNPJ)
    */
-  private detectCustomerType(documento: string): 'pessoa_fisica' | 'pessoa_juridica' {
+  private detectCustomerType(documento: string): 'individual' | 'company' {
     // Remove caracteres não numéricos
     const numeros = this.cleanDocument(documento);
 
     if (numeros.length === 11) {
-      return 'pessoa_fisica'; // CPF
+      return 'individual'; // CPF
     } else if (numeros.length === 14) {
-      return 'pessoa_juridica'; // CNPJ
+      return 'company'; // CNPJ
     }
 
     // Padrão: pessoa física
-    return 'pessoa_fisica';
+    return 'individual';
   }
 
   /**
@@ -417,12 +417,12 @@ export class ImportService {
 
         // Detectar tipo automaticamente baseado no documento limpo
         const tipo = this.detectCustomerType(documentoNumeros);
-        console.log(`  👤 Tipo detectado:`, tipo === 'pessoa_fisica' ? 'CPF (Pessoa Física)' : 'CNPJ (Pessoa Jurídica)');
+        console.log(`  👤 Tipo detectado:`, tipo === 'individual' ? 'CPF (Pessoa Física)' : 'CNPJ (Pessoa Jurídica)');
 
         // Validar documento
         const skipValidation = process.env.SKIP_DOCUMENT_VALIDATION === 'true';
 
-        if (tipo === 'pessoa_fisica') {
+        if (tipo === 'individual') {
           const isValid = this.isValidCPF(documentoNumeros);
           console.log(`  ✅ Validação CPF:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
 
@@ -434,7 +434,7 @@ export class ImportService {
             }
           }
         }
-        if (tipo === 'pessoa_juridica') {
+        if (tipo === 'company') {
           const isValid = this.isValidCNPJ(documentoNumeros);
           console.log(`  ✅ Validação CNPJ:`, isValid ? 'VÁLIDO' : 'INVÁLIDO');
 

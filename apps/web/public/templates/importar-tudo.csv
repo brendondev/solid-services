@@ -1,0 +1,7 @@
+tipo,nome,documento,email,telefone,preco,descricao,tempo_estimado,razao_social,cnpj,notas
+cliente,João Silva,12345678900,joao@email.com,(11) 98765-4321,,,,,,
+cliente,Maria Santos,98765432100,maria@email.com,(11) 91234-5678,,,,,,
+servico,Instalação Elétrica,,,,,Instalação completa de sistema elétrico residencial,250.00,120,,
+servico,Manutenção Preventiva,,,,,Revisão geral dos sistemas,150.50,90,,
+fornecedor,,,,,,,,,Fornecedor ABC Ltda,12345678000190,contato@fornecedorabc.com
+fornecedor,,,,,,,,,Materiais XYZ S/A,98765432000111,vendas@materiaisxyz.com
