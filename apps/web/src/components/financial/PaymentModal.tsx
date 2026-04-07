@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import { Select } from '@/components/ui/select-legacy';
 import { useToast } from '@/contexts/ToastContext';
 import { financialApi } from '@/lib/api/financial';
 

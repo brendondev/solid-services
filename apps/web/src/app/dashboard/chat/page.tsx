@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { customersApi } from '@/services/customers';
+import { customersApi } from '@/lib/api/customers';
 import { Loader2 } from 'lucide-react';
 import {
   Select,
@@ -110,7 +110,7 @@ export default function ChatPage() {
   // Nova conversa - carregar clientes
   const handleNewConversation = async () => {
     try {
-      const customersData = await customersApi.getCustomers();
+      const customersData = await customersApi.findAll();
       setCustomers(customersData);
       setShowNewConversationDialog(true);
     } catch (error: any) {
