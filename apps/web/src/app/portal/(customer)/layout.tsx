@@ -25,6 +25,20 @@ export default function CustomerPortalLayout({
     validateAuth();
   }, []);
 
+  // Debug log
+  useEffect(() => {
+    if (customer) {
+      console.log('[Portal Layout] Customer carregado:', {
+        id: customer.id,
+        name: customer.name,
+        hasId: !!customer.id,
+        hasName: !!customer.name
+      });
+    } else {
+      console.log('[Portal Layout] Customer ainda não carregado');
+    }
+  }, [customer]);
+
   const validateAuth = async () => {
     try {
       const customerData = await customerPortalApi.validateToken();
@@ -136,20 +150,12 @@ export default function CustomerPortalLayout({
       </main>
 
       {/* Chat Widget */}
-      {customer && (
-        <>
-          {console.log('[Portal Layout] Renderizando PortalChatWidget:', {
-            customerId: customer.id,
-            customerName: customer.name,
-            hasComponent: !!PortalChatWidget
-          })}
-          <PortalChatWidget
-            customerId={customer.id}
-            customerName={customer.name}
-          />
-        </>
-      )}
-      {!customer && console.log('[Portal Layout] Customer não carregado ainda')}
+      {customer ? (
+        <PortalChatWidget
+          customerId={customer.id}
+          customerName={customer.name}
+        />
+      ) : null}
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
