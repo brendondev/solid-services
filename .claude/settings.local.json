@@ -76,7 +76,9 @@
       "Bash(powershell:*)",
       "Bash(git rm:*)",
       "Bash(git -C \"C:\\\\Users\\\\blima\\\\Desktop\\\\Documentos\\\\solid-service\" log --oneline)",
-      "Bash(git -C \"C:\\\\Users\\\\blima\\\\Desktop\\\\Documentos\\\\solid-service\" ls-files)"
+      "Bash(git -C \"C:\\\\Users\\\\blima\\\\Desktop\\\\Documentos\\\\solid-service\" ls-files)",
+      "Bash(railway:*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

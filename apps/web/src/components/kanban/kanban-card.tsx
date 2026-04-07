@@ -63,16 +63,16 @@ export function KanbanCard({
       )}
     >
       <Card
-        className="mb-3 cursor-pointer hover:shadow-md transition-shadow"
+        className="mb-2 sm:mb-3 cursor-pointer hover:shadow-md transition-shadow"
         onClick={onClick}
       >
-        <CardContent className="p-3 space-y-2">
+        <CardContent className="p-2 sm:p-3 space-y-1.5 sm:space-y-2">
           {/* Header com prioridade */}
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="text-sm font-medium line-clamp-2 flex-1">
+          <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+            <h4 className="text-xs sm:text-sm font-medium line-clamp-2 flex-1">
               {title}
             </h4>
-            <Badge variant="secondary" className={cn('text-xs', priorityColors[priority])}>
+            <Badge variant="secondary" className={cn('text-[10px] sm:text-xs shrink-0', priorityColors[priority])}>
               {priority === 'low' && 'Baixa'}
               {priority === 'medium' && 'Média'}
               {priority === 'high' && 'Alta'}
@@ -80,15 +80,15 @@ export function KanbanCard({
           </div>
 
           {/* Cliente */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <User className="h-3 w-3" />
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-muted-foreground">
+            <User className="h-3 w-3 shrink-0" />
             <span className="truncate">{customer}</span>
           </div>
 
           {/* Técnico */}
           {technician && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <User className="h-3 w-3" />
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-muted-foreground">
+              <User className="h-3 w-3 shrink-0" />
               <span className="truncate">{technician}</span>
             </div>
           )}
@@ -96,11 +96,11 @@ export function KanbanCard({
           {/* Prazo */}
           {dueDate && (
             <div className={cn(
-              'flex items-center gap-2 text-xs',
+              'flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs',
               isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'
             )}>
-              {isOverdue && <AlertCircle className="h-3 w-3" />}
-              <Calendar className="h-3 w-3" />
+              {isOverdue && <AlertCircle className="h-3 w-3 shrink-0" />}
+              <Calendar className="h-3 w-3 shrink-0" />
               <span>
                 {new Date(dueDate).toLocaleDateString('pt-BR')}
                 {isOverdue && ' - Atrasada'}
@@ -110,8 +110,8 @@ export function KanbanCard({
 
           {/* Valor */}
           {value !== undefined && (
-            <div className="flex items-center gap-2 text-xs font-medium">
-              <DollarSign className="h-3 w-3" />
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium">
+              <DollarSign className="h-3 w-3 shrink-0" />
               <span>
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',

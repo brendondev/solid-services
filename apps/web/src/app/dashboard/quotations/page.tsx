@@ -301,16 +301,18 @@ export default function QuotationsPage() {
   }
 
   return (
-    <div className="space-y-4 animate-fadeInUp">
+    <div className="space-y-4 sm:space-y-6 animate-fadeInUp max-w-full overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Orçamentos</h1>
-          <p className="text-muted-foreground mt-1">Gerencie seus orçamentos e propostas</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Orçamentos</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+            Gerencie seus orçamentos e propostas
+          </p>
         </div>
         <Button
           onClick={() => router.push('/dashboard/quotations/new')}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto min-h-[44px]"
         >
           <Plus className="w-5 h-5" />
           Novo Orçamento
@@ -318,53 +320,53 @@ export default function QuotationsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-card p-6 rounded-lg shadow border border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total de Orçamentos</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Total de Orçamentos</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
             </div>
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <FileText className="w-6 h-6 text-primary" />
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Pendentes</p>
-              <p className="text-2xl font-bold text-warning mt-1">{stats.pending}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Pendentes</p>
+              <p className="text-xl sm:text-2xl font-bold text-warning mt-1">{stats.pending}</p>
             </div>
-            <div className="p-3 bg-warning/10 rounded-lg">
-              <Clock className="w-6 h-6 text-warning" />
+            <div className="p-2 sm:p-3 bg-warning/10 rounded-lg">
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Aprovados</p>
-              <p className="text-2xl font-bold text-success mt-1">{stats.approved}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Aprovados</p>
+              <p className="text-xl sm:text-2xl font-bold text-success mt-1">{stats.approved}</p>
             </div>
-            <div className="p-3 bg-success/10 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-success" />
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
+              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card p-6 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Valor Total</p>
-              <p className="text-2xl font-bold text-foreground mt-1">
+              <p className="text-xs sm:text-sm text-muted-foreground">Valor Total</p>
+              <p className="text-lg sm:text-2xl font-bold text-foreground mt-1">
                 {formatCurrency(stats.totalValue)}
               </p>
             </div>
-            <div className="p-3 bg-success/10 rounded-lg">
-              <DollarSign className="w-6 h-6 text-success" />
+            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
           </div>
         </div>
@@ -377,29 +379,29 @@ export default function QuotationsPage() {
       )}
 
       {/* Filter Bar */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Buscar orçamentos por número ou cliente..."
             value={globalFilter}
             onChange={(event) => setGlobalFilter(event.target.value)}
-            className="pl-10"
+            className="pl-10 h-11 text-base sm:text-sm"
           />
         </div>
-        <Button variant="outline" disabled>
+        <Button variant="outline" disabled className="min-h-[44px]">
           Filtros Avançados
         </Button>
       </div>
 
       {/* Data Table or Empty State */}
       {filteredData.length === 0 && !loading ? (
-        <div className="bg-card rounded-lg shadow border border-border p-12 text-center">
-          <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <p className="text-xl font-semibold text-foreground mb-2">
+        <div className="bg-card rounded-lg shadow border border-border p-6 sm:p-12 text-center">
+          <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             {data.length === 0 ? 'Nenhum orçamento encontrado' : 'Nenhum resultado encontrado'}
           </p>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-sm sm:text-base text-muted-foreground mb-6">
             {data.length === 0
               ? 'Comece criando seu primeiro orçamento'
               : 'Tente ajustar os filtros de busca'}

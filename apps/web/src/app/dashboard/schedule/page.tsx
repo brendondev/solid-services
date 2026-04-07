@@ -131,14 +131,14 @@ export default function SchedulePage() {
         {/* Cabeçalho dos dias da semana */}
         <div className="grid grid-cols-7 border-b border-border bg-muted/50">
           {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-            <div key={day} className="p-3 text-center text-sm font-semibold text-muted-foreground">
+            <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-semibold text-muted-foreground">
               {day}
             </div>
           ))}
         </div>
 
         {/* Grid de dias */}
-        <div className="grid grid-cols-7 auto-rows-fr min-h-[600px]">
+        <div className="grid grid-cols-7 auto-rows-fr min-h-[400px] sm:min-h-[600px]">
           {days.map((day, index) => {
             const dayOrders = getOrdersForDate(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
@@ -147,49 +147,50 @@ export default function SchedulePage() {
             return (
               <div
                 key={index}
-                className={`min-h-[100px] p-2 border-r border-b border-border transition-colors ${
+                className={`min-h-[60px] sm:min-h-[100px] p-1 sm:p-2 border-r border-b border-border transition-colors ${
                   !isCurrentMonth ? 'bg-muted/20' : 'bg-card hover:bg-muted/30'
                 } ${isDayToday ? 'bg-blue-50 dark:bg-blue-950/30' : ''}`}
               >
                 {/* Número do dia */}
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
                   <span
-                    className={`text-sm font-medium ${
+                    className={`text-xs sm:text-sm font-medium ${
                       !isCurrentMonth
                         ? 'text-muted-foreground'
                         : isDayToday
-                        ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs'
+                        ? 'bg-blue-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs'
                         : 'text-foreground'
                     }`}
                   >
                     {format(day, 'd')}
                   </span>
                   {dayOrders.length > 0 && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-[10px] sm:text-xs bg-primary/10 text-primary px-1.5 sm:px-2 py-0.5 rounded-full font-medium">
                       {dayOrders.length}
                     </span>
                   )}
                 </div>
 
                 {/* Lista de ordens */}
-                <div className="space-y-1">
-                  {dayOrders.slice(0, 3).map((order) => (
+                <div className="space-y-0.5 sm:space-y-1">
+                  {dayOrders.slice(0, 2).map((order) => (
                     <button
                       key={order.id}
                       onClick={() => {
                         setSelectedOrder(order);
                         setShowDetailsModal(true);
                       }}
-                      className={`w-full text-left px-2 py-1 rounded text-xs text-white truncate transition-all hover:scale-105 ${getStatusColor(
+                      className={`w-full text-left px-1 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs text-white truncate transition-all hover:scale-105 ${getStatusColor(
                         order.status
                       )}`}
                     >
-                      {format(parseISO(order.scheduledFor), 'HH:mm')} - {order.customer.name}
+                      <span className="hidden sm:inline">{format(parseISO(order.scheduledFor), 'HH:mm')} - </span>
+                      {order.customer.name.split(' ')[0]}
                     </button>
                   ))}
-                  {dayOrders.length > 3 && (
-                    <p className="text-xs text-muted-foreground text-center">
-                      +{dayOrders.length - 3} mais
+                  {dayOrders.length > 2 && (
+                    <p className="text-[10px] sm:text-xs text-muted-foreground text-center">
+                      +{dayOrders.length - 2}
                     </p>
                   )}
                 </div>
@@ -202,19 +203,19 @@ export default function SchedulePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Agenda</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gerencie seus agendamentos e ordens de serviço
           </p>
         </div>
 
         <button
           onClick={() => router.push('/dashboard/orders/new')}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          className="flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium w-full sm:w-auto min-h-[44px]"
         >
           <Plus className="w-4 h-4" />
           Nova Ordem
@@ -222,23 +223,23 @@ export default function SchedulePage() {
       </div>
 
       {/* Controles */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         {/* Navegação de data */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
           <button
             onClick={handlePrevMonth}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-2 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold min-w-[200px] text-center">
+          <div className="flex items-center gap-2 flex-1 justify-center sm:flex-initial sm:justify-start">
+            <h2 className="text-lg sm:text-xl font-semibold text-center">
               {format(currentDate, "MMMM 'de' yyyy", { locale: ptBR })}
             </h2>
             <button
               onClick={handleToday}
-              className="px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-muted transition-colors"
+              className="px-3 py-1.5 text-xs sm:text-sm border border-border rounded-lg hover:bg-muted transition-colors"
             >
               Hoje
             </button>
@@ -246,27 +247,27 @@ export default function SchedulePage() {
 
           <button
             onClick={handleNextMonth}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-2 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
         {/* Filtros e visualizações */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors min-h-[44px] flex-1 sm:flex-initial justify-center"
           >
             <Filter className="w-4 h-4" />
-            Filtros
+            <span className="text-sm">Filtros</span>
           </button>
 
           {/* View Mode Toggle */}
           <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
             <button
               onClick={() => setViewMode('month')}
-              className={`p-2 rounded ${
+              className={`p-2 rounded min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === 'month' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
               } transition-colors`}
               title="Visualização Mensal"
@@ -275,7 +276,7 @@ export default function SchedulePage() {
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`p-2 rounded ${
+              className={`p-2 rounded min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === 'week' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
               } transition-colors`}
               title="Visualização Semanal"
@@ -284,7 +285,7 @@ export default function SchedulePage() {
             </button>
             <button
               onClick={() => setViewMode('day')}
-              className={`p-2 rounded ${
+              className={`p-2 rounded min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === 'day' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
               } transition-colors`}
               title="Visualização Diária"
@@ -297,21 +298,24 @@ export default function SchedulePage() {
 
       {/* Filtros */}
       {showFilters && (
-        <div className="p-4 bg-muted/50 rounded-lg border border-border space-y-4">
+        <div className="p-3 sm:p-4 bg-muted/50 rounded-lg border border-border space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Filtros</h3>
-            <button onClick={() => setShowFilters(false)}>
+            <h3 className="text-sm sm:text-base font-semibold">Filtros</h3>
+            <button
+              onClick={() => setShowFilters(false)}
+              className="p-2 hover:bg-muted rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Técnico</label>
               <select
                 value={filters.technicianId}
                 onChange={(e) => setFilters({ ...filters, technicianId: e.target.value })}
-                className="w-full px-3 py-2 border border-input bg-background rounded-lg"
+                className="w-full px-3 py-2 border border-input bg-background rounded-lg text-sm min-h-[44px]"
               >
                 <option value="all">Todos</option>
                 {users.map((user) => (
@@ -327,7 +331,7 @@ export default function SchedulePage() {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-2 border border-input bg-background rounded-lg"
+                className="w-full px-3 py-2 border border-input bg-background rounded-lg text-sm min-h-[44px]"
               >
                 <option value="all">Todos</option>
                 <option value="scheduled">Agendada</option>
@@ -351,34 +355,40 @@ export default function SchedulePage() {
 
       {/* Placeholder para week e day views */}
       {!loading && viewMode === 'week' && (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
-          <LayoutList className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Visualização semanal em desenvolvimento</p>
+        <div className="bg-card rounded-lg border border-border p-6 sm:p-12 text-center">
+          <LayoutList className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Visualização semanal em desenvolvimento
+          </p>
         </div>
       )}
 
       {!loading && viewMode === 'day' && (
-        <div className="bg-card rounded-lg border border-border p-12 text-center">
-          <CalendarIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Visualização diária em desenvolvimento</p>
+        <div className="bg-card rounded-lg border border-border p-6 sm:p-12 text-center">
+          <CalendarIcon className="w-8 h-8 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Visualização diária em desenvolvimento
+          </p>
         </div>
       )}
 
       {/* Modal de Detalhes */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Detalhes da Ordem #{selectedOrder?.number}</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">
+              Detalhes da Ordem #{selectedOrder?.number}
+            </DialogTitle>
           </DialogHeader>
 
           {selectedOrder && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Status e Data */}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <Badge className={getStatusColor(selectedOrder.status)}>
                   {getStatusLabel(selectedOrder.status)}
                 </Badge>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                   <Clock className="w-4 h-4" />
                   {format(parseISO(selectedOrder.scheduledFor), "dd/MM/yyyy 'às' HH:mm", {
                     locale: ptBR,
@@ -388,20 +398,22 @@ export default function SchedulePage() {
 
               {/* Cliente */}
               <div>
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                <h4 className="text-sm sm:text-base font-semibold mb-2 flex items-center gap-2">
                   <UserIcon className="w-4 h-4" />
                   Cliente
                 </h4>
-                <p className="text-foreground font-medium">{selectedOrder.customer.name}</p>
+                <p className="text-sm sm:text-base text-foreground font-medium">
+                  {selectedOrder.customer.name}
+                </p>
               </div>
 
               {/* Items */}
               {selectedOrder.items && selectedOrder.items.length > 0 && (
                 <div>
-                  <h4 className="font-semibold mb-2">Serviços</h4>
+                  <h4 className="text-sm sm:text-base font-semibold mb-2">Serviços</h4>
                   <ul className="space-y-1">
                     {selectedOrder.items.map((item, idx) => (
-                      <li key={idx} className="text-sm text-muted-foreground">
+                      <li key={idx} className="text-xs sm:text-sm text-muted-foreground">
                         • {item.description} (x{item.quantity})
                       </li>
                     ))}
@@ -410,26 +422,26 @@ export default function SchedulePage() {
               )}
 
               {/* Ações */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <button
                   onClick={() => {
                     router.push(`/dashboard/orders/${selectedOrder.id}`);
                     setShowDetailsModal(false);
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors min-h-[44px]"
                 >
                   <Eye className="w-4 h-4" />
-                  Ver Detalhes
+                  <span className="text-sm">Ver Detalhes</span>
                 </button>
                 <button
                   onClick={() => {
                     router.push(`/dashboard/orders/${selectedOrder.id}/edit`);
                     setShowDetailsModal(false);
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors min-h-[44px]"
                 >
                   <Edit className="w-4 h-4" />
-                  Editar
+                  <span className="text-sm">Editar</span>
                 </button>
               </div>
             </div>

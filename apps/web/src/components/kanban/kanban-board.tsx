@@ -145,15 +145,16 @@ export function KanbanBoard({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto pb-4 min-h-[500px] max-h-[calc(100vh-20rem)]">
+      <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3 sm:pb-4 min-h-[400px] sm:min-h-[500px] max-h-[calc(100vh-16rem)] sm:max-h-[calc(100vh-20rem)] snap-x snap-mandatory scroll-smooth px-2 sm:px-0">
         {columns.map((column) => (
-          <KanbanColumn
-            key={column.id}
-            id={column.id}
-            title={column.title}
-            orders={ordersByStatus[column.id] || []}
-            onCardClick={onCardClick}
-          />
+          <div key={column.id} className="snap-center">
+            <KanbanColumn
+              id={column.id}
+              title={column.title}
+              orders={ordersByStatus[column.id] || []}
+              onCardClick={onCardClick}
+            />
+          </div>
         ))}
       </div>
 

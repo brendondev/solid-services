@@ -311,7 +311,7 @@ export default function DashboardMainPage() {
             </h3>
           </div>
           {ordersChartData.length > 0 ? (
-            <div className="h-64 sm:h-80">
+            <div className="h-48 sm:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -349,7 +349,7 @@ export default function DashboardMainPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 sm:h-80 flex items-center justify-center">
+            <div className="h-48 sm:h-64 lg:h-80 flex items-center justify-center">
               <p className="text-sm text-muted-foreground">Nenhuma ordem registrada</p>
             </div>
           )}
@@ -366,7 +366,7 @@ export default function DashboardMainPage() {
             </h3>
           </div>
           {topServicesData.length > 0 ? (
-            <div className="h-64 sm:h-80">
+            <div className="h-48 sm:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topServicesData} layout="horizontal">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -399,7 +399,7 @@ export default function DashboardMainPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 sm:h-80 flex items-center justify-center">
+            <div className="h-48 sm:h-64 lg:h-80 flex items-center justify-center">
               <p className="text-sm text-muted-foreground">Nenhum serviço registrado este mês</p>
             </div>
           )}
@@ -419,7 +419,7 @@ export default function DashboardMainPage() {
             </h3>
           </div>
           {revenueHistory.length > 0 ? (
-            <div className="h-64 sm:h-80">
+            <div className="h-48 sm:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={revenueHistory}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -467,7 +467,7 @@ export default function DashboardMainPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 sm:h-80 flex items-center justify-center">
+            <div className="h-48 sm:h-64 lg:h-80 flex items-center justify-center">
               <p className="text-sm text-muted-foreground">Nenhum dado de receita disponível</p>
             </div>
           )}
@@ -484,7 +484,7 @@ export default function DashboardMainPage() {
             </h3>
           </div>
           {ordersHistory.length > 0 ? (
-            <div className="h-64 sm:h-80">
+            <div className="h-48 sm:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={ordersHistory}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -552,7 +552,7 @@ export default function DashboardMainPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-64 sm:h-80 flex items-center justify-center">
+            <div className="h-48 sm:h-64 lg:h-80 flex items-center justify-center">
               <p className="text-sm text-muted-foreground">Nenhum dado de ordens disponível</p>
             </div>
           )}

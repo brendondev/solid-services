@@ -1,0 +1,3 @@
+-- Migration duplicada removida
+-- Esta migration estava vazia e foi consolidada em 20260320000000_update_portal_tokens_permanent
+-- Este arquivo existe apenas para manter compatibilidade com o histórico do banco de dados

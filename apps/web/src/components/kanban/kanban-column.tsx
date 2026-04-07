@@ -37,14 +37,14 @@ export function KanbanColumn({
   return (
     <div
       className={cn(
-        'flex flex-col min-w-[260px] max-w-[260px] bg-muted/30 rounded-lg p-4 h-full',
+        'flex flex-col min-w-[240px] max-w-[240px] sm:min-w-[260px] sm:max-w-[260px] bg-muted/30 rounded-lg p-3 sm:p-4 h-full',
         isOver && 'bg-muted/50 ring-2 ring-primary'
       )}
     >
       {/* Column Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-sm">{title}</h3>
-        <span className="text-xs text-muted-foreground bg-background rounded-full px-2 py-0.5">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="font-semibold text-xs sm:text-sm">{title}</h3>
+        <span className="text-[10px] sm:text-xs text-muted-foreground bg-background rounded-full px-1.5 sm:px-2 py-0.5">
           {orders.length}
         </span>
       </div>
@@ -52,7 +52,7 @@ export function KanbanColumn({
       {/* Cards Container */}
       <div
         ref={setNodeRef}
-        className="flex-1 overflow-y-auto space-y-2 min-h-[200px]"
+        className="flex-1 overflow-y-auto space-y-1.5 sm:space-y-2 min-h-[150px] sm:min-h-[200px]"
       >
         <SortableContext
           items={orders.map((o) => o.id)}
@@ -74,7 +74,7 @@ export function KanbanColumn({
         </SortableContext>
 
         {orders.length === 0 && (
-          <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center h-24 sm:h-32 text-xs sm:text-sm text-muted-foreground">
             Nenhuma ordem
           </div>
         )}
