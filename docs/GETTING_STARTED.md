@@ -1,193 +1,159 @@
-# 🚀 Guia de Início Rápido - Solid Service
+# 🚀 Guia de Início Rápido — Solid Service
 
-## Índice
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação](#instalação)
-- [Configuração](#configuração)
-- [Primeiro Acesso](#primeiro-acesso)
-- [Próximos Passos](#próximos-passos)
+> **O passo a passo de setup mora em [`../LOCAL.md`](../LOCAL.md).** Ele é a
+> fonte de verdade e cobre os dois caminhos (Docker e Postgres portátil).
+> Este documento cobre o entorno: comandos do dia a dia, problemas comuns e
+> estrutura do projeto.
+>
+> Contexto de como o projeto chegou ao estado atual:
+> [`MIGRACAO-LOCAL-2026-09-09.md`](MIGRACAO-LOCAL-2026-09-09.md).
 
-## Pré-requisitos
-
-- **Node.js** 18+ (recomendado: 20+)
-- **npm** 9+
-- **Git**
-
-## Instalação
-
-### 1. Clone o Repositório
+## Resumo do setup
 
 ```bash
 git clone https://github.com/brendondev/solid-services.git
 cd solid-services
-```
-
-### 2. Instale as Dependências
-
-```bash
 npm install
+cp .env.example .env
 ```
 
-### 3. Configure o Banco de Dados
+Depois escolha **um** caminho para o banco:
 
 ```bash
-# Entre na pasta do database
-cd packages/database
+# A) Docker (já instalado nesta máquina)
+docker compose up -d --build          # sobe tudo, migra e seeda sozinho
 
-# Execute as migrations
-npx prisma migrate dev
-
-# Popule com dados de exemplo
-npx prisma db seed
-
-# Volte para a raiz
-cd ../..
+# B) Sem Docker — Postgres portátil em .local/
+npm run pg:setup
+npm run db:setup                      # generate + migrate + seed
+npm run dev:api                       # terminal 1
+npm run dev:web                       # terminal 2
 ```
 
-## Configuração
+> Os dois caminhos disputam a porta 5432. Antes de subir via Docker:
+> `npm run pg:stop`.
 
-### 1. Variáveis de Ambiente
+## Primeiro acesso
 
-Crie um arquivo `.env` na raiz do projeto:
+**http://localhost:3001/auth/login**
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/solid_service"
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| Admin | `admin@demo.com` | `123456` |
+| Técnico | `tecnico@demo.com` | `123456` |
 
-# JWT
-JWT_SECRET="sua-chave-secreta-super-longa-e-aleatoria"
-JWT_EXPIRES_IN="15m"
-REFRESH_TOKEN_EXPIRES_IN="7d"
+⚠️ **A rota é `/auth/login`, não `/login`.** E **não existe `/dashboard`** — o
+login redireciona para `/dashboard/main`. Um 404 em `/dashboard` é esperado.
 
-# Servidor
-NODE_ENV="development"
-PORT=3000
+### Dados criados pelo seed
 
-# S3 (Opcional - usa local storage se não configurado)
-S3_ENDPOINT=https://t3.storageapi.dev
-S3_REGION=us-east-1
-S3_BUCKET=seu-bucket
-S3_ACCESS_KEY_ID=sua-key
-S3_SECRET_ACCESS_KEY=seu-secret
-```
+Tenant `demo` (“Empresa Demo”), 2 usuários, 2 clientes, 4 serviços,
+1 orçamento, 1 ordem de serviço e 1 recebível. O seed é **idempotente** —
+rodar de novo não duplica nada.
 
-### 2. PostgreSQL
+## Variáveis de ambiente
 
-**Opção A: Local**
-```bash
-# Instale PostgreSQL
-# Crie o banco:
-createdb solid_service
-```
+Um **único `.env` na raiz** atende a API e o Prisma CLI. Comece por
+`cp .env.example .env`; para desenvolvimento local os valores padrão já
+servem.
 
-**Opção B: Docker**
-```bash
-docker-compose up -d postgres
-```
+O front **não precisa de `.env`** — o código já cai em
+`http://localhost:3000/api/v1`.
 
-## Primeiro Acesso
+Sem `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`, os uploads vão para o
+filesystem (`LOCAL_STORAGE_PATH`, padrão `./uploads`). É o comportamento
+desejado em local: **não configure S3 para testar**.
 
-### 1. Inicie o Backend
+## Comandos úteis
 
 ```bash
-npm run dev:api
+# Banco
+npm run db:generate      # gera o Prisma Client
+npm run db:migrate       # aplica migrations (migrate deploy)
+npm run db:seed          # popula dados de demonstração
+npm run db:setup         # os três acima
+npm run db:studio        # Prisma Studio
+npm run db:reset         # dropa, remigra e roda o seed
+
+# Postgres portátil
+npm run pg:start / pg:stop / pg:status
+
+# Docker
+npm run docker:up        # build + sobe a stack toda
+npm run docker:infra     # só postgres + redis
+npm run docker:logs
+npm run docker:down
+
+# Build
+npm run build:api
+npm run build:web
 ```
 
-O servidor estará em: `http://localhost:3000`
+## Problemas comuns
 
-### 2. Inicie o Frontend (em outro terminal)
+### Porta 5432 ocupada
+
+O Postgres portátil e o container `postgres` competem pela porta. Rode
+`npm run pg:stop` antes do `docker compose up`, ou mude o compose para
+`'5433:5432'` e ajuste a `DATABASE_URL`.
+
+### Erro de conexão com o banco
 
 ```bash
-cd apps/web
-npm run dev
+npm run pg:status        # Postgres portátil está de pé?
+docker compose ps        # ou o container está saudável?
 ```
 
-O frontend estará em: `http://localhost:3001`
+Confira a `DATABASE_URL` no `.env` da **raiz** (não em `apps/api`).
 
-### 3. Acesse o Sistema
+### Porta 3000 ou 3001 em uso
 
-```
-URL: http://localhost:3001
-Email: admin@demo.com
-Senha: admin123
-```
-
-### 4. Dados de Exemplo
-
-O seed criou:
-- 1 Tenant (empresa demo)
-- 1 Admin user
-- 5 Clientes
-- 3 Serviços
-- 2 Orçamentos
-- 1 Ordem de Serviço
-
-## Próximos Passos
-
-- 📚 Leia a [Documentação da API](./development/API.md)
-- 🎨 Veja o [Design System](./development/DESIGN_SYSTEM.md)
-- 🚀 Configure [Deploy em Produção](./deployment/DEPLOYMENT.md)
-- 🔐 Entenda [RBAC e Permissões](./development/RBAC.md)
-
-## Problemas Comuns
-
-### Erro de Conexão com Banco
-
-```bash
-# Verifique se o PostgreSQL está rodando
-pg_isready
-
-# Verifique a DATABASE_URL no .env
-```
-
-### Porta já em uso
-
-```bash
-# Backend (porta 3000)
-lsof -ti:3000 | xargs kill -9
-
-# Frontend (porta 3001)
-lsof -ti:3001 | xargs kill -9
+```powershell
+Get-NetTCPConnection -LocalPort 3000 -State Listen | Select-Object OwningProcess
+Stop-Process -Id <pid>
 ```
 
 ### Prisma Client desatualizado
 
 ```bash
-cd packages/database
-npx prisma generate
+npm run db:generate
 ```
 
-## Comandos Úteis
+### `npm ci` falha no build do Docker
 
-```bash
-# Build completo
-npm run build
+Sinal de `package.json` e `package-lock.json` dessincronizados — normalmente
+depois de um merge do dependabot. Rode `npm install` na raiz e commite o lock.
 
-# Lint
-npm run lint
+### Container da API sobe e morre
 
-# Testes
-npm run test
+Quase sempre é migration falhando. `docker compose logs api` — o
+`docker/api-entrypoint.sh` loga cada etapa antes de subir o servidor.
 
-# Limpar tudo
-npm run clean
-```
-
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```
-solid-service/
+solid-services/
 ├── apps/
-│   ├── api/          # Backend NestJS
-│   └── web/          # Frontend Next.js
+│   ├── api/            # Backend NestJS  (Dockerfile aqui)
+│   └── web/            # Frontend Next.js (Dockerfile aqui)
 ├── packages/
-│   └── database/     # Prisma + Migrations
-├── docs/             # Documentação
-└── .github/          # CI/CD
+│   └── database/       # Prisma: schema, migrations e seed
+├── docker/             # entrypoint da API + notas do compose
+├── scripts/            # local-postgres.js e setup
+├── docs/               # documentação
+├── LOCAL.md            # ⭐ setup local (fonte de verdade)
+└── docker-compose.yml  # stack local completa
 ```
+
+## Próximos passos
+
+- 🐳 [Docker e imagens](../docker/README.md)
+- 🚀 [Deploy (Coolify)](DEPLOY-GUIDE.md)
+- 📊 [Status do projeto](PROJECT-STATUS.md)
+- ⌨️ [Atalhos de teclado](KEYBOARD_SHORTCUTS.md)
+- 🔐 [Testes de segurança](SECURITY-TESTS.md)
 
 ## Suporte
 
-- 📖 [Documentação Completa](../README.md)
-- 🐛 [Reportar Bug](https://github.com/brendondev/solid-services/issues)
-- 💬 [Discussões](https://github.com/brendondev/solid-services/discussions)
+- 📖 [Documentação completa](README.md)
+- 🐛 [Reportar bug](https://github.com/brendondev/solid-services/issues)

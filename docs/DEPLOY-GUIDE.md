@@ -1,364 +1,116 @@
-# 🚀 Guia de Deploy - Solid Service
+# Guia de Deploy — Solid Service
 
-**Status**: ✅ Código no GitHub, pronto para deploy!
+> **Status em 09/09/2026:** o projeto **não está publicado**. Saiu do Vercel
+> (web) + Railway (API) e hoje roda apenas local. O destino é **VPS Contabo +
+> Coolify**, ainda não iniciado.
+>
+> Para rodar o projeto agora, veja **[../LOCAL.md](../LOCAL.md)**.
+> Para entender o que mudou e por quê, veja
+> **[MIGRACAO-LOCAL-2026-09-09.md](MIGRACAO-LOCAL-2026-09-09.md)**.
 
-## 📋 Pré-requisitos
-
-- [x] Código no GitHub: `https://github.com/brendondev/solid-services`
-- [x] Build passing ✅
-- [ ] Conta Vercel (frontend)
-- [ ] Conta Railway (backend)
-
----
-
-## 🎯 Deploy Frontend (Vercel)
-
-### 1. Acessar Vercel
-
-1. Ir para [vercel.com](https://vercel.com)
-2. Fazer login com GitHub
-3. Clicar em **"Add New Project"**
-
-### 2. Importar Repositório
-
-1. Selecionar: `brendondev/solid-services`
-2. Clicar em **"Import"**
-
-### 3. Configurar Projeto
-
-```
-Framework Preset:     Next.js
-Root Directory:       apps/web
-Build Command:        npm run build
-Output Directory:     .next
-Install Command:      npm install
-```
-
-### 4. Variáveis de Ambiente
-
-Adicionar em **Environment Variables**:
-
-```bash
-# API Backend (Railway URL - adicionar depois que backend estiver no ar)
-NEXT_PUBLIC_API_URL=https://seu-backend.railway.app/api/v1
-
-# Google Analytics (opcional)
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
-
-# Sentry (opcional)
-NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
-```
-
-**IMPORTANTE**: Deixe `NEXT_PUBLIC_API_URL` em branco por enquanto. Você vai preencher depois que fizer deploy do backend.
-
-### 5. Deploy
-
-1. Clicar em **"Deploy"**
-2. Aguardar ~2 minutos
-3. Anotar a URL: `https://solid-service.vercel.app` (exemplo)
-
-### 6. PWA - Adicionar Ícones (Importante!)
-
-Depois do primeiro deploy:
-
-1. Gerar ícones PWA (8 tamanhos):
-   - Usar: https://www.pwabuilder.com/imageGenerator
-   - Upload de logo 512x512
-   - Baixar pacote de ícones
-
-2. Adicionar ícones em `apps/web/public/icons/`:
-   ```
-   icon-72x72.png
-   icon-96x96.png
-   icon-128x128.png
-   icon-144x144.png
-   icon-152x152.png
-   icon-192x192.png
-   icon-384x384.png
-   icon-512x512.png
-   ```
-
-3. Commit e push:
-   ```bash
-   git add apps/web/public/icons/
-   git commit -m "feat: adiciona ícones PWA"
-   git push
-   ```
-
-4. Vercel vai fazer re-deploy automático
+O guia antigo de Vercel + Railway está em
+[`archive/DEPLOY-VERCEL-RAILWAY.md`](archive/DEPLOY-VERCEL-RAILWAY.md), como
+referência histórica. Não siga aquele documento: os arquivos de configuração
+que ele pressupõe (`vercel.json`, `railway.json`, `Procfile`) foram removidos.
 
 ---
 
-## 🎯 Deploy Backend (Railway)
+## O modelo de deploy atual
 
-### 1. Acessar Railway
+Duas imagens Docker, construídas a partir da **raiz do monorepo**:
 
-1. Ir para [railway.app](https://railway.app)
-2. Fazer login com GitHub
-3. Clicar em **"New Project"**
+| Serviço | Dockerfile | Porta |
+| --- | --- | --- |
+| API (NestJS) | `apps/api/Dockerfile` | 3000 |
+| Web (Next.js) | `apps/web/Dockerfile` | 3001 |
 
-### 2. Criar Banco de Dados
+Mais Postgres e Redis, que no Coolify vêm de serviços gerenciados em vez do
+`docker-compose.yml` local.
 
-1. Clicar em **"Provision PostgreSQL"**
-2. Aguardar criação
-3. Railway vai gerar `DATABASE_URL` automaticamente
+As migrations **não** rodam via `package.json`: quem aplica é o
+`docker/api-entrypoint.sh`, no boot do container, antes de subir a API.
 
-### 3. Adicionar Repositório
+---
 
-1. Clicar em **"+ New"** > **"GitHub Repo"**
-2. Selecionar: `brendondev/solid-services`
-3. Railway detecta automaticamente
+## Checklist para o Coolify
 
-### 4. Configurar Serviço
+### 1. Banco
 
-```
-Root Directory:       apps/api
-Build Command:        npm run build
-Start Command:        (vazio - usa Procfile)
-```
+Provisione um Postgres e anote a connection string. O entrypoint da API roda
+`prisma migrate deploy` sozinho no primeiro boot — não precisa migrar à mão.
 
-### 5. Variáveis de Ambiente
+### 2. Serviço da API
 
-Adicionar em **Variables**:
+Build a partir do `apps/api/Dockerfile`, **contexto = raiz do repositório**.
 
-```bash
-# JWT (GERAR UM SEGREDO FORTE!)
-JWT_SECRET=sua_chave_secreta_super_forte_aqui_com_64_caracteres
+Variáveis:
 
-# Database (automático pelo Railway)
-DATABASE_URL=postgresql://... (já preenchido)
-
-# Node
+```env
 NODE_ENV=production
+PORT=3000
+DATABASE_URL=<postgres do VPS>
 
-# Port (automático)
-PORT=${{PORT}}
+# Gere um de verdade:
+#   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+JWT_SECRET=<segredo longo e aleatório>
+JWT_EXPIRES_IN=8h
+REFRESH_TOKEN_EXPIRES_IN=7d
+
+WEB_URL=https://<dominio>
+FRONTEND_URL=https://<dominio>
+PORTAL_URL=https://<dominio>
+API_BASE_URL=https://api.<dominio>
+CORS_ALLOWED_ORIGINS=https://<dominio>
+
+RUN_MIGRATIONS=true
+RUN_SEED=false          # o seed é só demonstração — nunca em produção
+SKIP_DOCUMENT_VALIDATION=false
+
+# Storage: sem estas chaves, grava no filesystem do container (efêmero).
+# Para produção, configure S3 ou monte um volume persistente.
+S3_ENDPOINT=
+S3_REGION=
+S3_BUCKET=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
 ```
 
-**Para gerar JWT_SECRET**:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+> Com várias réplicas, deixe `RUN_MIGRATIONS=true` em apenas uma para evitar
+> migrations concorrentes.
+
+### 3. Serviço Web
+
+Build a partir do `apps/web/Dockerfile`, **contexto = raiz do repositório**.
+
+⚠️ **`NEXT_PUBLIC_API_URL` é um build arg, não uma env de runtime.** O Next
+embute variáveis `NEXT_PUBLIC_*` no bundle durante o build. Configure no
+Coolify como *build argument*:
+
+```
+NEXT_PUBLIC_API_URL=https://api.<dominio>/api/v1
 ```
 
-### 6. Deploy
+Mudar essa URL depois **exige rebuild da imagem**. Alterar a env do container
+não surte efeito nenhum — é a pegadinha mais provável nesse deploy.
 
-1. Clicar em **"Deploy"**
-2. Railway vai:
-   - Instalar dependências
-   - Rodar migrations (via Procfile)
-   - Iniciar servidor
-3. Aguardar ~3 minutos
-4. Anotar a URL: `https://seu-backend.railway.app`
+### 4. Primeiro acesso
 
-### 7. Testar Backend
-
-Acessar: `https://seu-backend.railway.app/health`
-
-Deve retornar:
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-03-26T..."
-}
-```
+Com `RUN_SEED=false` não existe usuário nenhum no banco. Crie o primeiro
+tenant e admin pelo endpoint de registro (`POST /api/v1/auth/register`) ou
+rode um seed próprio de produção.
 
 ---
 
-## 🔗 Conectar Frontend e Backend
+## Pendência de segurança
 
-### 1. Atualizar Frontend
+🔴 **Rotacionar as credenciais de S3.** O `.env.example` versionado continha
+`S3_ACCESS_KEY_ID` e `S3_SECRET_ACCESS_KEY` reais em repositório **público**.
+Foram trocados por placeholders, mas seguem no histórico do git e devem ser
+tratados como comprometidos.
 
-1. Voltar para Vercel
-2. Ir em **Settings** > **Environment Variables**
-3. Editar `NEXT_PUBLIC_API_URL`:
-   ```
-   https://seu-backend.railway.app/api/v1
-   ```
-4. Clicar em **"Save"**
+Antes de publicar, confira também:
 
-### 2. Re-deploy Frontend
-
-1. Ir em **Deployments**
-2. Clicar nos "..." do último deploy
-3. Clicar em **"Redeploy"**
-4. Aguardar ~1 minuto
-
-### 3. Atualizar CORS no Backend
-
-Se necessário, adicionar domínio Vercel nas variáveis do Railway:
-
-```bash
-CORS_ALLOWED_ORIGINS=https://solid-service.vercel.app,https://solid-service-admin.vercel.app
-```
-
----
-
-## ✅ Verificar Deploy
-
-### Frontend
-
-1. Acessar: `https://solid-service.vercel.app`
-2. Deve aparecer a página de login
-3. Verificar console do browser (F12) - sem erros
-4. Lighthouse > PWA > Score > 90
-
-### Backend
-
-1. Acessar: `https://seu-backend.railway.app/api-docs`
-2. Deve abrir Swagger UI
-3. Testar endpoint `/health`
-4. Verificar logs no Railway
-
-### Integração
-
-1. Tentar registrar novo tenant
-2. Fazer login
-3. Criar cliente, ordem, etc
-4. Verificar dados salvando
-
----
-
-## 📊 Pós-Deploy
-
-### Google Analytics
-
-1. Criar conta: [analytics.google.com](https://analytics.google.com)
-2. Criar propriedade GA4
-3. Copiar ID: `G-XXXXXXXXXX`
-4. Adicionar no Vercel: `NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX`
-5. Re-deploy
-
-### Sentry (Opcional)
-
-1. Criar conta: [sentry.io](https://sentry.io)
-2. Criar projeto Next.js
-3. Instalar no frontend:
-   ```bash
-   cd apps/web
-   npm install @sentry/nextjs
-   npx @sentry/wizard -i nextjs
-   ```
-4. Adicionar DSN no Vercel
-5. Commit e push
-
-### Custom Domain (Opcional)
-
-**Vercel**:
-1. Settings > Domains
-2. Adicionar domínio (ex: `app.seusite.com`)
-3. Configurar DNS:
-   ```
-   CNAME app.seusite.com -> cname.vercel-dns.com
-   ```
-
-**Railway**:
-1. Settings > Domains
-2. Adicionar domínio (ex: `api.seusite.com`)
-3. Configurar DNS:
-   ```
-   CNAME api.seusite.com -> xxxxx.railway.app
-   ```
-
----
-
-## 🐛 Troubleshooting
-
-### Frontend não conecta no Backend
-
-**Erro**: `Network Error` ou `CORS`
-
-**Solução**:
-1. Verificar `NEXT_PUBLIC_API_URL` no Vercel
-2. Deve terminar com `/api/v1` (sem barra no final)
-3. Verificar `CORS_ALLOWED_ORIGINS` no Railway
-4. Incluir domínio Vercel completo
-
-### Backend não inicia
-
-**Erro**: `Application failed to respond`
-
-**Solução**:
-1. Verificar logs no Railway
-2. Conferir `DATABASE_URL` está preenchido
-3. Verificar migrations rodaram (Procfile)
-4. Conferir `JWT_SECRET` está definido
-
-### PWA não instala
-
-**Erro**: Não aparece botão "Instalar"
-
-**Solução**:
-1. Verificar HTTPS (Vercel já usa)
-2. Verificar ícones em `public/icons/`
-3. Verificar `manifest.json` acessível
-4. Verificar service worker registrado (DevTools > Application)
-
-### Migrations falham
-
-**Erro**: `Migration failed`
-
-**Solução**:
-1. Verificar `DATABASE_URL` correto
-2. Rodar manual:
-   ```bash
-   railway run npx prisma migrate deploy
-   ```
-3. Verificar schema.prisma correto
-
----
-
-## 📝 Checklist Final
-
-Antes de considerar deploy completo:
-
-### Obrigatório
-- [ ] Frontend no ar (Vercel)
-- [ ] Backend no ar (Railway)
-- [ ] Conexão funcionando
-- [ ] Consegue registrar tenant
-- [ ] Consegue fazer login
-- [ ] Consegue criar cliente/ordem
-
-### Recomendado
-- [ ] Ícones PWA adicionados
-- [ ] Custom domain configurado
-- [ ] Google Analytics configurado
-- [ ] SSL/HTTPS funcionando (automático)
-- [ ] CORS configurado
-
-### Opcional
-- [ ] Sentry configurado
-- [ ] Feedback button ativo
-- [ ] Lighthouse PWA > 90
-- [ ] Performance > 80
-
----
-
-## 🎉 Deploy Completo!
-
-Seu app está no ar! 🚀
-
-**URLs**:
-- **Frontend**: https://solid-service.vercel.app
-- **Backend**: https://seu-backend.railway.app
-- **Swagger**: https://seu-backend.railway.app/api-docs
-
-**Credenciais**:
-- Registrar primeiro tenant em `/auth/register`
-- Fazer login em `/auth/login`
-
-**Próximos passos**:
-1. Adicionar ícones PWA
-2. Configurar Google Analytics
-3. Testar em dispositivos reais (mobile)
-4. Compartilhar com usuários beta
-
----
-
-**Custos Mensais Estimados**:
-- Vercel: **Grátis** (Hobby plan)
-- Railway: **~$5-10** (Starter, $5 créditos grátis/mês)
-- Google Analytics: **Grátis**
-- Sentry: **Grátis** (até 5k eventos/mês)
-
-**Total**: ~$0-10/mês para começar 💰
+- `JWT_SECRET` diferente do valor de desenvolvimento
+- `NODE_ENV=production` (desliga os controllers de debug — veja
+  `apps/api/src/app.module.ts`)
+- `CORS_ALLOWED_ORIGINS` sem `localhost`

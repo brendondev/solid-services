@@ -9,7 +9,9 @@
 
 Sistema ERP multi-tenant completo para prestadores de serviços (MEIs, autônomos e pequenas empresas). Gerenciamento de clientes, orçamentos, ordens de serviço, agendamento e financeiro em uma única plataforma.
 
-**Status:** 🚀 MVP 95% completo - Pronto para produção
+**Status:** 🚀 MVP 95% completo · 🖥️ **rodando apenas local** — saiu de Vercel + Railway
+em 09/09/2026, destino futuro VPS Contabo + Coolify
+([contexto](./docs/MIGRACAO-LOCAL-2026-09-09.md))
 
 ---
 
@@ -94,14 +96,20 @@ solid-service/
 │   ├── shared/                 # Types compartilhados
 │   └── ui/                     # Componentes UI (Shadcn)
 │
-├── docs/                       # Documentação completa ✅
-│   └── planning/
+├── docker/                     # Entrypoint da API + notas do compose
+├── scripts/                    # local-postgres.js e setup
 │
-├── SETUP.md                    # 🔧 Guia de instalação local
-├── DEPLOY.md                   # 🚀 Guia de deploy produção
-├── API.md                      # 📖 Documentação da API
+├── docs/                       # Documentação completa ✅
+│   ├── MIGRACAO-LOCAL-2026-09-09.md  # 🧭 Estado atual e decisões
+│   ├── GETTING_STARTED.md            # 🚦 Comandos e troubleshooting
+│   ├── DEPLOY-GUIDE.md               # 🚀 Checklist do Coolify
+│   ├── development/                  # API.md, RBAC.md, DESIGN_SYSTEM.md
+│   ├── deployment/
+│   └── archive/                      # Histórico (guia antigo Vercel/Railway)
+│
+├── LOCAL.md                    # ⭐ Setup local (fonte de verdade)
+├── docker-compose.yml          # Stack local completa
 ├── CONTRIBUTING.md             # 🤝 Guia de contribuição
-├── RBAC.md                     # 🔐 Controle de acesso
 └── package.json                # Workspace root
 ```
 
@@ -160,19 +168,22 @@ Para instruções detalhadas, veja **[LOCAL.md](./LOCAL.md)**.
 
 | Documento | Descrição |
 |-----------|-----------|
-| **[SETUP.md](./SETUP.md)** | 🔧 Instalação e configuração local completa |
-| **[DEPLOY.md](./DEPLOY.md)** | 🚀 Deploy em produção (Railway + Vercel) |
-| **[API.md](./API.md)** | 📖 Documentação completa da API REST |
+| **[LOCAL.md](./LOCAL.md)** ⭐ | 🔧 Setup local — fonte de verdade (Docker e Postgres portátil) |
+| **[docs/MIGRACAO-LOCAL-2026-09-09.md](./docs/MIGRACAO-LOCAL-2026-09-09.md)** ⭐ | 🧭 Estado atual, decisões, bugs corrigidos e pendências |
+| **[docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md)** | 🚦 Comandos do dia a dia e problemas comuns |
+| **[docker/README.md](./docker/README.md)** | 🐳 Como as imagens são construídas |
+| **[docs/DEPLOY-GUIDE.md](./docs/DEPLOY-GUIDE.md)** | 🚀 Checklist de deploy no Coolify |
+| **[docs/development/API.md](./docs/development/API.md)** | 📖 Documentação completa da API REST |
+| **[docs/development/RBAC.md](./docs/development/RBAC.md)** | 🔐 Sistema de controle de acesso |
 | **[CONTRIBUTING.md](./CONTRIBUTING.md)** | 🤝 Como contribuir para o projeto |
-| **[RBAC.md](./RBAC.md)** | 🔐 Sistema de controle de acesso |
 
 ### Documentação Técnica
 
 - **Swagger/OpenAPI**: http://localhost:3000/api/docs (interativo)
 - **Prisma Studio**: `npx prisma studio` (explorar banco de dados)
 - **E2E Tests**: [apps/api/test/README.md](./apps/api/test/README.md)
-- **Performance**: [PERFORMANCE_OPTIMIZATIONS.md](./PERFORMANCE_OPTIMIZATIONS.md)
-- **Tasks Restantes**: [PLANEJAMENTO_TASKS_RESTANTES.md](./PLANEJAMENTO_TASKS_RESTANTES.md)
+- **Performance**: [docs/development/PERFORMANCE_OPTIMIZATIONS.md](./docs/development/PERFORMANCE_OPTIMIZATIONS.md)
+- **Tasks Restantes**: [docs/archive/PLANEJAMENTO_TASKS_RESTANTES.md](./docs/archive/PLANEJAMENTO_TASKS_RESTANTES.md)
 
 ---
 
@@ -209,7 +220,7 @@ prisma.$use(async (params, next) => {
 - ✅ Performance otimizada (32 índices estratégicos)
 - ✅ Testes garantem zero vazamento de dados
 
-**Documentação:** [Plano de Implementação](./docs/planning/implementation-plan.md)
+**Documentação:** [docs/PROJECT-STATUS.md](./docs/PROJECT-STATUS.md)
 
 ### Backend (6 Módulos)
 
@@ -286,7 +297,7 @@ npm run test:cov
 - Backups automáticos do banco
 - Monitoramento de logs (Railway/Sentry)
 
-**Documentação:** [RBAC.md](./RBAC.md)
+**Documentação:** [docs/development/RBAC.md](./docs/development/RBAC.md)
 
 ---
 
@@ -313,7 +324,7 @@ vercel --prod
 - Resend: $0 (3k emails/mês)
 - **Total: $0-6/mês** para MVP
 
-**Guia completo:** [DEPLOY.md](./DEPLOY.md)
+**Guia completo:** [docs/DEPLOY-GUIDE.md](./docs/DEPLOY-GUIDE.md)
 
 ---
 
@@ -332,7 +343,7 @@ vercel --prod
 - Payloads: 6-28 KB (antes: 50-200 KB) 📉
 - Escalabilidade: Pronto para 10,000+ registros ✅
 
-**Documentação:** [PERFORMANCE_OPTIMIZATIONS.md](./PERFORMANCE_OPTIMIZATIONS.md)
+**Documentação:** [docs/development/PERFORMANCE_OPTIMIZATIONS.md](./docs/development/PERFORMANCE_OPTIMIZATIONS.md)
 
 ---
 

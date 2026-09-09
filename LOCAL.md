@@ -14,12 +14,27 @@ descritos aqui — então o caminho Docker é o que vale a pena manter azeitado.
 Tenant: `demo` · Login: http://localhost:3001/auth/login ·
 API: http://localhost:3000 · Swagger: http://localhost:3000/api/docs
 
+> **A tela de login é `/auth/login`, não `/login`.** E **não existe rota
+> `/dashboard`** — o login redireciona para `/dashboard/main`. Um 404 em
+> `/dashboard` é esperado.
+
+Por que o projeto está assim e o que já foi resolvido:
+**[docs/MIGRACAO-LOCAL-2026-09-09.md](docs/MIGRACAO-LOCAL-2026-09-09.md)**.
+
 ---
 
 ## Opção A — Docker (recomendada)
 
-Requer Docker Desktop. Sobe Postgres, Redis, API e Web; a API aplica as
-migrations e roda o seed sozinha no primeiro boot.
+O Docker Desktop **já está instalado** nesta máquina (4.90, engine 29.7.2,
+Compose v5.5.1, backend WSL2). Se o `docker` não responder, abra o Docker
+Desktop e espere o engine subir.
+
+Sobe Postgres, Redis, API e Web; a API aplica as migrations e roda o seed
+sozinha no primeiro boot.
+
+> **Antes de subir, pare o Postgres portátil** (`npm run pg:stop`) — os dois
+> disputam a porta 5432. Para rodar os dois juntos, mude o mapeamento do
+> compose para `'5433:5432'` e ajuste a `DATABASE_URL`.
 
 ```bash
 docker compose up -d --build      # ou: npm run docker:up
@@ -47,12 +62,15 @@ npm run dev:web                   # terminal 2
 
 ## Opção B — sem Docker (Postgres portátil)
 
-Esta máquina de desenvolvimento não tem Docker instalado e a distro do WSL
-está com o disco (`ext4.vhdx`) ausente, então o WSL também não sobe. Para
-destravar os testes sem depender de instalação, `scripts/local-postgres.js`
-baixa os binários portáteis do PostgreSQL 15 da EnterpriseDB, cria um cluster
-dentro de `.local/` e sobe o servidor. Não instala nada no sistema, não pede
-administrador, e apagar `.local/` desfaz tudo.
+`scripts/local-postgres.js` baixa os binários portáteis do PostgreSQL 15 da
+EnterpriseDB, cria um cluster dentro de `.local/` e sobe o servidor. Não
+instala nada no sistema, não pede administrador, e apagar `.local/` desfaz
+tudo.
+
+Nasceu porque a máquina não tinha Docker (e o WSL está com a distro Ubuntu
+registrada mas sem o disco `ext4.vhdx`, então também não era saída). Continua
+útil mesmo com o Docker instalado: sobe em segundos e não depende do engine
+estar rodando.
 
 > SQLite não é alternativa aqui: o schema usa `String[]` e colunas `Json`,
 > que são específicos do PostgreSQL.
