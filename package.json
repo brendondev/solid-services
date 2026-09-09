@@ -12,7 +12,25 @@
     "dev:api": "cd apps/api && npm run dev",
     "build:web": "cd apps/web && npm run build",
     "build:api": "cd apps/api && npm run build",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+
+    "db:generate": "prisma generate --schema packages/database/prisma/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema packages/database/prisma/schema.prisma",
+    "db:migrate:dev": "prisma migrate dev --schema packages/database/prisma/schema.prisma",
+    "db:seed": "ts-node packages/database/prisma/seed/index.ts",
+    "db:studio": "prisma studio --schema packages/database/prisma/schema.prisma",
+    "db:reset": "prisma migrate reset --schema packages/database/prisma/schema.prisma",
+    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
+
+    "pg:setup": "node scripts/local-postgres.js setup",
+    "pg:start": "node scripts/local-postgres.js start",
+    "pg:stop": "node scripts/local-postgres.js stop",
+    "pg:status": "node scripts/local-postgres.js status",
+
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f api web",
+    "docker:infra": "docker compose up -d postgres redis"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

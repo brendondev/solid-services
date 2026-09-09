@@ -59,9 +59,9 @@ Sistema ERP multi-tenant completo para prestadores de serviços (MEIs, autônomo
 - **Forms**: React Hook Form + Zod
 
 ### DevOps
-- **Monorepo**: Turborepo
+- **Monorepo**: npm workspaces
 - **CI/CD**: GitHub Actions
-- **Hosting**: Railway (backend), Vercel (frontend)
+- **Hosting**: local via Docker (destino futuro: VPS Contabo + Coolify)
 - **Monitoring**: Sentry (opcional)
 
 ---
@@ -112,43 +112,45 @@ solid-service/
 ### Pré-requisitos
 
 - **Node.js** 18+ ([download](https://nodejs.org))
-- **PostgreSQL** 14+ ([download](https://postgresql.org))
 - **Git** ([download](https://git-scm.com))
+- **Docker Desktop** ([download](https://docker.com/products/docker-desktop)) — opcional,
+  veja a alternativa sem Docker em **[LOCAL.md](./LOCAL.md)**
 
-### Instalação Rápida
+### Instalação Rápida (Docker)
 
 ```bash
-# 1. Clonar repositório
-git clone https://github.com/seu-usuario/solid-service.git
-cd solid-service
+git clone https://github.com/brendondev/solid-services.git
+cd solid-services
 
-# 2. Instalar dependências
-npm install
-
-# 3. Configurar banco de dados
-cd packages/database
-npx prisma migrate dev
-npx prisma db seed
-
-# 4. Configurar variáveis de ambiente
-cd ../../apps/api
-cp .env.example .env
-# Editar .env (DATABASE_URL, JWT_SECRET, etc)
-
-# 5. Iniciar backend
-npm run dev
+docker compose up -d --build   # postgres + redis + api + web
+docker compose logs -f api     # acompanha migrations e seed
 ```
 
-**API disponível em:** http://localhost:3000
-**Swagger docs em:** http://localhost:3000/api/docs
+### Instalação Rápida (sem Docker)
 
-**Credenciais de teste:**
-- Email: `admin@example.com`
-- Senha: `admin123`
+```bash
+npm install
+npm run pg:setup               # Postgres portátil em .local/ (sem instalar nada)
+cp .env.example .env
+npm run db:setup               # generate + migrate + seed
+npm run dev:api                # terminal 1
+npm run dev:web                # terminal 2
+```
+
+**Login:** http://localhost:3001/auth/login
+**API:** http://localhost:3000
+**Swagger docs:** http://localhost:3000/api/docs
+
+**Credenciais de demonstração** (criadas pelo seed):
+
+| Perfil  | E-mail             | Senha    |
+| ------- | ------------------ | -------- |
+| Admin   | `admin@demo.com`   | `123456` |
+| Técnico | `tecnico@demo.com` | `123456` |
 
 ### Setup Completo
 
-Para instruções detalhadas, veja **[SETUP.md](./SETUP.md)**.
+Para instruções detalhadas, veja **[LOCAL.md](./LOCAL.md)**.
 
 ---
 

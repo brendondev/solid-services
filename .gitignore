@@ -41,5 +41,14 @@ yarn-error.log*
 *.db
 *.db-journal
 
+# Postgres portátil / artefatos locais (scripts/local-postgres.js)
+.local
+uploads
+
+# Runtime local
+*.pid
+*.log
+*.tsbuildinfo
+
 # OS
 Thumbs.db

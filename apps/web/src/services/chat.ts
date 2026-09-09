@@ -96,7 +96,8 @@ export const chatApi = {
       return () => {};
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+    // 3000 é a API; 3001 é o próprio Next (o fallback antigo apontava para si mesmo)
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
     const url = conversationId
       ? `${baseUrl}${CHAT_BASE_URL}/stream?conversationId=${conversationId}`
       : `${baseUrl}${CHAT_BASE_URL}/stream`;

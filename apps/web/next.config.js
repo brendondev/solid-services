@@ -1,7 +1,15 @@
+const path = require('path')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@solid-service/database'],
+
+  // Build autocontido usado pela imagem Docker (apps/web/Dockerfile).
+  // outputFileTracingRoot aponta para a raiz do monorepo para que o tracing
+  // encontre o node_modules hoisted do workspace.
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
 
   // Force environment variables to be available at build time
   env: {

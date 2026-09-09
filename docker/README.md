@@ -1,108 +1,80 @@
-# Docker Setup
+# Docker
 
-Este diretório contém as configurações do Docker para o ambiente de desenvolvimento.
+Stack local completa definida em `docker-compose.yml` na raiz. As mesmas
+imagens são o que o Coolify vai consumir no VPS mais adiante.
 
-## Serviços
+| Serviço    | Imagem / origem            | Porta | Observação                              |
+| ---------- | -------------------------- | ----- | --------------------------------------- |
+| `postgres` | `postgres:15-alpine`       | 5432  | user `solid` / senha `solid123` / db `solid_service_dev` |
+| `redis`    | `redis:7-alpine`           | 6379  | cache e filas                            |
+| `api`      | `apps/api/Dockerfile`      | 3000  | NestJS; migra e roda o seed no boot      |
+| `web`      | `apps/web/Dockerfile`      | 3001  | Next.js em modo `standalone`             |
 
-O `docker-compose.yml` na raiz do projeto configura os seguintes serviços:
-
-### PostgreSQL (porta 5432)
-- **Imagem**: postgres:15-alpine
-- **Usuário**: solid_service
-- **Senha**: solid_service_dev
-- **Database**: solid_service
-- **Volume**: postgres_data
-
-### Redis (porta 6379)
-- **Imagem**: redis:7-alpine
-- **Uso**: Cache e filas (BullMQ)
-- **Volume**: redis_data
-
-### MinIO (portas 9000 e 9001)
-- **Imagem**: minio/minio:latest
-- **Porta API**: 9000
-- **Porta Console**: 9001
-- **Usuário**: minioadmin
-- **Senha**: minioadmin
-- **Bucket**: solid-service
-- **Volume**: minio_data
+Não há MinIO: sem chaves de S3 configuradas, o `StorageService` grava no
+filesystem (volume `api_uploads` montado em `/app/uploads`).
 
 ## Comandos
 
-### Iniciar todos os serviços
 ```bash
-docker-compose up -d
+docker compose up -d --build      # sobe tudo
+docker compose up -d postgres redis   # só a infra (app roda no host, com hot reload)
+docker compose logs -f api web
+docker compose ps
+docker compose down               # para tudo, preserva os dados
+docker compose down -v            # CUIDADO: apaga os volumes
 ```
 
-### Ver logs
-```bash
-docker-compose logs -f
-```
+## Consoles
 
-### Parar todos os serviços
 ```bash
-docker-compose down
-```
-
-### Parar e remover volumes (CUIDADO: deleta dados!)
-```bash
-docker-compose down -v
-```
-
-### Verificar status
-```bash
-docker-compose ps
-```
-
-## Acessar Consoles
-
-### PostgreSQL
-```bash
-docker exec -it solid-service-postgres psql -U solid_service -d solid_service
-```
-
-### Redis CLI
-```bash
+docker exec -it solid-service-postgres psql -U solid -d solid_service_dev
 docker exec -it solid-service-redis redis-cli
 ```
 
-### MinIO Console
-Abra no navegador: http://localhost:9001
-- Usuário: minioadmin
-- Senha: minioadmin
+## Como as imagens são construídas
 
-## Variáveis de Ambiente
+Ambos os Dockerfiles esperam **a raiz do monorepo como contexto de build**,
+porque precisam do `package-lock.json` e dos workspaces:
 
-Após iniciar os containers, configure o `.env` do projeto:
-
-```env
-DATABASE_URL="postgresql://solid_service:solid_service_dev@localhost:5432/solid_service?schema=public"
-REDIS_URL="redis://localhost:6379"
-S3_ENDPOINT="http://localhost:9000"
-S3_ACCESS_KEY="minioadmin"
-S3_SECRET_KEY="minioadmin"
-S3_BUCKET="solid-service"
+```bash
+docker build -f apps/api/Dockerfile .
+docker build -f apps/web/Dockerfile .
 ```
+
+### API (`apps/api/Dockerfile`)
+
+Multi-stage: `deps` (com toolchain para compilar o `bcrypt`) → `build`
+(`prisma generate` + `nest build`) → `runtime`.
+
+O `node_modules` do runtime vem do stage de build de propósito: ele carrega o
+Prisma Client já gerado (`node_modules/.prisma`) e o CLI do Prisma, usado pelo
+`docker/api-entrypoint.sh` para aplicar as migrations antes de subir a API.
+
+Variáveis que o entrypoint respeita:
+
+- `RUN_MIGRATIONS` (padrão `true`) — aplica `prisma migrate deploy`
+- `RUN_SEED` (padrão `false`) — roda o seed de demonstração
+
+### Web (`apps/web/Dockerfile`)
+
+Usa `output: 'standalone'` do Next para a imagem final ficar enxuta.
+
+> `NEXT_PUBLIC_API_URL` entra como **build arg** — o Next embute variáveis
+> `NEXT_PUBLIC_*` no bundle em tempo de build. Mudar a URL da API exige
+> rebuild da imagem; alterar a env em runtime não tem efeito.
 
 ## Troubleshooting
 
-### PostgreSQL não inicia
-```bash
-# Verificar logs
-docker-compose logs postgres
+**API sobe e morre em seguida** — quase sempre é migration falhando. Veja
+`docker compose logs api`; o entrypoint loga cada etapa.
 
-# Reiniciar container
-docker-compose restart postgres
-```
+**Postgres não fica saudável** — `docker compose logs postgres`. Se a porta
+5432 já estiver ocupada no host (por um Postgres local), mude o mapeamento
+para `'5433:5432'` e ajuste a `DATABASE_URL`.
 
-### MinIO não cria bucket
-```bash
-# Recriar bucket manualmente
-docker exec -it solid-service-minio mc mb /data/solid-service
-```
+**Recomeçar do zero**
 
-### Limpar tudo e recomeçar
 ```bash
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d --build
 ```

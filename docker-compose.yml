@@ -1,4 +1,15 @@
-version: '3.8'
+# ============================================================================
+# Solid Service - stack local completa (Postgres + Redis + API + Web)
+#
+#   docker compose up -d --build
+#
+# Web: http://localhost:3001   API: http://localhost:3000   Docs: /api/docs
+#
+# Para rodar SÓ a infraestrutura (Postgres/Redis) e a aplicação em modo dev
+# no host, use o profile padrão:
+#
+#   docker compose up -d postgres redis
+# ============================================================================
 
 services:
   postgres:
@@ -14,10 +25,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U solid']
-      interval: 10s
+      test: ['CMD-SHELL', 'pg_isready -U solid -d solid_service_dev']
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 20
 
   redis:
     image: redis:7-alpine
@@ -29,10 +40,64 @@ services:
       - redis_data:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: solid-service-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://solid:solid123@postgres:5432/solid_service_dev?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: local-dev-secret-nao-usar-em-producao
+      JWT_EXPIRES_IN: 8h
+      REFRESH_TOKEN_EXPIRES_IN: 7d
+      WEB_URL: http://localhost:3001
+      FRONTEND_URL: http://localhost:3001
+      PORTAL_URL: http://localhost:3001
+      API_BASE_URL: http://localhost:3000
+      CORS_ALLOWED_ORIGINS: http://localhost:3001,http://localhost:3000
+      # Sem chaves S3 o StorageService cai no filesystem local
+      LOCAL_STORAGE_PATH: /app/uploads
+      # Aceita CPF/CNPJ inválidos nos imports de teste
+      SKIP_DOCUMENT_VALIDATION: 'true'
+      # Aplica migrations e popula os dados de demonstração no primeiro boot
+      RUN_MIGRATIONS: 'true'
+      RUN_SEED: 'true'
+    ports:
+      - '3000:3000'
+    volumes:
+      - api_uploads:/app/uploads
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Embutida no bundle em build time — o navegador chama localhost:3000
+        NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
+    container_name: solid-service-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+    ports:
+      - '3001:3001'
 
 volumes:
   postgres_data:
   redis_data:
+  api_uploads:

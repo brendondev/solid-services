@@ -54,7 +54,10 @@ import { ChatModule } from './modules/chat/chat.module';
     ConfigModule.forRoot({
       isGlobal: true,
       ignoreEnvFile: process.env.NODE_ENV === 'production',
-      envFilePath: '.env',
+      // Em dev o processo roda com cwd = apps/api, mas o .env local fica na
+      // raiz do monorepo (mesmo arquivo que o Prisma CLI consome). O primeiro
+      // arquivo encontrado vence, então apps/api/.env ainda sobrescreve.
+      envFilePath: ['.env', '../../.env'],
     }),
 
     // Rate limiting (100 requests per minute per tenant)

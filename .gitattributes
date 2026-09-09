@@ -1,0 +1,25 @@
+# Normaliza fim de linha no repositório.
+* text=auto eol=lf
+
+# Scripts consumidos por container Linux PRECISAM de LF: com CRLF o shebang
+# vira "#!/bin/sh\r" e o container morre com "no such file or directory".
+# Esta máquina roda com core.autocrlf=true, então sem isto o checkout quebraria.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+
+# Arquivos que devem manter CRLF no Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary

@@ -6,20 +6,29 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Usar tenant existente
-  const TENANT_ID = '1875be3a-c4c5-49fa-aba2-9df95fb152c5';
+  // Tenant de desenvolvimento. Criado se não existir, para que o seed funcione
+  // em um banco vazio (antes o ID era fixo e apontava para o banco da Railway).
+  const TENANT_SLUG = process.env.SEED_TENANT_SLUG || 'demo';
 
-  console.log('📦 Verificando tenant existente...');
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: TENANT_ID },
+  console.log('📦 Garantindo tenant de demonstração...');
+  const tenant = await prisma.tenant.upsert({
+    where: { slug: TENANT_SLUG },
+    update: {},
+    create: {
+      slug: TENANT_SLUG,
+      name: 'Empresa Demo',
+      status: 'active',
+      companyName: 'Empresa Demo LTDA',
+      tradingName: 'Empresa Demo',
+      document: '12.345.678/0001-00',
+      email: 'contato@demo.com',
+      phone: '(11) 3000-0000',
+      city: 'São Paulo',
+      state: 'SP',
+    },
   });
 
-  if (!tenant) {
-    console.error('❌ Tenant não encontrado:', TENANT_ID);
-    process.exit(1);
-  }
-
-  console.log('✅ Tenant encontrado:', tenant.name);
+  console.log(`✅ Tenant: ${tenant.name} (${tenant.slug})`);
 
   // Criar planos
   console.log('💳 Criando planos de assinatura...');
@@ -276,37 +285,31 @@ async function main() {
   // Criar catálogo de serviços
   console.log('🛠️  Criando catálogo de serviços...');
 
+  // O model Service não tem `category` nem `unit` — o seed antigo passava os
+  // dois e quebrava em banco novo.
   const servicesList = [
     {
       name: 'Manutenção Preventiva',
       description: 'Manutenção preventiva completa de equipamentos',
-      category: 'Manutenção',
       defaultPrice: 150.00,
-      unit: 'hora',
       estimatedDuration: 120,
     },
     {
       name: 'Instalação de Equipamento',
       description: 'Instalação e configuração de equipamentos',
-      category: 'Instalação',
       defaultPrice: 200.00,
-      unit: 'unidade',
       estimatedDuration: 180,
     },
     {
       name: 'Reparo de Emergência',
       description: 'Reparo emergencial com atendimento prioritário',
-      category: 'Reparo',
       defaultPrice: 300.00,
-      unit: 'hora',
       estimatedDuration: 240,
     },
     {
       name: 'Consultoria Técnica',
       description: 'Consultoria técnica especializada',
-      category: 'Consultoria',
       defaultPrice: 250.00,
-      unit: 'hora',
       estimatedDuration: 60,
     },
   ];
@@ -336,9 +339,13 @@ async function main() {
   }
 
   // Criar clientes
-  console.log('👥 Creating customers...');
-  const customer1 = await prisma.customer.create({
-    data: {
+  console.log('👥 Criando clientes...');
+  const customer1 = await prisma.customer.upsert({
+    where: {
+      tenantId_document: { tenantId: tenant.id, document: '123.456.789-00' },
+    },
+    update: {},
+    create: {
       tenantId: tenant.id,
       name: 'Maria Santos',
       type: 'individual',
@@ -371,8 +378,12 @@ async function main() {
     },
   });
 
-  const customer2 = await prisma.customer.create({
-    data: {
+  const customer2 = await prisma.customer.upsert({
+    where: {
+      tenantId_document: { tenantId: tenant.id, document: '12.345.678/0001-99' },
+    },
+    update: {},
+    create: {
       tenantId: tenant.id,
       name: 'Tech Solutions LTDA',
       type: 'company',
@@ -406,7 +417,11 @@ async function main() {
   });
 
   // Criar orçamento
-  console.log('📋 Creating quotation...');
+  console.log('📋 Criando orçamento...');
+  const existingQuotation = await prisma.quotation.findFirst({
+    where: { tenantId: tenant.id, number: 'QT-2024-001' },
+  });
+  if (!existingQuotation) {
   await prisma.quotation.create({
     data: {
       tenantId: tenant.id,
@@ -438,10 +453,15 @@ async function main() {
       },
     },
   });
+  }
 
   // Criar ordem de serviço
-  console.log('📝 Creating service order...');
-  const serviceOrder = await prisma.serviceOrder.create({
+  console.log('📝 Criando ordem de serviço...');
+  let serviceOrder = await prisma.serviceOrder.findFirst({
+    where: { tenantId: tenant.id, number: 'OS-2024-001' },
+  });
+  if (!serviceOrder) {
+  serviceOrder = await prisma.serviceOrder.create({
     data: {
       tenantId: tenant.id,
       customerId: customer2.id,
@@ -496,25 +516,31 @@ async function main() {
       },
     },
   });
+  }
 
   // Criar recebível
-  console.log('💰 Creating receivable...');
-  await prisma.receivable.create({
-    data: {
-      tenantId: tenant.id,
-      serviceOrderId: serviceOrder.id,
-      customerId: customer2.id,
-      amount: 300.00,
-      paidAmount: 0,
-      status: 'pending',
-      dueDate: new Date('2024-03-30'),
-      notes: 'Pagamento referente à OS-2024-001',
-    },
+  console.log('💰 Criando recebível...');
+  const existingReceivable = await prisma.receivable.findFirst({
+    where: { tenantId: tenant.id, serviceOrderId: serviceOrder.id },
   });
+  if (!existingReceivable) {
+    await prisma.receivable.create({
+      data: {
+        tenantId: tenant.id,
+        serviceOrderId: serviceOrder.id,
+        customerId: customer2.id,
+        amount: 300.00,
+        paidAmount: 0,
+        status: 'pending',
+        dueDate: new Date('2024-03-30'),
+        notes: 'Pagamento referente à OS-2024-001',
+      },
+    });
+  }
 
   console.log('\n✅ Seed concluído com sucesso!');
-  console.log('\n📊 Credenciais de acesso:');
-  console.log('  👤 Admin: admin@demo.com / 123456');
+  console.log('\n📊 Credenciais de acesso (LOCAL/DEMO):');
+  console.log('  👤 Admin:   admin@demo.com   / 123456');
   console.log('  👷 Técnico: tecnico@demo.com / 123456');
   console.log(`\n🏢 Tenant ID: ${tenant.id}`);
   console.log(`📦 Tenant: ${tenant.slug}`);
