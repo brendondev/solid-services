@@ -1,4 +1,5 @@
 import api from './client';
+import { PAGE_LIMIT_ALL } from './pagination';
 
 export interface Customer {
   id: string;
@@ -84,6 +85,10 @@ export const customersApi = {
   findAll: async (status?: string): Promise<Customer[]> => {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
+    // A API pagina em 10 por padrão. Sem este limite, "findAll" devolvia só a
+    // primeira página silenciosamente: a lista de clientes mostrava 10 de 26 e
+    // os totais da tela eram calculados em cima desses 10.
+    params.append('limit', String(PAGE_LIMIT_ALL));
 
     const response = await api.get(`/customers?${params.toString()}`);
     return response.data.data || [];

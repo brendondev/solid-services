@@ -1,10 +1,10 @@
 import api from './client';
+import { PAGE_LIMIT_ALL } from './pagination';
 
 export interface Service {
   id: string;
   name: string;
   description: string | null;
-  category: string | null;
   defaultPrice: number;
   estimatedDuration: number | null;
   status: string;
@@ -15,7 +15,6 @@ export interface Service {
 export interface CreateServiceDto {
   name: string;
   description?: string;
-  category?: string;
   defaultPrice: number;
   estimatedDuration?: number;
 }
@@ -23,7 +22,6 @@ export interface CreateServiceDto {
 export interface UpdateServiceDto {
   name?: string;
   description?: string;
-  category?: string;
   defaultPrice?: number;
   estimatedDuration?: number;
   status?: 'active' | 'inactive';
@@ -33,6 +31,7 @@ export const servicesApi = {
   findAll: async (status?: string): Promise<Service[]> => {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
+    params.append('limit', String(PAGE_LIMIT_ALL)); // ver pagination.ts
 
     const response = await api.get(`/services?${params.toString()}`);
     return response.data.data || [];

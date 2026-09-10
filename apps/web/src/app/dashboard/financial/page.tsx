@@ -1,4 +1,5 @@
 'use client';
+import { MetricStrip } from '@/components/layout/metric-strip';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -143,7 +144,7 @@ export default function FinancialPage() {
                 className="font-medium hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
-                {receivable.description || 'Sem descrição'}
+                {receivable.notes || 'Sem descrição'}
               </Link>
               <p className="text-sm text-muted-foreground">
                 {receivable.customer?.name || 'Cliente não informado'}
@@ -213,19 +214,19 @@ export default function FinancialPage() {
           const statusConfig: Record<string, { label: string; color: string }> = {
             pending: {
               label: 'Pendente',
-              color: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80',
+              color: 'bg-warning-subtle text-warning hover:bg-warning-subtle/80',
             },
             paid: {
               label: 'Pago',
-              color: 'bg-green-100 text-green-800 hover:bg-green-100/80',
+              color: 'bg-success-subtle text-success hover:bg-success-subtle/80',
             },
             overdue: {
               label: 'Vencido',
-              color: 'bg-red-100 text-red-800 hover:bg-red-100/80',
+              color: 'bg-destructive-subtle text-destructive hover:bg-destructive-subtle/80',
             },
             partial: {
               label: 'Parcial',
-              color: 'bg-blue-100 text-blue-800 hover:bg-blue-100/80',
+              color: 'bg-info-subtle text-info hover:bg-info-subtle/80',
             },
           };
 
@@ -304,7 +305,7 @@ export default function FinancialPage() {
     if (!globalFilter) return data;
 
     return data.filter((receivable) =>
-      receivable.description?.toLowerCase().includes(globalFilter.toLowerCase()) ||
+      receivable.notes?.toLowerCase().includes(globalFilter.toLowerCase()) ||
       receivable.customer?.name?.toLowerCase().includes(globalFilter.toLowerCase())
     );
   }, [data, globalFilter]);
@@ -323,18 +324,18 @@ export default function FinancialPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card p-6 rounded-lg shadow border border-border">
+            <div key={i} className="bg-card p-6 rounded-lg  border border-border">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-16" />
             </div>
           ))}
         </div>
 
-        <div className="bg-card p-4 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 rounded-lg  border border-border">
           <Skeleton className="h-10 w-full" />
         </div>
 
-        <div className="bg-card rounded-lg shadow border border-border">
+        <div className="bg-card rounded-lg  border border-border">
           <div className="p-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full mb-2" />
@@ -346,11 +347,11 @@ export default function FinancialPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-4 p-4 sm:p-6 animate-fadeInUp">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Contas a Receber</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Contas a Receber</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Gerencie seus recebíveis</p>
         </div>
         <Button
@@ -363,57 +364,10 @@ export default function FinancialPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Total de Recebíveis</p>
-              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
-              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Pendentes</p>
-              <p className="text-xl sm:text-2xl font-bold text-warning mt-1">{stats.pending}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-warning/10 rounded-lg">
-              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Recebidos</p>
-              <p className="text-xl sm:text-2xl font-bold text-success mt-1">{stats.paid}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
-              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Valor Total Pendente</p>
-              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
-                {formatCurrency(stats.totalPending)}
-              </p>
-            </div>
-            <div className="p-2 sm:p-3 bg-accent rounded-lg">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <MetricStrip items={[{ label: <>Total de Recebíveis</>, value: <>{stats.total}</>, tone: "neutral" },
+{ label: <>Pendentes</>, value: <>{stats.pending}</>, tone: "warning" },
+{ label: <>Recebidos</>, value: <>{stats.paid}</>, tone: "success" },
+{ label: <>Valor Total Pendente</>, value: <>{formatCurrency(stats.totalPending)}</>, tone: "neutral" }]} />
 
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
@@ -436,7 +390,7 @@ export default function FinancialPage() {
 
       {/* Data Table or Empty State */}
       {filteredData.length === 0 && !loading ? (
-        <div className="bg-card rounded-lg shadow border border-border p-6 sm:p-12 text-center">
+        <div className="bg-card rounded-lg  border border-border p-6 sm:p-12 text-center">
           <DollarSign className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             {data.length === 0 ? 'Nenhum recebível encontrado' : 'Nenhum resultado encontrado'}
@@ -457,7 +411,7 @@ export default function FinancialPage() {
           )}
         </div>
       ) : (
-        <div className="bg-card rounded-lg shadow border border-border p-3 sm:p-6">
+        <div className="min-w-0">
           <DataTable
             columns={columns}
             data={filteredData}

@@ -92,7 +92,7 @@ export default function NewReceivablePage() {
         serviceOrderId: data.serviceOrderId || undefined,
         amount: data.amount,
         dueDate: data.dueDate,
-        description: data.description || undefined,
+        notes: data.description || undefined,
       });
 
       router.push('/dashboard/financial');
@@ -117,12 +117,12 @@ export default function NewReceivablePage() {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => router.push('/dashboard/financial')}
-          className="text-gray-600 hover:text-foreground transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Novo Recebível</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Novo Recebível</h1>
           <p className="text-muted-foreground mt-1">
             Registre um novo valor a receber
           </p>
@@ -136,11 +136,11 @@ export default function NewReceivablePage() {
       )}
 
       {/* Form */}
-      <div className="bg-card rounded-lg shadow border border-border p-6">
+      <div className="bg-card rounded-lg  border border-border p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Cliente */}
           <div>
-            <label htmlFor="customerId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="customerId" className="block text-sm font-medium text-foreground mb-1">
               Cliente *
             </label>
             <select
@@ -164,7 +164,7 @@ export default function NewReceivablePage() {
           {/* Ordem de Serviço (opcional) */}
           {selectedCustomerId && (
             <div>
-              <label htmlFor="serviceOrderId" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="serviceOrderId" className="block text-sm font-medium text-foreground mb-1">
                 Ordem de Serviço (opcional)
               </label>
               <select
@@ -190,12 +190,12 @@ export default function NewReceivablePage() {
 
           {/* Valor */}
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="amount" className="block text-sm font-medium text-foreground mb-1">
               Valor (R$) *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <DollarSign className="h-5 w-5 text-gray-400" />
+                <DollarSign className="h-5 w-5 text-muted-foreground" />
               </div>
               <input
                 {...register('amount')}
@@ -214,7 +214,7 @@ export default function NewReceivablePage() {
 
           {/* Data de Vencimento */}
           <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="dueDate" className="block text-sm font-medium text-foreground mb-1">
               Data de Vencimento *
             </label>
             <input
@@ -231,7 +231,7 @@ export default function NewReceivablePage() {
 
           {/* Descrição/Observações */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-foreground mb-1">
               Descrição/Observações
             </label>
             <textarea
@@ -249,7 +249,7 @@ export default function NewReceivablePage() {
             <button
               type="button"
               onClick={() => router.push('/dashboard/financial')}
-              className="px-6 py-2.5 border border-border rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="px-6 py-2.5 border border-border rounded-lg hover:bg-background transition-colors font-medium"
               disabled={isSubmitting}
             >
               Cancelar

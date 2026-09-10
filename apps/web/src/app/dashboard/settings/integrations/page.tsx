@@ -1,8 +1,9 @@
 'use client';
 
+import { PreviewNotice } from '@/components/common/PreviewNotice';
 import { useState } from 'react';
 import { Zap, Check, X, ExternalLink, Key, Save, Loader2, MessageCircle, FileText, Webhook } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface Integration {
   id: string;
@@ -40,7 +41,7 @@ export default function IntegrationsSettingsPage() {
       name: 'WhatsApp Business',
       description: 'Envie notificações e atualizações via WhatsApp',
       icon: MessageCircle,
-      color: 'bg-green-100 text-green-600 dark:bg-green-900/30',
+      color: 'bg-success-subtle text-success ',
       enabled: whatsappEnabled,
       configured: !!whatsappToken && !!whatsappPhone,
       planRequired: 'PRO',
@@ -50,7 +51,7 @@ export default function IntegrationsSettingsPage() {
       name: 'NFe / NFS-e',
       description: 'Emita notas fiscais eletrônicas automaticamente',
       icon: FileText,
-      color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30',
+      color: 'bg-info-subtle text-info ',
       enabled: nfeEnabled,
       configured: !!nfeCertificate,
       planRequired: 'PRO',
@@ -98,7 +99,7 @@ export default function IntegrationsSettingsPage() {
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
           <Zap className="w-8 h-8" />
           Integrações
         </h1>
@@ -107,24 +108,29 @@ export default function IntegrationsSettingsPage() {
         </p>
       </div>
 
+      <PreviewNotice>
+        Esta tela ainda não está ligada ao servidor: as integrações abaixo
+        <strong> não são conectadas de fato</strong> e nenhuma configuração é salva.
+      </PreviewNotice>
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {integrations.map((integration) => (
           <div
             key={integration.id}
-            className="bg-card rounded-lg border border-border p-4 hover:shadow-md transition-shadow"
+            className="bg-card rounded-lg border border-border p-4  transition-shadow"
           >
             <div className="flex items-start justify-between mb-3">
               <div className={`p-2 rounded-lg ${integration.color}`}>
                 <integration.icon className="w-5 h-5" />
               </div>
               {integration.enabled ? (
-                <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+                <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-success-subtle text-success   rounded-full">
                   <Check className="w-3 h-3" />
                   Ativo
                 </span>
               ) : (
-                <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 rounded-full">
+                <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-muted text-foreground   rounded-full">
                   <X className="w-3 h-3" />
                   Inativo
                 </span>
@@ -134,7 +140,7 @@ export default function IntegrationsSettingsPage() {
             <h3 className="font-semibold mb-1">
               {integration.name}
               {integration.planRequired && (
-                <span className="ml-2 text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded">
+                <span className="ml-2 text-xs bg-warning-subtle text-warning   px-2 py-0.5 rounded">
                   {integration.planRequired}
                 </span>
               )}
@@ -144,7 +150,7 @@ export default function IntegrationsSettingsPage() {
             </p>
 
             {integration.configured ? (
-              <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+              <p className="text-xs text-success  flex items-center gap-1">
                 <Check className="w-3 h-3" />
                 Configurado
               </p>
@@ -163,13 +169,13 @@ export default function IntegrationsSettingsPage() {
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <MessageCircle className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-success-subtle  rounded-lg">
+                <MessageCircle className="w-5 h-5 text-success" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   WhatsApp Business API
-                  <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded">
+                  <span className="text-xs bg-warning-subtle text-warning   px-2 py-0.5 rounded">
                     PRO
                   </span>
                 </h3>
@@ -186,7 +192,7 @@ export default function IntegrationsSettingsPage() {
                 onChange={(e) => setWhatsappEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-primary"></div>
             </label>
           </div>
 
@@ -235,13 +241,13 @@ export default function IntegrationsSettingsPage() {
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-info-subtle  rounded-lg">
+                <FileText className="w-5 h-5 text-info" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   Nota Fiscal Eletrônica
-                  <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded">
+                  <span className="text-xs bg-warning-subtle text-warning   px-2 py-0.5 rounded">
                     PRO
                   </span>
                 </h3>
@@ -258,7 +264,7 @@ export default function IntegrationsSettingsPage() {
                 onChange={(e) => setNfeEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-primary"></div>
             </label>
           </div>
 
@@ -343,7 +349,7 @@ export default function IntegrationsSettingsPage() {
                 onChange={(e) => setWebhooksEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-primary"></div>
             </label>
           </div>
 

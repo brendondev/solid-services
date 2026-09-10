@@ -1,4 +1,5 @@
 'use client';
+import { MetricStrip } from '@/components/layout/metric-strip';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -109,12 +110,17 @@ export default function ServicesPage() {
   const getStats = () => {
     const total = data.length;
     const active = data.filter(s => s.status === 'active').length;
-    const categories = new Set(data.map(s => s.category).filter(Boolean)).size;
+    // O model Service não tem `category` — a métrica antiga contava sempre 0.
+    // Duração média é dado que existe de verdade (estimatedDuration, em minutos).
+    const withDuration = data.filter(s => s.estimatedDuration != null);
+    const avgDuration = withDuration.length > 0
+      ? withDuration.reduce((sum, s) => sum + Number(s.estimatedDuration), 0) / withDuration.length
+      : 0;
     const avgPrice = data.length > 0
       ? data.reduce((sum, s) => sum + Number(s.defaultPrice), 0) / data.length
       : 0;
 
-    return { total, active, categories, avgPrice };
+    return { total, active, avgDuration, avgPrice };
   };
 
   // Define columns
@@ -139,15 +145,13 @@ export default function ServicesPage() {
         },
       },
       {
-        accessorKey: 'category',
-        header: 'Categoria',
+        accessorKey: 'description',
+        header: 'Descrição',
         cell: ({ row }) => {
-          const category = row.getValue('category') as string | null;
-          return category ? (
-            <Badge variant="secondary">{category}</Badge>
-          ) : (
-            '-'
-          );
+          const description = row.getValue('description') as string | null;
+          return description
+            ? <span className="text-muted-foreground">{description}</span>
+            : '-';
         },
         filterFn: (row, id, value) => {
           return value.includes(row.getValue(id));
@@ -183,7 +187,7 @@ export default function ServicesPage() {
               variant={status === 'active' ? 'default' : 'secondary'}
               className={
                 status === 'active'
-                  ? 'bg-green-100 text-green-800 hover:bg-green-100/80'
+                  ? 'bg-success-subtle text-success hover:bg-success-subtle/80'
                   : ''
               }
             >
@@ -256,7 +260,7 @@ export default function ServicesPage() {
 
     return data.filter((service) =>
       service.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
-      service.category?.toLowerCase().includes(globalFilter.toLowerCase())
+      service.description?.toLowerCase().includes(globalFilter.toLowerCase())
     );
   }, [data, globalFilter]);
 
@@ -274,18 +278,18 @@ export default function ServicesPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card p-6 rounded-lg shadow border border-border">
+            <div key={i} className="bg-card p-6 rounded-lg  border border-border">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-16" />
             </div>
           ))}
         </div>
 
-        <div className="bg-card p-4 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 rounded-lg  border border-border">
           <Skeleton className="h-10 w-full" />
         </div>
 
-        <div className="bg-card rounded-lg shadow border border-border">
+        <div className="bg-card rounded-lg  border border-border">
           <div className="p-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full mb-2" />
@@ -297,11 +301,11 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 animate-fadeInUp">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Serviços</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Serviços</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Catálogo de serviços oferecidos</p>
         </div>
         <Button
@@ -314,57 +318,10 @@ export default function ServicesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Total de Serviços</p>
-              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
-              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Ativos</p>
-              <p className="text-xl sm:text-2xl font-bold text-success mt-1">{stats.active}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
-              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Categorias</p>
-              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.categories}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-accent rounded-lg">
-              <Tag className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Preço Médio</p>
-              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">
-                {formatCurrency(stats.avgPrice)}
-              </p>
-            </div>
-            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
-              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <MetricStrip items={[{ label: <>Total de Serviços</>, value: <>{stats.total}</>, tone: "neutral" },
+{ label: <>Ativos</>, value: <>{stats.active}</>, tone: "success" },
+{ label: <>Duração Média</>, value: <>{Math.round(stats.avgDuration)} min</>, tone: "neutral" },
+{ label: <>Preço Médio</>, value: <>{formatCurrency(stats.avgPrice)}</>, tone: "neutral" }]} />
 
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
@@ -387,7 +344,7 @@ export default function ServicesPage() {
 
       {/* Data Table or Empty State */}
       {filteredData.length === 0 && !loading ? (
-        <div className="bg-card rounded-lg shadow border border-border p-6 sm:p-12 text-center">
+        <div className="bg-card rounded-lg  border border-border p-6 sm:p-12 text-center">
           <Wrench className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-lg sm:text-xl font-semibold text-foreground mb-2">
             {data.length === 0 ? 'Nenhum serviço encontrado' : 'Nenhum resultado encontrado'}
@@ -408,7 +365,7 @@ export default function ServicesPage() {
           )}
         </div>
       ) : (
-        <div className="bg-card rounded-lg shadow border border-border p-3 sm:p-6">
+        <div className="min-w-0">
           <DataTable
             columns={columns}
             data={filteredData}
