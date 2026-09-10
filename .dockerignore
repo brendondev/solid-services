@@ -1,20 +1,38 @@
-.git
-.turbo
-node_modules
-dist
-build
-.next
-coverage
+# ATENÇÃO ao escrever padrões aqui: o .dockerignore NÃO é recursivo por
+# padrão. "node_modules" casa apenas com <raiz>/node_modules — para pegar
+# apps/web/node_modules é preciso "**/node_modules". Sem os "**/", o build
+# chegou a enviar os 484 MB de apps/web/.next no contexto.
 
-# Postgres portátil e uploads locais — não devem ir no contexto de build
+.git
+.github
+
+# Artefatos de build (em qualquer nível do monorepo)
+**/node_modules
+**/dist
+**/build
+**/.next
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+
+# Postgres portátil e uploads locais
 .local
-uploads
-*.pid
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+**/uploads
+
+# Runtime e logs
+**/*.pid
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+
+# Segredos — nunca no contexto de build
 .env
-.env*.local
-.env.production
+**/.env
+**/.env*.local
+**/.env.production
+
+# Docs e configs de editor: não afetam o build e só invalidam cache
+**/.vscode
+**/.idea

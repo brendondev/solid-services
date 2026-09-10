@@ -17,8 +17,11 @@ Bem-vindo à documentação do projeto Solid Service.
 - **[Status do Projeto](PROJECT-STATUS.md)** — análise do estado das features
 - **[Roadmap Futuro](PASSOS-FINAIS-NFE-ETC.md)** — próximas funcionalidades (NFe, WhatsApp, etc.)
 
+### Em andamento
+- **[../PROMPT-REDESIGN-UI.md](../PROMPT-REDESIGN-UI.md)** — briefing do redesenho de UI/UX (próxima frente, antes do deploy)
+
 ### Deploy
-- **[Guia de Deploy](DEPLOY-GUIDE.md)** — checklist para o Coolify (não iniciado)
+- **[Guia de Deploy](DEPLOY-GUIDE.md)** — checklist para o Coolify (adiado até o redesenho terminar)
 
 ### Funcionalidades
 - **[Keyboard Shortcuts](KEYBOARD_SHORTCUTS.md)** — atalhos de teclado implementados
@@ -77,10 +80,11 @@ Ver análise completa em [PROJECT-STATUS.md](PROJECT-STATUS.md)
 ## 🎯 Próximos Passos
 
 1. 🔴 **Rotacionar as chaves de S3** que vazaram no `.env.example` em repo público — ver [migração](MIGRACAO-LOCAL-2026-09-09.md#-rotacionar-as-credenciais-de-s3)
-2. **Testes** (crítico) - Adicionar testes unitários e E2E
-3. **Dashboard** - Completar gráficos e métricas
-4. **Mobile Polish** - Melhorar responsividade
-5. **Agenda** - Completar calendário e drag & drop
+2. 🎨 **Redesenho de UI/UX** — em andamento, ver [briefing](../PROMPT-REDESIGN-UI.md). Resolve também o Mobile Polish
+3. 🐳 **Validar a stack containerizada** — as imagens buildam, o `compose up` ainda não foi verificado
+4. 🚀 **Deploy no Coolify** — depois do redesenho
+5. **Testes** (crítico) - Adicionar testes unitários e E2E
+6. **Agenda** - Completar calendário e drag & drop
 
 ## 📞 Suporte
 

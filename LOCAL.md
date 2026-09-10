@@ -23,14 +23,26 @@ Por que o projeto está assim e o que já foi resolvido:
 
 ---
 
-## Opção A — Docker (recomendada)
+## Opção A — Docker
 
-O Docker Desktop **já está instalado** nesta máquina (4.90, engine 29.7.2,
-Compose v5.5.1, backend WSL2). Se o `docker` não responder, abra o Docker
-Desktop e espere o engine subir.
+O Docker Desktop **já está instalado** (4.90, engine 29.7.2, Compose v5.5.1,
+backend WSL2). Se o `docker` não responder, abra o Docker Desktop e espere o
+engine subir.
+
+> **Status:** as duas imagens **buildam** (`docker compose build` = `EXIT=0`),
+> mas a stack rodando **ainda não foi validada** — o `docker compose up -d`
+> não chegou a criar os containers na primeira tentativa. Se você precisa de
+> ambiente funcionando agora, use a **Opção B**, que está verificada ponta a
+> ponta. Detalhes e o roteiro de investigação em
+> [docs/MIGRACAO-LOCAL-2026-09-09.md](docs/MIGRACAO-LOCAL-2026-09-09.md).
 
 Sobe Postgres, Redis, API e Web; a API aplica as migrations e roda o seed
 sozinha no primeiro boot.
+
+> O primeiro build é lento (~20 min): dois `apt-get install` de ~5 min cada
+> para compilar o `bcrypt`, mais `npm ci` e o build do Next. Cache parado não
+> quer dizer build travado. Para acompanhar de verdade:
+> `docker compose build --progress=plain > build.log 2>&1`
 
 > **Antes de subir, pare o Postgres portátil** (`npm run pg:stop`) — os dois
 > disputam a porta 5432. Para rodar os dois juntos, mude o mapeamento do
@@ -60,7 +72,7 @@ npm run dev:web                   # terminal 2
 
 ---
 
-## Opção B — sem Docker (Postgres portátil)
+## Opção B — sem Docker (Postgres portátil) ⭐ é o que está em uso
 
 `scripts/local-postgres.js` baixa os binários portáteis do PostgreSQL 15 da
 EnterpriseDB, cria um cluster dentro de `.local/` e sobe o servidor. Não

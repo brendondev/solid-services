@@ -19,8 +19,13 @@ desfazer uma decisão sem saber o motivo.
 | Web Next.js | ✅ rodando em `localhost:3001` |
 | Login demo | ✅ verificado ponta a ponta (token + dados do tenant) |
 | Docker Desktop | ✅ instalado (4.90, engine 29.7.2, Compose v5.5.1, backend WSL2) |
-| Imagens Docker | ⏳ build executado, ainda não concluído até o fechamento deste doc |
+| Imagens Docker | ✅ **as duas buildam** — `solid-services-api` (341 MB) e `solid-services-web` (92 MB) |
+| Stack containerizada | ⚠️ **não validada** — `docker compose up -d` não chegou a criar os containers; ver abaixo |
 | Deploy Coolify | ⬜ não iniciado |
+
+O ambiente em uso hoje é o **Postgres portátil + processos Node no host**, que
+está verificado ponta a ponta. O Docker serve, por enquanto, como garantia de
+que as imagens compilam.
 
 ### Credenciais de demonstração
 
@@ -122,6 +127,21 @@ Client já gerado (`node_modules/.prisma`) **e** do CLI do Prisma, que o
 entrypoint usa para aplicar as migrations. O CLI é `devDependency` de
 `packages/database`, então um prune quebraria as migrations no boot.
 
+### `.dockerignore` precisa de `**/` — ele não é recursivo
+
+Armadilha que só apareceu vendo o log do build: um padrão como `.next` casa
+**apenas** com `<raiz-do-contexto>/.next`. Não pega `apps/web/.next`. O mesmo
+vale para `node_modules` e `dist`.
+
+Resultado no build real: **484 MB de `apps/web/.next`** foram enviados no
+contexto — a etapa `load build context` sozinha passou de 11 minutos. Nada
+disso é usado (as imagens buildam de dentro), era puro desperdício.
+
+Corrigido para `**/node_modules`, `**/.next`, `**/dist` etc., com um
+comentário no topo do arquivo explicando o porquê. **Ao editar o
+`.dockerignore`, mantenha os `**/`** — sem eles o problema volta silencioso,
+só se manifestando como “o build está lento”.
+
 ### `.gitattributes` forçando LF
 
 Esta máquina tem `core.autocrlf=true`. Sem o `.gitattributes`,
@@ -182,13 +202,42 @@ O `.env.example` versionado continha `S3_ACCESS_KEY_ID` e
 Foram substituídos por placeholders, mas **as chaves seguem no histórico do
 git** e devem ser tratadas como comprometidas. Rotacionar no provedor.
 
-### 🟡 Concluir o build das imagens Docker
+### 🟡 Validar a stack containerizada
 
-O build foi disparado e estava progredindo, mas não terminou dentro da sessão.
-`npm ci` de ~1200 pacotes mais o build do Next dentro do container é lento na
-primeira vez; as camadas ficam em cache para as próximas.
+**As imagens buildam** — isso está resolvido e verificado (`docker compose
+build` terminou com `EXIT=0`, gerando `solid-services-api:latest` 341 MB e
+`solid-services-web:latest` 92 MB).
 
-Quando concluir: `docker compose up -d`.
+O que **não** foi verificado é a stack rodando: `docker compose up -d` baixou
+`postgres:15-alpine` e `redis:7-alpine`, mas ficou vários minutos sem criar
+um único container — com as imagens prontas, isso deveria levar segundos.
+A tentativa foi abortada e o ambiente voltou para o Postgres portátil, porque
+o trabalho em andamento é de UI/UX e precisa de um localhost funcionando.
+
+Quando for retomar (provavelmente junto do deploy no Coolify), investigar
+nessa ordem:
+
+```bash
+npm run pg:stop                      # libera a 5432
+docker compose up                    # SEM -d, para ver o erro na hora
+docker compose logs api              # se o container chegar a existir
+```
+
+Suspeitas a descartar primeiro: porta ocupada no host (3000/3001/5432) e
+lentidão de criação de volume no backend WSL2 na primeira execução.
+
+Falta então confirmar, contra os containers: migrations aplicadas pelo
+entrypoint, seed rodando com `RUN_SEED=true`, login funcionando e CORS entre
+web e API.
+
+### Notas de build que valem lembrar
+
+- O primeiro build é lento de verdade: são dois `apt-get install` de ~5 min
+  cada (`python3 make g++`, necessários para compilar o `bcrypt`). Cache
+  parado **não** significa build travado — errei esse diagnóstico uma vez e
+  reiniciei o build à toa, o que custou refazer esses passos.
+- Use `docker compose build --progress=plain` redirecionado para arquivo. Com
+  a saída padrão (ou passando por `tail`), não dá para saber em que passo está.
 
 ### 🟡 Conflito de porta 5432
 
@@ -198,8 +247,41 @@ mudar o mapeamento do compose para `'5433:5432'` e ajustar a `DATABASE_URL`.
 
 ### ⬜ Deploy no Coolify
 
-Não iniciado. O que muda em relação ao local está listado no fim do
-`LOCAL.md`.
+Não iniciado, e **deliberadamente adiado**: o redesenho de UI/UX vem primeiro
+(ver abaixo). O que muda em relação ao local está listado no fim do
+`LOCAL.md` e detalhado em [DEPLOY-GUIDE.md](DEPLOY-GUIDE.md).
+
+---
+
+## Próxima frente: redesenho de UI/UX
+
+Decidido em 10/09/2026, **antes** de publicar. O visual atual é shadcn padrão,
+com cara de template recém-instalado.
+
+O briefing está em [`../PROMPT-REDESIGN-UI.md`](../PROMPT-REDESIGN-UI.md),
+escrito para ser executado por outro agente. Resumo das decisões tomadas:
+
+- **Direção:** SaaS moderno no espírito de Linear/Vercel — tipografia como
+  hierarquia, paleta neutra, cor como sinal, borda em vez de sombra pesada
+- **Escopo:** as três áreas (dashboard, portal do cliente e auth)
+- **Restrição:** manter Tailwind + Radix + a convenção de CSS variables.
+  Redesenhar tokens, layout e primitivos — **não** trocar a stack de UI,
+  porque são 50 páginas apoiadas nesses primitivos
+
+Débitos de UI já mapeados, para serem resolvidos junto:
+
+- `docs/development/DESIGN_SYSTEM.md` especifica uma paleta (`#4A90E2`) que
+  **não existe** no `globals.css` — a documentação contradiz o código
+- três selects convivendo: `select.tsx`, `select-legacy.tsx`, `select-radix.tsx`
+- dois modais: `modal.tsx` e `dialog.tsx`
+- duas libs de toast simultâneas: `react-hot-toast` (14 arquivos) e `sonner` (4)
+- `apps/web/src/app/dashboard/layout.old.tsx` morto
+- `@hello-pangea/dnd` no `package.json` e usado em **zero** arquivos (o kanban
+  usa `@dnd-kit`)
+
+> Como o redesenho vai mexer em muitos arquivos do front, evite iniciar
+> refatorações grandes em `apps/web` em paralelo — o conflito de merge não
+> compensa.
 
 ---
 
