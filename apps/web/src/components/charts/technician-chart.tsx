@@ -34,7 +34,7 @@ export function TechnicianChart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={350} minWidth={0}>
           <PieChart>
             <Pie
               data={data}

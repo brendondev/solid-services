@@ -9,7 +9,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: { sans: ['Inter Variable', 'Inter', 'system-ui', 'sans-serif'] },
+      transitionDuration: { DEFAULT: '150ms' },
+      boxShadow: { sm: '0 1px 2px rgb(0 0 0 / 0.06)', md: '0 2px 6px rgb(0 0 0 / 0.12)', lg: '0 3px 8px rgb(0 0 0 / 0.16)' },
       colors: {
+        info: 'hsl(var(--info))',
+        'info-subtle': 'hsl(var(--info-subtle))',
+        'success-subtle': 'hsl(var(--success-subtle))',
+        'warning-subtle': 'hsl(var(--warning-subtle))',
+        'destructive-subtle': 'hsl(var(--destructive-subtle))',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -79,9 +87,9 @@ const config: Config = {
         },
       },
       animation: {
-        slideIn: 'slideIn 0.3s ease-out',
-        slideOut: 'slideOut 0.3s ease-in',
-        fadeInUp: 'fadeInUp 0.3s ease-out',
+        slideIn: 'slideIn 0.18s ease-out',
+        slideOut: 'slideOut 0.15s ease-in',
+        fadeInUp: 'fadeInUp 0.18s ease-out',
       },
     },
   },

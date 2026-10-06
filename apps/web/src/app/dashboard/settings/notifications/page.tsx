@@ -1,8 +1,9 @@
 'use client';
 
+import { PreviewNotice } from '@/components/common/PreviewNotice';
 import { useState } from 'react';
 import { Bell, Mail, MessageSquare, Save, Loader2, Volume2, Calendar, DollarSign, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function NotificationsSettingsPage() {
   const [saving, setSaving] = useState(false);
@@ -47,7 +48,7 @@ export default function NotificationsSettingsPage() {
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
           <Bell className="w-8 h-8" />
           Notificações
         </h1>
@@ -56,12 +57,17 @@ export default function NotificationsSettingsPage() {
         </p>
       </div>
 
+      <PreviewNotice>
+        Esta tela ainda não está ligada ao servidor: as preferências abaixo
+        <strong> não são salvas</strong> e não alteram os avisos que você recebe.
+      </PreviewNotice>
+
       <form onSubmit={handleSave} className="space-y-6">
         {/* Email Notifications */}
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Mail className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-info-subtle  rounded-lg">
+              <Mail className="w-5 h-5 text-info" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Notificações por Email</h3>
@@ -152,7 +158,7 @@ export default function NotificationsSettingsPage() {
 
               <label className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <DollarSign className="w-4 h-4 text-green-600" />
+                  <DollarSign className="w-4 h-4 text-success" />
                   <div>
                     <p className="font-medium">Pagamento recebido</p>
                     <p className="text-sm text-muted-foreground">
@@ -170,7 +176,7 @@ export default function NotificationsSettingsPage() {
 
               <label className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
+                  <AlertCircle className="w-4 h-4 text-destructive" />
                   <div>
                     <p className="font-medium">Pagamento atrasado</p>
                     <p className="text-sm text-muted-foreground">
@@ -314,8 +320,8 @@ export default function NotificationsSettingsPage() {
         {/* Sound Settings */}
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <Volume2 className="w-5 h-5 text-amber-600" />
+            <div className="p-2 bg-warning-subtle  rounded-lg">
+              <Volume2 className="w-5 h-5 text-warning" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Sons</h3>

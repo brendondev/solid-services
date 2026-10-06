@@ -1,4 +1,5 @@
 import api from './client';
+import { PAGE_LIMIT_ALL } from './pagination';
 
 export interface Quotation {
   id: string;
@@ -67,6 +68,7 @@ export const quotationsApi = {
   findAll: async (status?: string): Promise<Quotation[]> => {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
+    params.append('limit', String(PAGE_LIMIT_ALL)); // ver pagination.ts
 
     const response = await api.get(`/quotations?${params.toString()}`);
     return response.data.data || [];

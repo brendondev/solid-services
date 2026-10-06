@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Database, Download, Upload, Calendar, HardDrive, CheckCircle2, Loader2, AlertCircle, Trash2 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Database, Download, Upload, Calendar, HardDrive, CheckCircle2, Loader2, AlertCircle, AlertTriangle, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Backup {
   id: string;
@@ -75,7 +75,7 @@ export default function BackupSettingsPage() {
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
           <Database className="w-8 h-8" />
           Backup e Dados
         </h1>
@@ -84,41 +84,22 @@ export default function BackupSettingsPage() {
         </p>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Database className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total de Backups</p>
-              <p className="text-2xl font-bold">{backups.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Último Backup</p>
-              <p className="text-2xl font-bold">Hoje</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <HardDrive className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Espaço Usado</p>
-              <p className="text-2xl font-bold">695 MB</p>
-            </div>
+      {/* AVISO: esta tela é uma maquete. Não existe endpoint de backup na API e
+          a página não faz nenhuma chamada — os números que apareciam aqui
+          ("5 backups", "Último: Hoje", "695 MB") eram fixos no código e davam a
+          entender que havia backup rodando. Enquanto o recurso não existir, a
+          tela precisa dizer isso em vez de exibir número inventado. */}
+      <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+          <div>
+            <p className="font-medium text-foreground">Recurso ainda não disponível</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              O backup automático ainda não foi implementado no servidor. As opções
+              abaixo são uma prévia da interface e <strong>não executam backup nem
+              salvam configuração</strong>. Para não perder dados, faça backup do
+              banco por fora do sistema.
+            </p>
           </div>
         </div>
       </div>
@@ -127,8 +108,8 @@ export default function BackupSettingsPage() {
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <Calendar className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-success-subtle  rounded-lg">
+              <Calendar className="w-5 h-5 text-success" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Backup Automático</h3>
@@ -145,7 +126,7 @@ export default function BackupSettingsPage() {
               onChange={(e) => setAutoBackupEnabled(e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+            <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-primary"></div>
           </label>
         </div>
 
@@ -262,13 +243,13 @@ export default function BackupSettingsPage() {
             >
               <div className="flex items-center gap-4">
                 <div className={`p-2 rounded-lg ${
-                  backup.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30' :
-                  backup.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-900/30' :
-                  'bg-red-100 dark:bg-red-900/30'
+                  backup.status === 'completed' ? 'bg-success-subtle ' :
+                  backup.status === 'in_progress' ? 'bg-info-subtle ' :
+                  'bg-destructive-subtle '
                 }`}>
-                  {backup.status === 'completed' && <CheckCircle2 className="w-5 h-5 text-green-600" />}
-                  {backup.status === 'in_progress' && <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />}
-                  {backup.status === 'failed' && <AlertCircle className="w-5 h-5 text-red-600" />}
+                  {backup.status === 'completed' && <CheckCircle2 className="w-5 h-5 text-success" />}
+                  {backup.status === 'in_progress' && <Loader2 className="w-5 h-5 text-info animate-spin" />}
+                  {backup.status === 'failed' && <AlertCircle className="w-5 h-5 text-destructive" />}
                 </div>
 
                 <div>
@@ -276,7 +257,7 @@ export default function BackupSettingsPage() {
                     <p className="font-medium">{backup.date}</p>
                     <span className={`px-2 py-0.5 text-xs rounded ${
                       backup.type === 'auto'
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        ? 'bg-info-subtle text-info  '
                         : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
                     }`}>
                       {backup.type === 'auto' ? 'Automático' : 'Manual'}
@@ -390,8 +371,8 @@ export default function BackupSettingsPage() {
               />
             </div>
 
-            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg">
-              <p className="text-xs text-amber-800 dark:text-amber-400 flex items-start gap-2">
+            <div className="mt-4 p-3 bg-warning-subtle  border border-warning/30  rounded-lg">
+              <p className="text-xs text-warning  flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>
                   A importação pode sobrescrever dados existentes. Faça um backup antes de importar.
@@ -403,14 +384,14 @@ export default function BackupSettingsPage() {
       </div>
 
       {/* Warning */}
-      <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-lg p-4">
+      <div className="bg-destructive-subtle  border border-destructive/30  rounded-lg p-4">
         <div className="flex gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
           <div>
-            <h4 className="font-semibold text-red-900 dark:text-red-400 mb-1">
+            <h4 className="font-semibold text-destructive  mb-1">
               Atenção
             </h4>
-            <p className="text-sm text-red-800 dark:text-red-400/80">
+            <p className="text-sm text-destructive ">
               Restaurar um backup substituirá todos os dados atuais. Esta ação não pode ser desfeita.
               Certifique-se de criar um backup antes de restaurar.
             </p>

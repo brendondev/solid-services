@@ -1,237 +1,116 @@
+@import '@fontsource-variable/inter';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Shadboard-inspired Professional Theme */
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-
+    color-scheme: light;
+    --background: 240 5% 98%;
+    --foreground: 240 6% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
+    --card-foreground: 240 6% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    /* Primary: Professional Blue */
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-
-    /* Secondary: Subtle Gray */
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    /* Muted: Light Gray for backgrounds */
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
-    /* Accent: Soft Blue */
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-
-    /* Destructive: Soft Red */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    /* Success: Green for positive actions */
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
-
-    /* Warning: Yellow for alerts */
-    --warning: 47.9 95.8% 53.1%;
-    --warning-foreground: 26 83.3% 14.1%;
-
-    /* Borders and inputs */
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221.2 83.2% 53.3%;
-
-    /* Radius for modern rounded corners */
+    --popover-foreground: 240 6% 10%;
+    --primary: 221 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 95%;
+    --secondary-foreground: 240 6% 20%;
+    --muted: 240 5% 95%;
+    --muted-foreground: 240 4% 40%;
+    --accent: 240 5% 93%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 70% 43%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 65% 28%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 90% 30%;
+    --warning-foreground: 0 0% 100%;
+    --info: 221 70% 45%;
+    --info-subtle: 221 85% 96%;
+    --success-subtle: 152 45% 95%;
+    --warning-subtle: 40 85% 95%;
+    --destructive-subtle: 0 75% 97%;
+    --border: 240 5% 88%;
+    --input: 240 4% 54%;
+    --ring: 221 70% 45%;
     --radius: 0.5rem;
-
-    /* Chart colors - Professional palette */
-    --chart-1: 221.2 83.2% 53.3%;
-    --chart-2: 142.1 76.2% 36.3%;
-    --chart-3: 47.9 95.8% 53.1%;
-    --chart-4: 280 100% 70%;
-    --chart-5: 340 82% 52%;
+    --chart-1: 221 70% 45%;
+    --chart-2: 152 65% 28%;
+    --chart-3: 32 90% 35%;
+    --chart-4: 270 45% 48%;
+    --chart-5: 340 60% 42%;
   }
-
   .dark {
-    /* Dark mode - Melhorado para melhor contraste e visibilidade */
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
-
-    --card: 224 71% 6%;
-    --card-foreground: 213 31% 91%;
-
-    --popover: 224 71% 6%;
-    --popover-foreground: 213 31% 91%;
-
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
-
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --success: 142.1 70.6% 50.3%;
-    --success-foreground: 144.9 80.4% 10%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 48 96% 89%;
-
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 216 34% 17%;
-
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    color-scheme: dark;
+    --background: 240 6% 7%;
+    --foreground: 240 5% 96%;
+    --card: 240 5% 10%;
+    --card-foreground: 240 5% 96%;
+    --popover: 240 5% 12%;
+    --popover-foreground: 240 5% 96%;
+    --primary: 221 85% 72%;
+    --primary-foreground: 240 6% 10%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 240 5% 92%;
+    --muted: 240 5% 14%;
+    --muted-foreground: 240 5% 68%;
+    --accent: 240 5% 18%;
+    --accent-foreground: 240 5% 96%;
+    --destructive: 0 85% 75%;
+    --destructive-foreground: 240 6% 10%;
+    --success: 152 55% 65%;
+    --success-foreground: 240 6% 10%;
+    --warning: 40 85% 70%;
+    --warning-foreground: 240 6% 10%;
+    --info: 221 85% 72%;
+    --info-subtle: 221 35% 17%;
+    --success-subtle: 152 25% 14%;
+    --warning-subtle: 40 30% 14%;
+    --destructive-subtle: 0 30% 16%;
+    --border: 240 5% 21%;
+    --input: 240 4% 44%;
+    --ring: 221 85% 72%;
+    --chart-1: 221 85% 72%;
+    --chart-2: 152 55% 65%;
+    --chart-3: 40 85% 70%;
+    --chart-4: 270 65% 76%;
+    --chart-5: 340 70% 73%;
   }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground antialiased; font-feature-settings: 'cv11', 'ss01'; }
+  h1, h2, h3 { text-wrap: balance; letter-spacing: -0.025em; }
+  :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+  input, textarea, select { @apply text-foreground; }
+  ::selection { background: hsl(var(--primary) / 0.18); }
 }
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
 @layer components {
-  /* Container paddings */
-  .container {
-    @apply mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Page header styling */
-  .page-header {
-    @apply mb-8;
-  }
-
-  .page-title {
-    @apply text-3xl font-bold tracking-tight;
-  }
-
-  .page-description {
-    @apply text-muted-foreground mt-2;
+  .container { @apply mx-auto px-4 sm:px-6 lg:px-8; }
+  .page-header { @apply mb-6; }
+  .page-title { @apply text-2xl font-semibold tracking-tight; }
+  .page-description { @apply mt-1 text-sm text-muted-foreground; }
+  .safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+@layer utilities {
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+  @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+  .animate-fadeIn { animation: fadeIn 150ms ease-out; }
+  .animate-fadeInUp { animation: fadeInUp 180ms ease-out; }
+  .animate-scaleIn { animation: scaleIn 150ms ease-out; }
+  .animate-slideInRight { animation: slideInRight 180ms ease-out; }
+  .animate-slideInLeft { animation: slideInLeft 180ms ease-out; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
-
-@layer utilities {
-  /* Animations */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.2s ease-in-out;
-  }
-
-  .animate-fadeInUp {
-    animation: fadeInUp 0.3s ease-out;
-  }
-
-  .animate-scaleIn {
-    animation: scaleIn 0.2s ease-in-out;
-  }
-
-  .animate-slideInRight {
-    animation: slideInRight 0.3s ease-out;
-  }
-
-  .animate-slideInLeft {
-    animation: slideInLeft 0.3s ease-out;
-  }
-
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-
-  /* Glass morphism effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  .dark .glass {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']), textarea, select { font-size: 1rem; }
 }

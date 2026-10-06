@@ -1,8 +1,9 @@
 'use client';
 
+import { PreviewNotice } from '@/components/common/PreviewNotice';
 import { useState } from 'react';
 import { Shield, Key, Clock, FileText, AlertTriangle, Save, Loader2, Eye, Download, Lock } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function SecuritySettingsPage() {
   const [saving, setSaving] = useState(false);
@@ -55,7 +56,7 @@ export default function SecuritySettingsPage() {
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
           <Shield className="w-8 h-8" />
           Segurança
         </h1>
@@ -64,13 +65,20 @@ export default function SecuritySettingsPage() {
         </p>
       </div>
 
+      <PreviewNotice>
+        Esta tela ainda não está ligada ao servidor. O <strong>2FA não é ativado</strong>,
+        as políticas não são aplicadas, e a lista de sessões ativas e o histórico
+        abaixo são <strong>exemplos fixos</strong> — não refletem acessos reais à
+        sua conta.
+      </PreviewNotice>
+
       <form onSubmit={handleSave} className="space-y-6">
         {/* Two-Factor Authentication */}
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <Key className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-success-subtle  rounded-lg">
+                <Key className="w-5 h-5 text-success" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold">Autenticação de Dois Fatores (2FA)</h3>
@@ -90,14 +98,14 @@ export default function SecuritySettingsPage() {
                 }}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-primary"></div>
             </label>
           </div>
 
           {twoFactorEnabled && showQRCode && (
             <div className="pl-11 space-y-4">
               <div className="p-6 bg-muted/50 rounded-lg text-center">
-                <div className="w-48 h-48 mx-auto bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-48 h-48 mx-auto bg-card  rounded-lg flex items-center justify-center mb-4">
                   {/* QR Code placeholder */}
                   <p className="text-sm text-muted-foreground">QR Code</p>
                 </div>
@@ -130,8 +138,8 @@ export default function SecuritySettingsPage() {
         {/* Session Management */}
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Clock className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-info-subtle  rounded-lg">
+              <Clock className="w-5 h-5 text-info" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Gerenciamento de Sessão</h3>
@@ -190,7 +198,7 @@ export default function SecuritySettingsPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="px-2 py-1 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded">
+                  <span className="px-2 py-1 text-xs bg-success-subtle text-success   rounded">
                     Atual
                   </span>
                 </div>
@@ -222,8 +230,8 @@ export default function SecuritySettingsPage() {
         {/* Password Policy */}
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <Lock className="w-5 h-5 text-amber-600" />
+            <div className="p-2 bg-warning-subtle  rounded-lg">
+              <Lock className="w-5 h-5 text-warning" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">Política de Senhas</h3>
@@ -319,7 +327,7 @@ export default function SecuritySettingsPage() {
                 onChange={(e) => setAuditLogsEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all  peer-checked:bg-primary"></div>
             </label>
           </div>
 
@@ -356,9 +364,9 @@ export default function SecuritySettingsPage() {
                   ].map((log, i) => (
                     <div key={i} className="flex items-start gap-3 p-2 text-sm bg-muted/30 rounded">
                       <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                        log.type === 'success' ? 'bg-green-500' :
-                        log.type === 'warning' ? 'bg-amber-500' :
-                        log.type === 'danger' ? 'bg-red-500' : 'bg-blue-500'
+                        log.type === 'success' ? 'bg-success' :
+                        log.type === 'warning' ? 'bg-warning' :
+                        log.type === 'danger' ? 'bg-destructive' : 'bg-info'
                       }`} />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{log.action}</p>
@@ -375,14 +383,14 @@ export default function SecuritySettingsPage() {
         </div>
 
         {/* Warning Banner */}
-        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg p-4">
+        <div className="bg-warning-subtle  border border-warning/30  rounded-lg p-4">
           <div className="flex gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0" />
             <div>
-              <h4 className="font-semibold text-amber-900 dark:text-amber-400 mb-1">
+              <h4 className="font-semibold text-warning  mb-1">
                 Importante
               </h4>
-              <p className="text-sm text-amber-800 dark:text-amber-400/80">
+              <p className="text-sm text-warning ">
                 Alterações nas configurações de segurança afetam todos os usuários do sistema.
                 Certifique-se de comunicar mudanças importantes à equipe.
               </p>

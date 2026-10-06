@@ -1,4 +1,5 @@
 import api from './client';
+import { PAGE_LIMIT_ALL } from './pagination';
 
 export interface Receivable {
   id: string;
@@ -8,7 +9,10 @@ export interface Receivable {
   paidAmount: number;
   status: string;
   dueDate: string;
-  description: string | null;
+  // O campo se chama `notes` no schema e na API. O front declarava
+  // `description`, que nunca vinha preenchido — a lista mostrava
+  // "Sem descrição" mesmo com observação gravada.
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
   customer?: {
@@ -114,14 +118,14 @@ export interface CreateReceivableDto {
   serviceOrderId?: string;
   amount: number;
   dueDate: string;
-  description?: string;
+  notes?: string;
 }
 
 export interface UpdateReceivableDto {
   customerId?: string;
   amount?: number;
   dueDate?: string;
-  description?: string;
+  notes?: string;
   status?: 'pending' | 'paid' | 'overdue' | 'cancelled';
 }
 
@@ -163,6 +167,7 @@ export const financialApi = {
   findAllReceivables: async (status?: string): Promise<Receivable[]> => {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
+    params.append('limit', String(PAGE_LIMIT_ALL)); // ver pagination.ts
 
     const response = await api.get(`/financial/receivables?${params.toString()}`);
     return response.data.data || [];

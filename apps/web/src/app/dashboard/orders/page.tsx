@@ -1,4 +1,5 @@
 'use client';
+import { MetricStrip } from '@/components/layout/metric-strip';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -111,10 +112,13 @@ export default function OrdersPage() {
   const getStats = () => {
     const total = data.length;
     const open = data.filter(o => o.status === 'open').length;
+    // 'scheduled' não era contado em lugar nenhum: uma ordem agendada aparecia
+    // no total mas ficava com 0 em todos os status.
+    const scheduled = data.filter(o => o.status === 'scheduled').length;
     const inProgress = data.filter(o => o.status === 'in_progress').length;
     const completed = data.filter(o => o.status === 'completed').length;
 
-    return { total, open, inProgress, completed };
+    return { total, open, scheduled, inProgress, completed };
   };
 
   // Mapeia ServiceOrder para KanbanOrder
@@ -179,23 +183,23 @@ export default function OrdersPage() {
           const statusConfig: Record<string, { label: string; className: string }> = {
             open: {
               label: 'Aberta',
-              className: 'bg-blue-100 text-blue-800 hover:bg-blue-100/80',
+              className: 'bg-info-subtle text-info hover:bg-info-subtle/80',
             },
             scheduled: {
               label: 'Agendada',
-              className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80',
+              className: 'bg-warning-subtle text-warning hover:bg-warning-subtle/80',
             },
             in_progress: {
               label: 'Em Andamento',
-              className: 'bg-orange-100 text-orange-800 hover:bg-orange-100/80',
+              className: 'bg-warning-subtle text-warning hover:bg-warning-subtle/80',
             },
             completed: {
               label: 'Concluída',
-              className: 'bg-green-100 text-green-800 hover:bg-green-100/80',
+              className: 'bg-success-subtle text-success hover:bg-success-subtle/80',
             },
             cancelled: {
               label: 'Cancelada',
-              className: 'bg-red-100 text-red-800 hover:bg-red-100/80',
+              className: 'bg-destructive-subtle text-destructive hover:bg-destructive-subtle/80',
             },
           };
           const config = statusConfig[status] || statusConfig.open;
@@ -233,7 +237,7 @@ export default function OrdersPage() {
         cell: ({ row }) => {
           const amount = row.getValue('totalAmount') as number;
           return (
-            <span className="font-medium text-green-600">
+            <span className="font-medium text-success">
               {formatCurrency(Number(amount))}
             </span>
           );
@@ -342,18 +346,18 @@ export default function OrdersPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card p-6 rounded-lg shadow border border-border">
+            <div key={i} className="bg-card p-6 rounded-lg  border border-border">
               <Skeleton className="h-4 w-32 mb-2" />
               <Skeleton className="h-8 w-16" />
             </div>
           ))}
         </div>
 
-        <div className="bg-card p-4 rounded-lg shadow border border-border">
+        <div className="bg-card p-4 rounded-lg  border border-border">
           <Skeleton className="h-10 w-full" />
         </div>
 
-        <div className="bg-card rounded-lg shadow border border-border">
+        <div className="bg-card rounded-lg  border border-border">
           <div className="p-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <Skeleton key={i} className="h-12 w-full mb-2" />
@@ -369,7 +373,7 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Ordens de Serviço</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Ordens de Serviço</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Gerencie as ordens de trabalho</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
@@ -405,55 +409,13 @@ export default function OrdersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Total de Ordens</p>
-              <p className="text-xl sm:text-2xl font-bold text-foreground mt-1">{stats.total}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
-              <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Abertas</p>
-              <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{stats.open}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-blue-500/10 rounded-lg">
-              <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Em Andamento</p>
-              <p className="text-xl sm:text-2xl font-bold text-orange-600 mt-1">{stats.inProgress}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-orange-500/10 rounded-lg">
-              <PlayCircle className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card p-4 sm:p-6 rounded-lg shadow border border-border hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Concluídas</p>
-              <p className="text-xl sm:text-2xl font-bold text-success mt-1">{stats.completed}</p>
-            </div>
-            <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
-              <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <MetricStrip items={[
+        { label: <>Total de Ordens</>, value: <>{stats.total}</>, tone: 'neutral' },
+        { label: <>Abertas</>, value: <>{stats.open}</>, tone: 'neutral' },
+        { label: <>Agendadas</>, value: <>{stats.scheduled}</>, tone: 'neutral' },
+        { label: <>Em Andamento</>, value: <>{stats.inProgress}</>, tone: 'warning' },
+        { label: <>Concluídas</>, value: <>{stats.completed}</>, tone: 'success' },
+      ]} />
 
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
@@ -478,7 +440,7 @@ export default function OrdersPage() {
 
       {/* Kanban View */}
       {viewMode === 'kanban' && (
-        <div className="bg-card rounded-lg shadow border border-border overflow-hidden">
+        <div className="bg-card rounded-lg  border border-border overflow-hidden">
           {kanbanOrders.length === 0 ? (
             <div className="p-6 sm:p-12 text-center">
               <ClipboardList className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
@@ -511,7 +473,7 @@ export default function OrdersPage() {
       {viewMode === 'table' && (
         <>
           {filteredData.length === 0 && !loading ? (
-            <div className="bg-card rounded-lg shadow border border-border p-6 sm:p-12 text-center">
+            <div className="bg-card rounded-lg  border border-border p-6 sm:p-12 text-center">
               <ClipboardList className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg sm:text-xl font-semibold text-foreground mb-2">
                 {data.length === 0 ? 'Nenhuma ordem encontrada' : 'Nenhum resultado encontrado'}
@@ -532,7 +494,7 @@ export default function OrdersPage() {
               )}
             </div>
           ) : (
-            <div className="bg-card rounded-lg shadow border border-border p-3 sm:p-6">
+            <div className="min-w-0">
               <DataTable
                 columns={columns}
                 data={filteredData}
